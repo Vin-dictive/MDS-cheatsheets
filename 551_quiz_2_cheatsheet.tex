@@ -1,0 +1,151 @@
+\documentclass[7pt,landscape]{article}
+
+% PACKAGES
+\usepackage[letterpaper, margin=0.25in]{geometry} % tighter margins
+\usepackage{amsmath, amssymb}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage{verbatim}
+
+% --- FORMATTING ---
+\setstretch{0.9}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\allsectionsfont{\fontsize{8}{9}\selectfont}
+
+% DOCUMENT START
+\begin{document}
+\pagestyle{empty}
+
+\begin{multicols}{3}
+
+\section*{R Distribution Function Types}
+\begin{itemize}
+    \item \textbf{d*} : Density / PMF (probability mass or density function). Example: \texttt{dnorm(x, mean, sd)} 
+    \item \textbf{p*} : Cumulative distribution function (CDF). Example: \texttt{pnorm(q, mean, sd) = P(X \le q)}
+    \item \textbf{q*} : Quantile function (inverse CDF). Example: \texttt{qnorm(p, mean, sd) = x s.t. P(X \le x) = p}
+    \item \textbf{r*} : Random number generation. Example: \texttt{rnorm(n, mean, sd)}
+\end{itemize}
+
+\subsection*{Discrete Distribution Families}
+
+\subsection*{Bernoulli($p$)}
+Binary trial (success/failure). \\
+PMF: $P(X=x)=p^x(1-p)^{1-x}$, $x \in \{0,1\}$ \\
+Mean: $p$, Var: $p(1-p)$ \\
+R: \texttt{d/p/q/rbinom(n=1, p)}
+
+\subsection*{Binomial($n,p$)}
+# successes in $n$ Bernoulli trials. \\
+PMF: $P(X=x)=\binom{n}{x}p^x(1-p)^{n-x}$ \\
+Mean: $np$, Var: $np(1-p)$ \\
+R: \texttt{dbinom, pbinom, qbinom, rbinom}
+
+\subsection*{Geometric($p$)}
+Failures before 1st success. \\
+PMF: $P(X=x)=(1-p)^x p$, $x \ge 0$ \\
+Mean: $(1-p)/p$, Var: $(1-p)/p^2$ \\
+R: \texttt{dgeom, pgeom, qgeom, rgeom}
+
+\subsection*{NegBin($k,p$)}
+Failures before $k$-th success. \\
+PMF: $P(X=x)=\binom{x+k-1}{x}p^k(1-p)^x$ \\
+Mean: $k(1-p)/p$, Var: $k(1-p)/p^2$ \\
+R: \texttt{dnbinom, pnbinom, qnbinom, rnbinom}
+
+\subsection*{Poisson($\lambda$)}
+Counts in interval, rate $\lambda$. \\
+PMF: $P(X=x)=\tfrac{\lambda^x e^{-\lambda}}{x!}$ \\
+Mean: $\lambda$, Var: $\lambda$ \\
+R: \texttt{dpois, ppois, qpois, rpois}
+
+\subsection*{Continuous Distribution Families}
+
+\subsection*{Uniform($a,b$)}
+All values equally likely on $[a,b]$. \\
+PDF: $f(x)=\tfrac{1}{b-a}, \; a \le x \le b$ \\
+Mean: $(a+b)/2$, Var: $(b-a)^2/12$ \\
+Skewness: 0 (symmetric) \\
+R: \texttt{dunif, punif, qunif, runif}
+
+\subsection*{Normal($\mu,\sigma^2$)}
+Bell-shaped, \\ 
+-\infty < \mu < \infty \\
+\sigma^2 > 0 \\
+PDF: $f(x)=\tfrac{1}{\sqrt{2\pi\sigma^2}} e^{-(x-\mu)^2/(2\sigma^2)}$ \\
+Mean: $\mu$, Var: $\sigma^2$ \\
+Skewness: 0 (symmetric) \\
+R: \texttt{dnorm, pnorm, qnorm, rnorm; \\
+moments::skewness(samples)}
+
+\subsection*{Lognormal($\mu,\sigma^2$)}
+If $\ln X \sim N(\mu,\sigma^2)$. \\
+PDF: $f(x)=\tfrac{1}{x\sigma\sqrt{2\pi}} e^{-(\ln x-\mu)^2/(2\sigma^2)}$ \\
+Mean: $e^{\mu+\sigma^2/2}$, Var: $(e^{\sigma^2}-1)e^{2\mu+\sigma^2}$ \\
+Skewness: $(e^{\sigma^2}+2)\sqrt{e^{\sigma^2}-1}$ \\
+R: \texttt{dlnorm, plnorm, qlnorm, rlnorm; \\
+moments::skewness(samples)}
+
+\subsection*{Exponential($\lambda$)}
+Time between Poisson events. \\
+PDF: $f(x)=\lambda e^{-\lambda x}, x\ge0$ \\
+Mean: $1/\lambda$, Var: $1/\lambda^2$ \\
+Skewness: 2 \\
+R: \texttt{dexp, pexp, qexp, rexp; \\
+moments::skewness(samples)}
+
+\subsection*{Beta($\alpha,\beta$)}
+On $[0,1]$, Bayesian priors. \\
+PDF: $f(x)=\tfrac{1}{B(\alpha,\beta)} x^{\alpha-1}(1-x)^{\beta-1}$ \\
+Mean: $\alpha/(\alpha+\beta)$, Var: $\tfrac{\alpha\beta}{(\alpha+\beta)^2(\alpha+\beta+1)}$ \\
+Skewness: $\frac{2(\beta-\alpha)\sqrt{\alpha+\beta+1}}{(\alpha+\beta+2)\sqrt{\alpha\beta}}$ \\
+R: \texttt{dbeta, pbeta, qbeta, rbeta; \\
+moments::skewness(samples)}
+
+\subsection*{Weibull($k,\lambda$)}
+Lifetimes, survival, reliability. \\
+PDF: $f(x)=\tfrac{k}{\lambda}(x/\lambda)^{k-1} e^{-(x/\lambda)^k}$ \\
+Mean: $\lambda \Gamma(1+1/k)$, Var: $\lambda^2[\Gamma(1+2/k)-\Gamma(1+1/k)^2]$ \\
+Skewness: $\frac{\Gamma(1+3/k)\lambda^3 - 3\mu\sigma^2 - \mu^3}{\sigma^3}$ \\
+R: \texttt{dweibull, pweibull, qweibull, rweibull; \\
+moments::skewness(samples)}
+
+\subsection*{Gamma($\alpha,\theta$)}
+Waiting time for $\alpha$ events. \\
+PDF: $f(x)=\tfrac{1}{\Gamma(\alpha)\theta^\alpha} x^{\alpha-1} e^{-x/\theta}$ \\
+Mean: $\alpha\theta$, Var: $\alpha\theta^2$ \\
+Skewness: $2/\sqrt{\alpha}$ \\
+R: \texttt{dgamma, pgamma, qgamma, rgamma; \\
+moments::skewness(samples)}
+
+\subsection*{R: Computing Expected Value}
+
+\subsection*{Discrete RV}
+\texttt{X <- 0:2} \\
+\texttt{p <- c(0.2,0.5,0.3)} \\
+\texttt{EV <- sum(X*p)} \\
+
+\subsection*{Continuous RV (numerical integration)}
+\texttt{f <- function(x) 2*x} \\
+\texttt{EV <- integrate(function(x) x*f(x), 0,1)\$value} \\
+
+\subsection*{From sample (Monte Carlo)}
+\texttt{samples <- rnorm(10000, mean=5, sd=2)} \\
+\texttt{mean(samples)}  % approximate expected value
+
+\subsection*{Define the PDF function}
+
+\texttt{f <- function(x) { 2*x }} \\
+\texttt{prob <- integrate(f, lower = 0.5, upper = 0.75)\$value \# Integrate over [0.5, 0.75]}
+
+
+
+\subsection*{R: Skewness from sample}
+\texttt{library(moments)} \\
+\texttt{skewness(samples)}
+
+
+\end{multicols}
+
+\end{document}

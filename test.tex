@@ -1,0 +1,140 @@
+\documentclass[8pt]{article}
+% PACKAGES
+\usepackage[letterpaper, margin=0.15in, top=0.2in, bottom=0.2in]{geometry} % Tighter margins
+\usepackage{amsmath, amssymb} % For math symbols and environments
+\usepackage{multicol} % For multi-column layout
+\usepackage{tcolorbox} % For colored boxes around distributions
+\usepackage{xcolor} % For colors
+\usepackage{setspace} % To control line spacing
+\usepackage{sectsty} % To control section font styles
+% --- FORMATTING ADJUSTMENTS ---
+\setstretch{0.8} % Reduces line spacing globally (very tight)
+\setlength{\parindent}{0pt} % Removes paragraph indentation
+\setlength{\parskip}{1pt} % Adds a tiny space between paragraphs
+\allsectionsfont{\fontsize{8}{9}\selectfont} % Makes all section titles 8pt font
+\tcbset{fonttitle=\normalfont} % Makes tcolorbox titles non-bold
+% TCOLORBOX SETUP
+\tcbuselibrary{skins}
+\newtcolorbox{distbox}[1]{
+    colback=blue!5!white,
+    colframe=blue!75!black,
+    title=#1,
+    sharp corners,
+    boxsep=1pt, % Reduced internal padding
+    left=3pt, right=3pt, top=2pt, bottom=2pt
+}
+% DOCUMENT START
+\begin{document}
+\pagestyle{empty} % No page numbers
+\begin{multicols}{3}
+\section*{Fundamental Concepts}
+\subsection*{Probability \& Events}
+Probability of Event A: $P(A) = \frac{\text{Count of A}}{\text{Total Events}} \text{ as total } \to \infty$.
+Range: $0 \le P(A) \le 1$.
+Sample Space (S): Set of all possible outcomes. $P(S)=1$.
+Complement ($A^c$): “Not A”. $P(A^c) = 1 - P(A)$.
+Union ($A \cup B$): “A OR B”.
+Intersection ($A \cap B$): “A AND B”.
+\subsection*{Probability Laws}
+Inclusion-Exclusion Principle:
+$$P(A \cup B) = P(A) + P(B) - P(A \cap B)$$
+Mutually Exclusive Events: Events that cannot happen at the same time. $P(A \cap B) = 0$. Then, $P(A \cup B) = P(A) + P(B)$.
+Independent Events: Occurrence of one does not affect the other.
+$$P(A \cap B) = P(A) \cdot P(B)$$
+\section*{Conditional Probability}
+Definition: Probability of A given that B has occurred.
+$$P(A|B) = \frac{P(A \cap B)}{P(B)}$$
+Conditional Distribution: A valid probability distribution for a subset of the sample space defined by the condition. Sums to 1.
+Independence (Conditional View): Knowing X gives no information about Y.
+$$P(Y|X) = P(Y)$$
+Law of Total Expectation: The marginal mean is the weighted average of conditional means.
+\begin{align*}
+\mathbb{E}_{Y}[Y] &= \sum_{x} \mathbb{E}_{Y}[Y|X=x] P(X=x) \\
+                 &= \mathbb{E}_{X}[\mathbb{E}_{Y}[Y|X]]
+\end{align*}
+Law of Total Probability: From the conditional formula, we get the multiplication rule: $P(A \cap B) = P(A|B)P(B)$.
+Conditional Independence: X and Y are independent given Z.
+$$P(X,Y|Z) = P(X|Z)P(Y|Z)$$
+\section*{Random Variables (RVs)}
+Discrete RV: Takes countable values (e.g., counts, categories). Described by a Probability Mass Function (PMF).
+Continuous RV: Takes uncountable values (e.g., height, time). Described by a Probability Density Function (PDF).
+\subsection*{Measures of Central Tendency \& Uncertainty}
+Mode: The outcome with the highest probability. Can be multimodal.
+Entropy (Uncertainty): Average “surprise” or information. $H(X)=0$ means no randomness.
+$$H(X) = -\sum_{x} P(X=x) \log[P(X=x)]$$
+Mean / Expected Value ($\mathbb{E}(X)$ or $\mu$):
+For a discrete RV X:
+$$\mathbb{E}(X) = \sum_{x} x \cdot P(X=x)$$
+For a function $g(X)$:
+$$\mathbb{E}[g(X)] = \sum_{x} g(x) \cdot P(X=x)$$
+Variance ($Var(X)$ or $\sigma^2$): Measure of spread.
+\begin{align*}
+Var(X) &= \mathbb{E}[(X-\mu)^2] \\
+       &= \mathbb{E}(X^2) - [\mathbb{E}(X)]^2
+\end{align*}
+Standard Deviation ($\sigma$): $\sqrt{Var(X)}$.
+\section*{Properties of Expectation \& Variance}
+\subsection*{Linearity of Expectation}
+For constants $a, b$ and RVs $X, Y$:
+$\mathbb{E}(aX + b) = a\mathbb{E}(X) + b$
+$\mathbb{E}(aX + bY) = a\mathbb{E}(X) + b\mathbb{E}(Y)$
+\textit{Note: $\mathbb{E}(XY) \neq \mathbb{E}(X)\mathbb{E}(Y)$ unless X and Y are independent.}
+\subsection*{Properties of Variance}
+For constants $a, b$ and RVs $X, Y$:
+$Var(aX + b) = a^2 Var(X)$
+If X, Y are independent:
+$$Var(aX + bY) = a^2 Var(X) + b^2 Var(Y)$$
+If X, Y are dependent:
+$$Var(X+Y) = Var(X)+Var(Y)+2Cov(X,Y)$$
+\section*{Joint \& Marginal Distributions}
+Joint Distribution: A probability distribution for two or more RVs, e.g., $P(X=x, Y=y)$. The sum of all probabilities over all possible pairs of outcomes is 1.
+Marginal Distribution: The probability distribution of a single variable in a joint distribution. To find it, sum over the other variable(s).
+$$P(X=x) = \sum_{y} P(X=x, Y=y)$$
+\subsection*{Measures of Dependence}
+Covariance: Measures joint variability. Sign indicates direction of linear relationship.
+\begin{align*}
+Cov(X,Y) &= \mathbb{E}[(X-\mu_X)(Y-\mu_Y)] \\
+         &= \mathbb{E}(XY) - \mathbb{E}(X)\mathbb{E}(Y)
+\end{align*}
+If X, Y independent $\implies Cov(X,Y) = 0$. The converse is not always true.
+Pearson’s Correlation ($\rho$): Standardized covariance, measures linear dependence.
+$$\rho_{XY} = \frac{Cov(X,Y)}{\sigma_X \sigma_Y} \quad \in [-1, 1]$$
+Kendall’s Tau ($\tau_K$): Non-parametric measure of monotonic dependence based on concordant/discordant pairs. $\tau_K \in [-1, 1]$.
+\subsection*{Odds}
+Odds of an event with probability $p$:
+$$o = \frac{p}{1-p}$$
+Probability from odds $o$:
+$$p = \frac{o}{o+1}$$
+\section*{Common Discrete Distribution Families}
+\begin{distbox}{Bernoulli(p)}
+Process: A single trial with two outcomes: success (1) or failure (0).
+PMF: $P(X=x) = p^x(1-p)^{1-x}$ for $x \in \{0, 1\}$.
+Mean: $\mathbb{E}(X) = p$.
+Variance: $Var(X) = p(1-p)$.
+\end{distbox}
+\begin{distbox}{Binomial(n, p)}
+Process: Number of successes in $n$ independent Bernoulli trials.
+PMF: $P(X=x) = \binom{n}{x}p^x(1-p)^{n-x}$ for $x \in \{0, ..., n\}$.
+Mean: $\mathbb{E}(X) = np$.
+Variance: $Var(X) = np(1-p)$.
+\end{distbox}
+\begin{distbox}{Geometric(p)}
+Process: Number of failures ($x$) before the first success.
+PMF: $P(X=x) = (1-p)^x p$ for $x \in \{0, 1, 2, ...\}$.
+Mean: $\mathbb{E}(X) = \frac{1-p}{p}$.
+Variance: $Var(X) = \frac{1-p}{p^2}$.
+\end{distbox}
+\begin{distbox}{Negative Binomial(k, p)}
+Process: Number of failures ($x$) before the $k^{th}$ success.
+PMF: $P(X=x) = \binom{x+k-1}{x}p^k(1-p)^x$ for $x \in \{0, 1, ...\}$.
+Mean: $\mathbb{E}(X) = \frac{k(1-p)}{p}$.
+Variance: $Var(X) = \frac{k(1-p)}{p^2}$.
+\end{distbox}
+\begin{distbox}{Poisson(lambda)}
+Process: Number of events occurring in a fixed interval, given an average rate lambda.
+PMF: $P(X=x) = \frac{\lambda^x e^{-\lambda}}{x!}$ for $x \in \{0, 1, 2, ...\}$.
+Mean: $\mathbb{E}(X) = \lambda$.
+Variance: $Var(X) = \lambda$.
+\end{distbox}
+\end{multicols}
+\end{document}
