@@ -67,7 +67,7 @@ All values equally likely on $[a,b]$. \\
 PDF: $f(x)=\tfrac{1}{b-a}, \; a \le x \le b$ \\
 Mean: $(a+b)/2$, Var: $(b-a)^2/12$ \\
 Skewness: 0 (symmetric) \\
-R: \texttt{dunif, punif, qunif, runif}
+R: \texttt{dunif, punif, qunif, runif} \\
 
 \subsection*{Normal($\mu,\sigma^2$)}
 Bell-shaped, \\ 
@@ -76,48 +76,45 @@ Bell-shaped, \\
 PDF: $f(x)=\tfrac{1}{\sqrt{2\pi\sigma^2}} e^{-(x-\mu)^2/(2\sigma^2)}$ \\
 Mean: $\mu$, Var: $\sigma^2$ \\
 Skewness: 0 (symmetric) \\
-R: \texttt{dnorm, pnorm, qnorm, rnorm; \\
-moments::skewness(samples)}
+R: \texttt{dnorm, pnorm, qnorm, rnorm;} \\
 
 \subsection*{Lognormal($\mu,\sigma^2$)}
 If $\ln X \sim N(\mu,\sigma^2)$. \\
 PDF: $f(x)=\tfrac{1}{x\sigma\sqrt{2\pi}} e^{-(\ln x-\mu)^2/(2\sigma^2)}$ \\
 Mean: $e^{\mu+\sigma^2/2}$, Var: $(e^{\sigma^2}-1)e^{2\mu+\sigma^2}$ \\
 Skewness: $(e^{\sigma^2}+2)\sqrt{e^{\sigma^2}-1}$ \\
-R: \texttt{dlnorm, plnorm, qlnorm, rlnorm; \\
-moments::skewness(samples)}
+R: \texttt{dlnorm, plnorm, qlnorm, rlnorm;} \\
 
 \subsection*{Exponential($\lambda$)}
 Time between Poisson events. \\
+Positive RV, wait time, memoryless \\
+($\lambda$) is average rate \\
+($\beta$) is mean wait time \\
 PDF: $f(x)=\lambda e^{-\lambda x}, x\ge0$ \\
 Mean: $1/\lambda$, Var: $1/\lambda^2$ \\
 Skewness: 2 \\
-R: \texttt{dexp, pexp, qexp, rexp; \\
-moments::skewness(samples)}
+R: \texttt{dexp, pexp, qexp, rexp;} \\
 
 \subsection*{Beta($\alpha,\beta$)}
 On $[0,1]$, Bayesian priors. \\
 PDF: $f(x)=\tfrac{1}{B(\alpha,\beta)} x^{\alpha-1}(1-x)^{\beta-1}$ \\
 Mean: $\alpha/(\alpha+\beta)$, Var: $\tfrac{\alpha\beta}{(\alpha+\beta)^2(\alpha+\beta+1)}$ \\
 Skewness: $\frac{2(\beta-\alpha)\sqrt{\alpha+\beta+1}}{(\alpha+\beta+2)\sqrt{\alpha\beta}}$ \\
-R: \texttt{dbeta, pbeta, qbeta, rbeta; \\
-moments::skewness(samples)}
+R: \texttt{dbeta, pbeta, qbeta, rbeta;} \\
 
 \subsection*{Weibull($k,\lambda$)}
 Lifetimes, survival, reliability. \\
 PDF: $f(x)=\tfrac{k}{\lambda}(x/\lambda)^{k-1} e^{-(x/\lambda)^k}$ \\
 Mean: $\lambda \Gamma(1+1/k)$, Var: $\lambda^2[\Gamma(1+2/k)-\Gamma(1+1/k)^2]$ \\
 Skewness: $\frac{\Gamma(1+3/k)\lambda^3 - 3\mu\sigma^2 - \mu^3}{\sigma^3}$ \\
-R: \texttt{dweibull, pweibull, qweibull, rweibull; \\
-moments::skewness(samples)}
+R: \texttt{dweibull, pweibull, qweibull, rweibull;} \\
 
 \subsection*{Gamma($\alpha,\theta$)}
 Waiting time for $\alpha$ events. \\
 PDF: $f(x)=\tfrac{1}{\Gamma(\alpha)\theta^\alpha} x^{\alpha-1} e^{-x/\theta}$ \\
 Mean: $\alpha\theta$, Var: $\alpha\theta^2$ \\
 Skewness: $2/\sqrt{\alpha}$ \\
-R: \texttt{dgamma, pgamma, qgamma, rgamma; \\
-moments::skewness(samples)}
+R: \texttt{dgamma, pgamma, qgamma, rgamma;} \\
 
 \subsection*{R: Computing Expected Value}
 
@@ -138,13 +135,6 @@ moments::skewness(samples)}
 
 \texttt{f <- function(x) { 2*x }} \\
 \texttt{prob <- integrate(f, lower = 0.5, upper = 0.75)\$value \# Integrate over [0.5, 0.75]}
-
-
-
-\subsection*{R: Skewness from sample}
-\texttt{library(moments)} \\
-\texttt{skewness(samples)}
-
 
 \end{multicols}
 
