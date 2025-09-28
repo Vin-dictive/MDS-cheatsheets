@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.25)  27 SEP 2025 17:37
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.9.25)  27 SEP 2025 19:47
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -206,6 +206,21 @@ Package: verbatim 2024-01-22 v1.5x LaTeX2e package for verbatim enhancements
 \every@verbatim=\toks24
 \verbatim@line=\toks25
 \verbatim@in@stream=\read2
+) (/Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2024/12/31 v1.2e Enhanced LaTeX Graphics (DPC,SPQR)
+ (/Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
+ (/Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
+) (/Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 106.
+ (/Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2024/04/13 v1.2c Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen175
+\Gin@req@width=\dimen176
 ) (/Users/viction/Library/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2025-06-09 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count309
@@ -217,20 +232,20 @@ LaTeX Warning: Unused global option(s):
 (./551_quiz_2_cheatsheet.aux)
 \openout1 = `551_quiz_2_cheatsheet.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -266,146 +281,172 @@ LaTeX Font Info:    ... okay on input line 23.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 29.
-(/Users/viction/Library/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
+(/Users/viction/Library/TinyTeX/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count310
+\scratchdimen=\dimen177
+\scratchbox=\box101
+\nofMPsegments=\count311
+\nofMParguments=\count312
+\everyMPshowfont=\toks26
+\MPscratchCnt=\count313
+\MPscratchDim=\dimen178
+\MPnumerator=\count314
+\makeMPintoPDFobject=\count315
+\everyMPtoPDFconversion=\toks27
+) (/Users/viction/Library/TinyTeX/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
+ (/Users/viction/Library/TinyTeX/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
+))
+LaTeX Font Info:    Trying to load font information for U+msa on input line 30.
+ (/Users/viction/Library/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 29.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 30.
  (/Users/viction/Library/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Underfull \hbox (badness 10000) in paragraph at lines 56--59
+Underfull \hbox (badness 10000) in paragraph at lines 92--94
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 104--106
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 107--109
+Underfull \hbox (badness 10000) in paragraph at lines 95--97
 \OT1/cmtt/m/n/10 prob <- integrate(f, lower = 0.5, upper =
  []
 
 
-Overfull \hbox (0.94533pt too wide) detected at line 117
-\OML/cmm/m/it/10 f[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 x\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ) = []
+Underfull \hbox (badness 10000) in paragraph at lines 98--100
+[]\OT1/cmtt/m/n/10 Conditional dist is just a segment of marginal
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 117--120
-\OT1/cmtt/m/n/10 Conditional dist is just a segment of marginal
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 117--120
+Underfull \hbox (badness 10000) in paragraph at lines 98--100
 \OT1/cmtt/m/n/10 dist, then re-normalized to have an area
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 117--120
+Underfull \hbox (badness 10000) in paragraph at lines 98--100
 \OT1/cmtt/m/n/10 under the curve equal to 1 If X and Y are
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 120--121
+Underfull \hbox (badness 10000) in paragraph at lines 100--101
 \OT1/cmtt/m/n/10 This means conditional PDF of Y and X is
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 122--123
+Underfull \hbox (badness 10000) in paragraph at lines 102--103
 []\OT1/cmtt/m/n/10 It is independent and identically distributed
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 122--123
+Underfull \hbox (badness 10000) in paragraph at lines 102--103
 \OT1/cmtt/m/n/10 (iid). Each pair of observations are
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 122--123
+Underfull \hbox (badness 10000) in paragraph at lines 102--103
 \OT1/cmtt/m/n/10 independent, and each observation comes from
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 124--125
+Underfull \hbox (badness 10000) in paragraph at lines 104--105
 []\OT1/cmtt/m/n/10 Great way to find estimators. Applied on
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 124--125
+Underfull \hbox (badness 10000) in paragraph at lines 104--105
 \OT1/cmtt/m/n/10 multi and univariate. Relies on random sample
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 124--125
+Underfull \hbox (badness 10000) in paragraph at lines 104--105
 \OT1/cmtt/m/n/10 of n observations. Mean, is a estimator for
  []
 
 
-Overfull \hbox (0.46951pt too wide) in paragraph at lines 126--131
+Overfull \hbox (0.46951pt too wide) in paragraph at lines 106--111
 \OT1/cmtt/m/n/10 2.Find parameters of a theoretical distribution
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 126--131
+Underfull \hbox (badness 10000) in paragraph at lines 106--111
 \OT1/cmtt/m/n/10 4.Play with the parameters for that family
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 126--131
+Underfull \hbox (badness 10000) in paragraph at lines 106--111
 \OT1/cmtt/m/n/10 of distributions to find the most likely
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 126--131
+Underfull \hbox (badness 10000) in paragraph at lines 106--111
 \OT1/cmtt/m/n/10 parameters for the corresponding parametric
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 126--131
+Underfull \hbox (badness 10000) in paragraph at lines 106--111
 \OT1/cmtt/m/n/10 5.To get estimates, we use the likelihood
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 126--131
+Underfull \hbox (badness 10000) in paragraph at lines 106--111
 
  []
 
 
-Overfull \hbox (31.96924pt too wide) in paragraph at lines 138--138
+Overfull \hbox (31.96924pt too wide) in paragraph at lines 118--118
 []\OT1/cmtt/m/n/10 #Generate 30 random samples from Exponential(beta=20) 
  []
 
 
-Overfull \hbox (26.71928pt too wide) in paragraph at lines 140--140
+Overfull \hbox (26.71928pt too wide) in paragraph at lines 120--120
 []\OT1/cmtt/m/n/10 sample_n30 <- tibble(values = rexp(30, rate = 1/20))[] 
  []
 
 
-Overfull \hbox (26.71928pt too wide) in paragraph at lines 141--141
+Overfull \hbox (26.71928pt too wide) in paragraph at lines 121--121
 []\OT1/cmtt/m/n/10 #Compute likelihood and log-likelihood for candidate[] 
  []
 
 
-Overfull \hbox (16.21938pt too wide) in paragraph at lines 155--155
+Overfull \hbox (16.21938pt too wide) in paragraph at lines 135--135
 []\OT1/cmtt/m/n/10 LL <- function(l) log(prod(dexp(sample_n30$values,[] 
  []
 
 
-Overfull \hbox (0.46951pt too wide) in paragraph at lines 177--177
+Overfull \hbox (0.46951pt too wide) in paragraph at lines 157--157
 []\OT1/cmtt/m/n/10 converges to the true mean we want to estimate.[] 
  []
 
+<skew.png, id=1, 703.62875pt x 330.23375pt>
+File: skew.png Graphic file (type png)
+<use skew.png>
+Package pdftex.def Info: skew.png  used on input line 161.
+(pdftex.def)             Requested size: 221.64899pt x 104.02417pt.
 
-Overfull \vbox (4.08775pt too high) has occurred while \output is active []
+Underfull \hbox (badness 10000) in paragraph at lines 163--165
+\OT1/cmtt/m/n/10 Left-skewed: long tail to the left, mean <
+ []
 
 
-Overfull \vbox (3.35338pt too high) has occurred while \output is active []
+Underfull \hbox (badness 10000) in paragraph at lines 163--165
+\OT1/cmtt/m/n/10 Right-skewed: long tail to the right, mean >
+ []
 
 
-Overfull \vbox (8.05222pt too high) has occurred while \output is active []
+Underfull \hbox (badness 10000) in paragraph at lines 163--165
+
+ []
+
+
+Overfull \vbox (9.82118pt too high) has occurred while \output is active []
+
+
+Overfull \vbox (2.90039pt too high) has occurred while \output is active []
 
 
 
@@ -419,25 +460,25 @@ Overfull \vbox (8.05222pt too high) has occurred while \output is active []
 
 [1
 
-{/Users/viction/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] (./551_quiz_2_cheatsheet.aux)
+{/Users/viction/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./skew.png>] (./551_quiz_2_cheatsheet.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-09-02>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 2645 strings out of 469735
- 39790 string characters out of 5479983
- 498559 words of memory out of 5000000
- 31046 multiletter control sequences out of 15000+600000
+ 3448 strings out of 469735
+ 51893 string characters out of 5479983
+ 503870 words of memory out of 5000000
+ 31820 multiletter control sequences out of 15000+600000
  632398 words of font info for 63 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
- 57i,9n,65p,273b,266s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,5n,65p,273b,285s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </Users/viction/Library/TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tctt1000.600pk></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></Users/viction/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on 551_quiz_2_cheatsheet.pdf (1 page, 171215 bytes).
+Output written on 551_quiz_2_cheatsheet.pdf (1 page, 628523 bytes).
 PDF statistics:
- 83 PDF objects out of 1000 (max. 8388607)
- 50 compressed objects within 1 object stream
+ 86 PDF objects out of 1000 (max. 8388607)
+ 51 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 6 words of extra memory for PDF output out of 10000 (max. 10000000)
 

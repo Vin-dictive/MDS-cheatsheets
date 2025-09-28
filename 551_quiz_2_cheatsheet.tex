@@ -7,6 +7,7 @@
 \usepackage{setspace}
 \usepackage{sectsty}
 \usepackage{verbatim}
+\usepackage{graphicx}
 % --- FORMATTING ---
 \setstretch{0.9}
 \setlength{\parindent}{0pt}
@@ -26,41 +27,38 @@
 
 \subsection*{Discrete Distribution Families}
 
-\subsection*{Binomial($n,p$)}
+\subsection*{Binomial($n,p$)*binom} 
 successes in $n$ Bernoulli trials. \\
 PMF: $P(X=x)=\binom{n}{x}p^x(1-p)^{n-x}$ \\
-Mean: $np$, Var: $np(1-p)$ \\
-R: \texttt{dbinom, pbinom, qbinom, rbinom}
+Mean: $np$, Var: $np(1-p)$ 
 
-\subsection*{Geometric($p$)}
+\subsection*{Geometric($p$)*geom} 
 Failures before 1st success. \\
 PMF: $P(X=x)=(1-p)^x p$, $x \ge 0$ \\
-Mean: $(1-p)/p$, Var: $(1-p)/p^2$ \\
-R: \texttt{dgeom, pgeom, qgeom, rgeom}
+Mean: $(1-p)/p$, Var: $(1-p)/p^2$ 
 
-\subsection*{NegBin($k,p$)}
+\subsection*{NegBin($k,p$)*nbinom} 
 Failures before $k$-th success. \\
 PMF: $P(X=x)=\binom{x+k-1}{x}p^k(1-p)^x$ \\
-Mean: $k(1-p)/p$, Var: $k(1-p)/p^2$ \\
-R: \texttt{dnbinom, pnbinom, qnbinom, rnbinom}
+Mean: $k(1-p)/p$, Var: $k(1-p)/p^2$ 
 
-\subsection*{Poisson($\lambda$)}
+\subsection*{Poisson($\lambda$)*pois}
 Counts in interval, rate $\lambda$. \\
 PMF: $P(X=x)=\tfrac{\lambda^x e^{-\lambda}}{x!}$ \\
-Mean: $\lambda$, Var: $\lambda$ \\
-R: \texttt{dpois, ppois, qpois, rpois}
+Mean: $\lambda$, Var: $\lambda$ 
 
 \subsection*{Continuous Distribution Families}
 
 \subsection*{Uniform($a,b$) - *unif} 
 All values equally likely on $[a,b]$. \\
 PDF: $f(x)=\tfrac{1}{b-a}, \; a \le x \le b$ \\
-Mean: $(a+b)/2$, Var: $(b-a)^2/12$ \\
+Mean: $(a+b)/2$, Var: $(b-a)^2/12$ 
 
 \subsection*{Normal($\mu,\sigma^2$) - *norm}
 Bell-shaped, $-\infty < \mu < \infty , \sigma^2 > 0 $\\
 PDF: $f(x)=\tfrac{1}{\sqrt{2\pi\sigma^2}} e^{-(x-\mu)^2/(2\sigma^2)}$ \\
-Mean: $\mu$, Var: $\sigma^2$ 
+Mean: $\mu$, Var: $\sigma^2$ \\
+Z score: $\mu = x - Z\sigma$ 
 
 \subsection*{Lognormal($\mu,\sigma^2$) - *lnorm}
 If $\ln X \sim N(\mu,\sigma^2)$. \\
@@ -90,16 +88,6 @@ PDF: $f(x)=\tfrac{k}{\lambda}(x/\lambda)^{k-1} e^{-(x/\lambda)^k}$ \\
 Mean: $\lambda \Gamma(1+1/k)$, Var: $\lambda^2[\Gamma(1+2/k)-\Gamma(1+1/k)^2]$ \\
 Skewness: $\frac{\Gamma(1+3/k)\lambda^3 - 3\mu\sigma^2 - \mu^3}{\sigma^3}$ 
 
-\subsection*{Gamma($\alpha,\theta$) - *gamma}
-Waiting time for $\alpha$ events. \\
-non-negative numbers \\
-$\alpha$ is shape parameter $\theta$ is scale parameter \\
-PDF: $f(x)=\tfrac{1}{\Gamma(\alpha)\theta^\alpha} x^{\alpha-1} e^{-x/\theta}$ \\
-Mean: $\alpha\theta$, Var: $\alpha\theta^2$ \\
-Skewness: $2/\sqrt{\alpha}$ 
-
-\subsection*{R: Computing Expected Value}
-\subsection*{Discrete RV}
 \subsection*{Continuous RV (numerical integration)}
 \texttt{f <- function(x) 2*x} \\
 \texttt{EV <- integrate(function(x) x*f(x), 0,1)\$value} \\
@@ -107,14 +95,6 @@ Skewness: $2/\sqrt{\alpha}$
 \texttt{f <- function(x) { 2*x }} \\
 \texttt{prob <- integrate(f, lower = 0.5, upper = 0.75)\$value \# Integrate over [0.5, 0.75]}
 \subsection*{Conditional Distributions}
-Let $X$ and $Y$ be two random variables.
-\[
-f_{X|Y}(x|y) =
-\begin{cases}
-\frac{P(X=x, Y=y)}{P(Y=y)}, & \text{discrete case} \\
-\frac{f_{X,Y}(x,y)}{f_Y(y)}, & \text{continuous case, } f_Y(y) > 0
-\end{cases}
-\]
 \texttt{Conditional dist is just a segment of marginal dist, then re-normalized to have an area under the curve equal to 1}
 \texttt{If X and Y are independent, in continouse case,\[
 f_{Y|X}(y) = f_Y(y)\] This means conditional PDF of Y and X is marginal PDF of Y. }
@@ -176,5 +156,11 @@ The Law of Large of Numbers states that, as we
 increase our sample size n, our empirical mean 
 converges to the true mean we want to estimate.
 \end{verbatim}
+\subsection*{Skewness}
+\begin{center}
+\includegraphics[width=0.9\linewidth]{skew.png}
+\end{center}
+\texttt{Left-skewed: long tail to the left, mean < median < mode} \\
+\texttt{Right-skewed: long tail to the right, mean > median > mode} \\
 \end{multicols}
 \end{document}
