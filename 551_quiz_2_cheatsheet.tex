@@ -53,8 +53,7 @@ Mean: $\lambda$, Var: $\lambda$
 All values equally likely on $[a,b]$. \\
 PDF: $f(x)=\tfrac{1}{b-a}, \; a \le x \le b$ \\
 Mean: $(a+b)/2$, Var: $(b-a)^2/12$ \\
-For a uniform distribution between a and b,
-\[ 
+For a uniform distribution between a and b,\[ 
 P(X > x) = \frac{b - x}{b - a}, \quad a \le x \le b 
 \]
 
@@ -109,13 +108,12 @@ f_{Y|X}(y) = f_Y(y)\] This means conditional PDF of Y and X is marginal PDF of Y
 \subsection*{Random Sample}
 \texttt{It is independent and identically distributed (iid). Each pair of observations are independent, and each observation comes from the same distribution.}
 \subsection*{MLE}
-\texttt{Great way to find estimators. Applied on multi and univariate. Relies on random sample of n observations. Mean, is a estimator for univariate, multivariate, linear regression}
+\texttt{Way to find estimators. Mean - univariate, linear regression - multivariate}
 \subsection*{Steps for MLE}
 \texttt{1.(discrete or contin) distribution} \\
 \texttt{2.Find parameters of a theoretical distribution (eg $\lambda$ in a Poisson distribution)} \\
-\texttt{3.Choose distribution)} \\
-\texttt{4.Play with the parameters for that family of distributions to find the most likely parameters for the corresponding parametric estimates)} \\
-\texttt{5.To get estimates, we use the likelihood function of our observed random sample.)} \\
+\texttt{3.Find sample and parameters for the distribution to find the most likely estimates} \\
+\texttt{4.To get estimates, we use the likelihood function of our observed random sample.} \\
 \subsection*{R: Generating Sample and Likelihood}
 \begin{verbatim}
 #Generate 30 random samples from Exponential(beta=20)
@@ -142,20 +140,16 @@ stochastic - having some uncertain outcome.
 deterministic - an outcome that will be known 
 with 100% certainty.
 Computers cannot actually generate truly 
-random outcomes. 
-Instead, they use something called 
+random outcomes, they can generate only 
 pseudorandom numbers.
 Although this sequence is deterministic, 
 it behaves like a random sample. 
 One pitfall is that neighbouring pairs are not 
 independent of each other.
-
 The empirical approach (using observed data),
-resulting in approximate values that improve 
-as the sample size increases 
-(i.e., the frequentist paradigm!).
-
-The Law of Large of Numbers states that, as we 
+resulting in approx. values that improve 
+as the sample size incre (frequentist paradigm)
+The Law of Large of no. states that, as we 
 increase our sample size n, our empirical mean 
 converges to the true mean we want to estimate.
 \end{verbatim}

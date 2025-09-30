@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1759036438.58659 "/Users/viction/Projects/MDS/Latex/551_quiz_2_cheatsheet.tex" "551_quiz_2_cheatsheet.pdf" "551_quiz_2_cheatsheet" 1759036438.91741 0
+["pdflatex"] 1759037003.1231 "/Users/viction/Projects/MDS/Latex/551_quiz_2_cheatsheet.tex" "551_quiz_2_cheatsheet.pdf" "551_quiz_2_cheatsheet" 1759037003.4228 0
   "/Users/viction/Library/TinyTeX/texmf-dist/fonts/tfm/jknappen/ec/tctt1000.tfm" 1136768653 1536 c5729d01ab121276cf99b309129349a0 ""
   "/Users/viction/Library/TinyTeX/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/Users/viction/Library/TinyTeX/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1246382020 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -64,9 +64,9 @@
   "/Users/viction/Library/TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/tctt1000.600pk" 1759002624.71141 9468 6e75f4520ef099ea8e8d592d7b68b8dc ""
   "/Users/viction/Library/TinyTeX/texmf-var/web2c/pdftex/pdflatex.fmt" 1758817835 2265324 23fc5b9c32d278d7846d9a4ebadd9f2d ""
   "/Users/viction/Library/TinyTeX/texmf.cnf" 1756332794.10146 708 85fd07691b6294ba94c59dbc62380410 ""
-  "/Users/viction/Projects/MDS/Latex/551_quiz_2_cheatsheet.tex" 1759036438.36097 6824 9f54eda47bf73cfcc89226e45c22bfdc ""
-  "551_quiz_2_cheatsheet.aux" 1759036438.87385 32 044b7f8fc9779af7531264e0c5c84b6d "pdflatex"
-  "551_quiz_2_cheatsheet.tex" 1759036438.36097 6824 9f54eda47bf73cfcc89226e45c22bfdc ""
+  "/Users/viction/Projects/MDS/Latex/551_quiz_2_cheatsheet.tex" 1759037002.94522 6593 9c146190ce5b155cdb8b78ac1dd83f0b ""
+  "551_quiz_2_cheatsheet.aux" 1759037003.38575 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  "551_quiz_2_cheatsheet.tex" 1759037002.94522 6593 9c146190ce5b155cdb8b78ac1dd83f0b ""
   "skew.png" 1759028037.37774 297188 b06c178d7b3e44a03ed270214a99c46b ""
   (generated)
   "551_quiz_2_cheatsheet.aux"
