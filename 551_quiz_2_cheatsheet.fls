@@ -51,6 +51,14 @@ INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics-cfg/graphics.
 INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics-def/pdftex.def
 INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics-def/pdftex.def
 INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics-def/pdftex.def
+INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/xcolor/xcolor.sty
+INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/xcolor/xcolor.sty
+INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics-cfg/color.cfg
+INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics-cfg/color.cfg
+INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics-cfg/color.cfg
+INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics/mathcolor.ltx
+INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics/mathcolor.ltx
+INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/graphics/mathcolor.ltx
 INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 INPUT /Users/viction/Library/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 INPUT ./551_quiz_2_cheatsheet.aux
