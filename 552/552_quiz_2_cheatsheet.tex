@@ -1,0 +1,61 @@
+\documentclass[8pt,landscape]{article}
+
+% PACKAGES
+\usepackage[letterpaper, margin=0.1in]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+\setlist{nosep, leftmargin=*}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{gray!10},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{orange}
+}
+% FORMATTING
+\setstretch{0.9}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+% Reduce subsection spacing and make subsections blue
+\makeatletter
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
+    {0.2ex}% space before subsection
+    {0.2ex}% space after subsection
+    {\fontsize{8}{8}\bfseries\color{blue}}} % font size, bold, blue color
+\makeatother
+% Custom small text wrapper
+\newcommand{\smalltext}[1]{%
+  {\fontsize{8}{7}\selectfont\sloppy #1\par}%
+}
+
+% DOCUMENT START
+\begin{document}
+\pagestyle{empty}
+\begin{multicols}{3}
+\subsection*{Code}
+\smalltext{critical value $Z$ for a 99\% confidence interval using the qnorm() function. For a two-sided confidence interval, a 99\% confidence level means that $\alpha = 1 - 0.99 = 0.01$, and we are interested in the value $Z$ such that the area to the left is $1 - \alpha/2 = 1 - 0.01/2 = 0.995$.}
+\begin{lstlisting}[language=R]
+#critical value Z
+qnorm(0.995) #give 2.58
+\end{lstlisting}
+
+\smalltext{
+    Based on the critical value calculated in the previous step, $\text{z\_99} = 2.58$, the formula for the 99\% confidence interval is:$$\text{Confidence Interval} = \text{Point Estimate} \pm \underbrace{\, 2.58 \, \times \, \text{SE}}_{\text{MoE}}$$The critical $Z$-value, $\mathbf{Z_{1 - \alpha/2}}$, is replaced by $\mathbf{2.58}$, which corresponds to the $\mathbf{99\%}$ confidence level ($\alpha = 0.01$). This value is the multiplier for the Standard Error ($\text{SE}$) to calculate the Margin of Error ($\text{MoE}$).
+}
+
+\end{multicols}
+\end{document}
