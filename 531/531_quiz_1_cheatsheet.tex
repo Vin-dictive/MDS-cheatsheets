@@ -1,0 +1,211 @@
+\documentclass[8pt,landscape]{article}
+
+% PACKAGES
+\usepackage[letterpaper, margin=0.1in]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+
+% Define a custom color for code highlighting and environment
+\definecolor{myred}{RGB}{204, 0, 0} % A strong red
+\definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
+
+% LISTINGS SETUP for R and Python
+\lstset{
+  basicstyle=\ttfamily\scriptsize\color{black}, % Tiny font for code
+  backgroundcolor=\color{mygray},
+  frame=single,
+  frameround=tttt,
+  framesep=3pt,
+  rulesepcolor=\color{black!20},
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  commentstyle=\color{gray},
+  keywordstyle=\color{blue!80!black},
+  stringstyle=\color{myred}, % Use red for strings to match the custom \code{} style
+  breakatwhitespace=true,
+  xleftmargin=0pt,
+  xrightmargin=0pt,
+  aboveskip=0.5ex,
+  belowskip=0.5ex
+}
+
+% FORMATTING
+\setstretch{0.9} % Reduce line spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+% Reduce section spacing and change color
+\sectionfont{\fontsize{8}{9}\selectfont\bfseries} % Main section font: 8pt
+% Reduce subsection spacing and make subsections blue
+\makeatletter
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
+    {0.1ex}% space before subsection
+    {0.1ex}% space after subsection
+    {\fontsize{8}{9}\bfseries\color{blue}}} % Subsection font: 8pt
+\makeatother
+
+% Custom command for red-highlighted code/commands (for in-line use)
+\newcommand{\code}[1]{\textcolor{myred}{\texttt{#1}}}
+
+% Custom small text wrapper - ensuring 8pt for body text
+\newcommand{\smalltext}[1]{%
+  {\fontsize{8}{9}\selectfont\sloppy #1\par}%
+}
+
+% DOCUMENT START
+\begin{document}
+\fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
+\pagestyle{empty}
+\begin{multicols}{3}
+
+\section*{Visualization Reference Sheet}
+
+\subsection*{Altair (Python)}
+\smalltext{Create a data-aware chart using \code{alt.Chart(df)}.}
+
+\subsubsection*{Core Methods}
+\begin{itemize}
+\item \textbf{\code{alt.Chart(df)}}: Creates the initial data-aware chart object.
+\item \code{alt.mark\_point()} / \code{mark\_line()} / \textbf{\code{mark\_area()}} / \textbf{\code{mark\_bar()}} / \code{mark\_rect()} / \code{mark\_boxplot()}: Graphical mark. \code{mark\_rect()} is for 2D histogram/heatmap.
+\item \code{alt.encode(x='col1', color='col2', ...)}: Specify how data columns are encoded as visual channels.
+\item \textbf{Special Encoding Strings}: Use strings like \code{'count()'}, \code{'mean(col1)'}, \textbf{\code{'sum(col1)'}}, etc., for aggregate statistics.
+\item \code{alt.facet('col2', columns=1)}: Create multiple views (panels).
+\item \code{alt.properties(width=100, height=100)}: Set chart dimensions/properties.
+\item \code{alt.resolve\_scale(y='independent')}: Control shared/independent scales.
+\item \code{alt.transform\_density('col')}: Compute the \textbf{KDE} (Kernel Density Estimate).
+\item \code{alt.mark\_errorbar(extent='ci')} / \code{mark\_errorband()}: Show error bars/bands (\code{'ci'} or \code{'stdev'}).
+\item \code{alt.transform\_regression('x', 'y', groupby=['col'])}: Add a \textbf{regression line} (linear or other via \code{method}).
+\item \code{alt.transform\_loess('x', 'y', groupby=['col'])}: Add a \textbf{LOESS} curve.
+\item \code{alt.scale(scheme='colormap name')}: Apply a specific \textbf{colorscheme}.
+\item \textbf{Layering / Concatenation}: \code{chart1 + chart2} (Layer), \code{chart1 \& chart2} (Vertical), \code{chart1 | chart2} (Horizontal).
+\item \textbf{Interactivity}: \code{alt.interactive()}, \code{alt.selection\_interval()}, \textbf{\code{alt.selection\_point()}}, \code{alt.condition(...)}.
+\end{itemize}
+
+\subsubsection*{Encoding Helper Methods}
+\smalltext{Passed to helpers like \code{alt.Color}, \code{alt.X}, etc.}
+\begin{itemize}
+\item \code{.bin(maxbins=30)}: Group values into bins/buckets.
+\item \code{.scale(zero=False, range=(5, 40))}: Modify scale properties (e.g., range for size).
+\item \code{.stack(False)}: Control if marks (e.g. bars/areas) should stack.
+\item \code{.title('Col 1')}: Add a title to the axis.
+\item \code{.sort('-x')}: Sort/reorder based on another value (e.g., \code{'-x'} for descending 'x').
+\item \code{.axis(format=)}: Format labels (\code{'e'} for scientific, \code{'s'} for SI units, \code{'~s'} to remove trailing zeros).
+\item \code{.axis(tickCount = )}: Set the number of ticks.
+\end{itemize}
+
+\subsubsection*{Altair (Python) Examples}
+\smalltext{\textbf{Simple Chart}:}
+\begin{lstlisting}[language=Python]
+alt.Chart(df).mark_point().encode(
+    x='col1',
+    y=alt.Y('col2').title('Col 2')
+)
+\end{lstlisting}
+\smalltext{\textbf{Density Plot}:}
+\begin{lstlisting}[language=Python]
+alt.Chart(df).transform_density(
+    'col1', groupby=['col2'], as_=['col1', 'density']
+).mark_area().encode(
+    x='col1', y=alt.Y('density:Q').stack(False),
+    color='col2'
+)
+\end{lstlisting}
+\smalltext{\textbf{2D Histogram}:}
+\begin{lstlisting}[language=Python]
+alt.Chart(diamonds).mark_rect().encode(
+    alt.X('carat').bin(maxbins=40),
+    alt.Y('price').bin(maxbins=40),
+    alt.Color('count()'),
+    alt.Size('count()')
+)
+\end{lstlisting}
+\smalltext{\textbf{Scatter Plot Matrix (\code{alt.repeat})}:}
+\begin{lstlisting}[language=Python]
+alt.Chart(df).mark_point().encode(
+    alt.X(alt.repeat('row')).type('quantitative'),
+    alt.Y(alt.repeat('column')).type('quantitative')
+).repeat(
+    column=['col1', 'col2', 'col3'],
+    row=['col1', 'col2', 'col3'],
+)
+\end{lstlisting}
+\smalltext{\textbf{Interactivity}:}
+\begin{lstlisting}[language=Python]
+brush = alt.selection_interval()
+alt.Chart(df).mark_circle().encode(
+    x='xcol', y='ycol',
+    color = alt.condition(brush, 'column name', alt.value('color code'))
+).add_params(brush)
+\end{lstlisting}
+\hrule
+
+\subsection*{ggplot (R)}
+\smalltext{Create a data-aware chart using \code{ggplot(df)}.}
+
+\subsubsection*{Core Functions}
+\begin{itemize}
+\item \code{ggplot(df)}: Creates the initial data-aware chart object.
+\item \code{aes(x=col1, color=col2, ...)}: Specify visual \textbf{aesthetics}.
+\item \code{geom\_point()} / \code{geom\_line()} / \code{geom\_area()} / \code{geom\_bar()} / \textbf{\code{geom\_histogram()}} / \code{geom\_boxplot()} / \code{geom\_density()} / \textbf{\code{geom\_violin()}}: Geometric marks.
+\item \code{geom\_*(stat='summary', fun=mean)}: Compute aggregate statistics (e.g., \code{mean}).
+\item \code{facet\_wrap(~col1, ncol=1, scales='free')}: Create multiple views.
+\item \code{reorder(col1, -col2)}: Sort/reorder a column based on another value (e.g., \code{-col2} for descending).
+\item \code{ggtitle(title)}: Adds a title.
+\item \code{labs(x = 'Col 1', fill = 'Col 2')}: Modifies labels.
+\item \code{geom\_() + geom\_()}: Layer multiple geoms.
+\item \code{geom\_bin2d()}: \textbf{2D histogram}. \code{geom\_hex()} for hexagonal.
+\item \code{GGally::ggpairs(df)}: \textbf{Scatterplot matrix} (requires \code{select\_if(is.numeric)}).
+\item \code{geom\_smooth(se = FALSE, method = 'lm')}: Add a smooth curve. \code{se} controls the confidence interval.
+\item \textbf{\code{cowplot::plot\_grid(p1, p2, labels)}}: Arrange multiple plots (requires \code{cowplot} package).
+\end{itemize}
+
+\subsubsection*{Scale and Theme Modifications}
+\begin{itemize}
+\item \code{scale\_size(range = c(5, 40))}: Change the size scale range.
+\item \code{theme(text = element\_text(size = 24))}: Modify non-data components (e.g., text size).
+\item \code{scale\_y\_continuous(labels, breaks, limits)}: Modify Y-axis properties. Labels can use \code{scales::label\_scientific()}, \code{scales::label\_dollar()}.
+\item \code{scale\_fill\_continuous(labels, trans='reverse')}: Control color fill scale. \code{trans='reverse'} reverses the gradient.
+\item \code{scale\_color\_brewer(palette='Dark2')}: Apply RColorBrewer palettes.
+\item \code{scale\_color\_viridis\_c(trans, direction=1)}: Apply Viridis scale (\code{direction=-1} reverses the gradient).
+\end{itemize}
+
+\subsubsection*{ggplot (R) Examples}
+\smalltext{\textbf{Simple Chart}:}
+\begin{lstlisting}[language=R]
+library(tidyverse)
+my_data |> ggplot(aes(x = col1, y = col2)) +
+    geom_point()
+\end{lstlisting}
+\smalltext{\textbf{Density Plot (Geom Shortcut)}:}
+\begin{lstlisting}[language=R]
+ggplot(df, aes(x = col1, color = col2)) +
+    geom_density()
+\end{lstlisting}
+\smalltext{\textbf{2D Histogram}:}
+\begin{lstlisting}[language=R]
+ggplot(df, aes(x = xcol, y = ycol)) +
+    geom_bin2d()
+\end{lstlisting}
+\smalltext{\textbf{Hiding an Axis}:}
+\begin{lstlisting}[language=R]
+ggplot(df, aes(x = xcol, y = ycol)) +
+    geom_point() +
+    theme(axis.title.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+\end{lstlisting}
+\smalltext{\textbf{Scatter Plot Matrix}:}
+\begin{lstlisting}[language=R]
+GGally::ggpairs(df %>% select_if(is.numeric))
+\end{lstlisting}
+
+\end{multicols}
+\end{document}
