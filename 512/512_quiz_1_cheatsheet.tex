@@ -100,6 +100,26 @@
     \item Lists cannot be keys (mutable).
 \end{itemize}
 }
+\begin{lstlisting}[language=Python]
+# Getting a value with a default (avoids KeyError)
+salary = my_dict.get('salary', 'N/A')
+# Loop through key-value pairs (most common and efficient)
+for key, value in my_dict.items():
+    print(f"Key: {key} -> Value: {value}")
+#Binary Search
+def search_sorted(data, key):
+    low = 0
+    high = len(data) - 1
+    while (low <= high):
+        mid = (high + low)//2
+        if data[mid] == key:
+            return True
+        if key < data[mid]:
+            high = mid - 1
+        else:
+            low = mid + 1
+    return False
+\end{lstlisting}
 
 \subsection{Graphs}
 \smalltext{
@@ -214,35 +234,17 @@ def dfs_iterative(G, start):
 
 \subsection{Sparse Matrix format (Scipy)}
 \smalltext{
-  This is “Compressed Sparse Row” format. \\
-  It means we store an adjacency list per row. \\
-  Sparse matrices come up a lot in practice, beyond just adjacency matrices in graphs. For example: \\
+This is “Compressed Sparse Row” format. \\
+It means we store an adjacency list per row. \\
 Word counts: We might represent a document by the words in it, but only a small fraction of all words would appear in a given document. \\
 Ratings: We might represent an Amazon item by the user ratings, but only a small fraction of all users have rated a given item. \\
 }
-
-\subsection{Sparse Matrix Formats}
-\smalltext{
-\textbf{Compressed Sparse Row (CSR) vs. Column (CSC)}
-}
-\centering
-\begin{tabular}{p{1.4cm} p{1.6cm} p{1.6cm}}
-\toprule
-\textbf{Feature} & \textbf{CSR} & \textbf{CSC} \\
-\midrule
-Storage Arrays & Values, Column Indices, Row Pointers & Values, Row Indices, Column Pointers \\
-Optimized For & Row operations & Column operations \\
-Access Pattern & Fast row slicing & Fast column slicing \\
-Use Cases & Matrix-vector multiplication, row-wise operations & Column-wise computations, matrix factorization \\
-\bottomrule
-\end{tabular}
 \smalltext{
 CSR and CSC are efficient ways to store matrices with mostly zero entries, saving memory and speeding up relevant operations.
 }
 
 \begin{lstlisting}[language=Python]
 x = scipy.sparse.random(5, 5, density=0.2, format="csr", random_state=321)
-
 \end{lstlisting}
 
 
