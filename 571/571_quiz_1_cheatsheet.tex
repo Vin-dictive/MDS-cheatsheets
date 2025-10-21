@@ -67,8 +67,6 @@
 \pagestyle{empty}
 \begin{multicols}{3}
 
-\section{Core ML Concepts}
-
 \subsection{Basic Terminology}
 \smalltext{
 \textbf{Features ($\mathbf{X}$):} Relevant characteristics of the problem, usually suggested by experts. $d$ is the number of features. \\
@@ -83,8 +81,6 @@
 \textbf{Machine Learning (ML):} A subset of AI where systems learn patterns from data instead of being explicitly programmed. \\
 \textbf{Deep Learning (DL):} A subset of ML that uses multi-layered neural networks to learn complex patterns.
 }
-
-\section{Scikit-learn Workflow}
 
 \subsection{Classification Steps}
 \smalltext{
@@ -104,8 +100,6 @@
 \textbf{Hyperparameters:} "Knobs" set *before* calling \code{fit} that control the learning (e.g., \code{max\_depth} in a decision tree). Set via expert knowledge, heuristics, or optimization.
 }
 
-\section{Decision Trees}
-
 \subsection{Tree Terminology}
 \smalltext{
 \textbf{Root Node:} The first condition/question to check. \\
@@ -115,7 +109,7 @@
 \textbf{Tree Depth:} The number of edges on the path from the root node to the farthest leaf node.
 }
 
-\subsection{Regression Trees}
+\subsection{Decision Regression Trees}
 \smalltext{
 \textbf{Model:} Use \code{DecisionTreeRegressor}. \\
 \textbf{Paradigm:} \code{fit} and \code{predict} are similar to classification. \\
@@ -144,8 +138,6 @@ score = model.score(X_subset.values, y)
 print("Error: %0.3f" % (1 - score))
 \end{lstlisting}
 
-\section{Model Evaluation}
-
 \subsection{Train, Validation, Test Split}
 \smalltext{
 \textbf{Golden Rule:} The test data cannot influence the training phase in any way. \\
@@ -155,11 +147,7 @@ print("Error: %0.3f" % (1 - score))
 $E\text{-train} < E\text{-validation} < E\text{-test} < E\text{-deployment}$
 }
 \begin{lstlisting}[language=Python]
-from sklearn.model_selection import train_test_split
-
-train_df, test_df = train_test_split(
-    df, test_size=0.2, random_state=123
-) 
+train_df, test_df = train_test_split(df, test_size=0.2, random_state=123) 
 X_train, y_train = train_df.drop(columns=["country"]), train_df["country"]
 X_test, y_test = test_df.drop(columns=["country"]), test_df["country"]
 \end{lstlisting}
@@ -179,8 +167,6 @@ scores = cross_validate(model, X_train, y_train, cv=10,
                         return_train_score=True)
 \end{lstlisting}
 
-\section{Bias-Variance Tradeoff}
-
 \subsection{Underfitting (High Bias)}
 \smalltext{
 \textbf{Cause:} Model is too simple (\code{max\_depth=1}). Fails to capture useful training patterns. \\
@@ -195,53 +181,6 @@ scores = cross_validate(model, X_train, y_train, cv=10,
 \textbf{Error Relation:} $E\text{-train} < E\text{-best} < E\text{-valid}$ \\
 \textbf{Tradeoff:} As complexity $\uparrow$, $E\text{-train} \downarrow$ but $(E\text{-valid} - E\text{-train}) \uparrow$. We want to avoid both.
 }
-
-\section{Preprocessing}
-
-\subsection{Preprocessing}
-\smalltext{
-\textbf{Imputation:} Tackling missing values. \\
-\textbf{Scaling:} Scaling of numeric features (e.g., MinMax or Standardization). \\
-\textbf{One-hot encoding:} Tackling categorical variables.
-}
-\begin{lstlisting}[language=Python]
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.impute import SimpleImputer # For handling missing values
-# Define feature types (X_train.columns assumed)
-numeric_features = ['age', 'income']
-categorical_features = ['city', 'gender']
-# Create transformers for different column types
-numeric_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='mean')),
-    ('scaler', StandardScaler())
-])
-categorical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='most_frequent')),
-    ('onehot', OneHotEncoder(handle_unknown='ignore'))
-])
-# Create the preprocessor using ColumnTransformer
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('num', numeric_transformer, numeric_features),
-        ('cat', categorical_transformer, categorical_features)
-    ])
-# Fit and transform the data
-X_train_processed = preprocessor.fit_transform(X_train)
-X_test_processed = preprocessor.transform(X_test)
-\end{lstlisting}
-
-\subsection{Euclidean Distance}
-\smalltext{
-Used to find the distance between 2 feature vectors (a row).
-}
-\begin{lstlisting}[language=Python]
-# Euclidean distance using sklearn
-from sklearn.metrics.pairwise import euclidean_distances
-
-euclidean_distances(two_cities)
-\end{lstlisting}
 
 \subsection{$\text{k-NN}$ KNeighborsClassifier Hyperparameter Tuning}
 \smalltext{
@@ -287,18 +226,85 @@ It does not work well on datasets with many features or where most feature value
 \smalltext{
 Affects all learners but especially bad for nearest-neighbour. \\
 k-NN usually works well when the number of dimensions d is small but things fall apart quickly as d goes up. \\
-If there are many irrelevant attributes, k-NN is hopelessly confused because all of them contribute to finding similarity between examples. \\ d
+If there are many irrelevant attributes, k-NN is hopelessly confused because all of them contribute to finding similarity between examples. \\ 
 With enough irrelevant attributes the accidental similarity swamps out meaningful similarity and k-NN is no better than random guessing.
 }
 \subsection{Support Vector Machines (SVMs) with RBF kernel}
 \smalltext{
-Affects all learners but especially bad for nearest-neighbour. \\
-k-NN usually works well when the number of dimensions d is small but things fall apart quickly as d goes up. \\
-If there are many irrelevant attributes, k-NN is hopelessly confused because all of them contribute to finding similarity between examples. \\ d
-With enough irrelevant attributes the accidental similarity swamps out meaningful similarity and k-NN is no better than random guessing.
+The decision boundary is defined by a set of positive and negative examples and their weights together with their similarity measure. \\
+A test example is labeled positive if on average it looks more like positive examples than the negative examples. \\
 }
 
+\begin{lstlisting}[language=Python]
+from sklearn.svm import SVC
+svm = SVC(gamma=0.01)
+scores = cross_validate(svm, X_train, y_train, return_train_score=True)
+print("Mean validation score \%0.3f" \% (np.mean(scores["test_score"])))
+\end{lstlisting}
 
+\subsection{Preprocessing}
+\smalltext{
+\textbf{fit and transform paradigm for transformers}
+We \textbf{fit} the transformer on the train split and then transform the train split\\
+We apply \textbf{transform} on the test split. \\
+\textbf{TRANFORMER} used to change the input representation \\
+\textbf{Imputation:} Tackling missing values. \\
+\textbf{Scaling:} Scaling of numeric features (e.g., MinMax or Standardization). \\
+\textbf{One-hot encoding:} Tackling categorical variables. \\
+\textbf{Ordinal encoding:} data with a meaningful rank or order—into integers that preserve that specific sequence.
+}
+\smalltext{
+Are we applying fit\_transform on train portion and transform on validation portion in each fold? \\
+Here you might be allowing information from the validation set to leak into the training step. \\
+You need to apply the SAME preprocessing steps to train/validation. \\
+With many different transformations and cross validation the code gets unwieldy very quickly. \\
+Likely to make mistakes and "leak" information. \\
+In these examples our test accuracies look fine, but our methodology is flawed. \\
+Implications can be significant in practice! \\
+}
+
+\begin{lstlisting}[language=Python]
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer # For handling missing values
+# Define feature types (X_train.columns assumed)
+numeric_features = ['age', 'income']
+categorical_features = ['city', 'gender']
+# Create transformers for different column types
+numeric_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='mean')),
+    ('scaler', StandardScaler())
+])
+categorical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('onehot', OneHotEncoder(handle_unknown='ignore'))
+])
+# Define the specific order for the categories in your feature
+size_categories = ['Small', 'Medium', 'Large', 'Extra Large']
+ordinal_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='constant', fill_value='Missing')), # Handles NaNs if any
+    ('ordinal', OrdinalEncoder(categories=[size_categories])) # Apply encoding based on defined order
+])
+# Create the preprocessor using ColumnTransformer
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numeric_transformer, numeric_features),
+        ('cat', categorical_transformer, categorical_features),
+        ('cat_ordinal', ordinal_transformer, ordinal_features),
+        (binary_transformer, binary_features),
+        ("drop", drop_features)
+    ])
+
+# Fit and transform the data
+X_train_processed = preprocessor.fit_transform(X_train)
+X_test_processed = preprocessor.transform(X_test)
+\end{lstlisting}
+
+\subsection{Pipelines}
+\smalltext{
+Each transformer is applied to the specified columns and the result are concatenated horizontally, Single object for transform.
+}
 
 \end{multicols}
 \end{document}
