@@ -1,0 +1,87 @@
+\documentclass[8pt,landscape]{article}
+
+% PACKAGES
+\usepackage[letterpaper, margin=0.1in]{geometry}
+\usepackage{amsmath, amssymb, geometry}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{booktabs} % For better tables if needed
+
+% Define a custom color for code highlighting and environment
+\definecolor{myred}{RGB}{204, 0, 0} % A strong red
+\definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
+
+% LISTINGS SETUP for R and Python
+\lstset{
+  basicstyle=\ttfamily\scriptsize\color{black}, % Tiny font for code
+  backgroundcolor=\color{mygray},
+  frame=single,
+  frameround=tttt,
+  framesep=3pt,
+  rulesepcolor=\color{black!20},
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  commentstyle=\color{gray},
+  keywordstyle=\color{blue!80!black},
+  stringstyle=\color{myred}, % Use red for strings to match the custom \code{} style
+  breakatwhitespace=true,
+  xleftmargin=0pt,
+  xrightmargin=0pt,
+  aboveskip=0.5ex,
+  belowskip=0.5ex
+}
+
+% FORMATTING
+\setstretch{0.9} % Reduce line spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+% Reduce section spacing and change color
+\sectionfont{\fontsize{8}{9}\selectfont\bfseries\color{black}} % Main section font: 8pt
+% Reduce subsection spacing and make subsections blue
+\makeatletter
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
+    {0.1ex}% space before subsection
+    {0.1ex}% space after subsection
+    {\fontsize{8}{9}\bfseries\color{blue}}} % Subsection font: 8pt
+\makeatother
+
+% Custom command for red-highlighted code/commands (for in-line use)
+\newcommand{\code}[1]{\textcolor{myred}{\texttt{#1}}}
+
+% Custom small text wrapper - ensuring 8pt for body text
+\newcommand{\smalltext}[1]{%
+  {\fontsize{8}{9}\selectfont\sloppy #1\par}%
+}
+
+% DOCUMENT START
+\begin{document}
+\fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
+\pagestyle{empty}
+\begin{multicols}{3}
+
+\subsection{Basic Terminology}
+\smalltext{
+\textbf{Important Point ($\mathbf{X}$):} Lorem Ipsum \\
+}
+
+\subsection{Classification Steps}
+\smalltext{
+\begin{enumerate}[label=\arabic*., nosep, itemsep=0pt, topsep=0pt, partopsep=0pt]
+    \item Step 1
+    \item Step 2
+\end{enumerate}
+}
+\begin{lstlisting}[language=Python]
+#Put R or python code here
+\end{lstlisting}
+
+\end{multicols}
+\end{document}

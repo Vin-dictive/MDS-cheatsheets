@@ -1,0 +1,218 @@
+\documentclass[8pt,landscape]{article}
+
+% PACKAGES
+\usepackage[letterpaper, margin=0.1in]{geometry}
+\usepackage{amsmath, amssymb, geometry}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{booktabs} % For better tables if needed
+
+% Define a custom color for code highlighting and environment
+\definecolor{myred}{RGB}{204, 0, 0} % A strong red
+\definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
+
+% LISTINGS SETUP for R and Python
+\lstset{
+  basicstyle=\ttfamily\scriptsize\color{black}, % Tiny font for code
+  backgroundcolor=\color{mygray},
+  frame=single,
+  frameround=tttt,
+  framesep=3pt,
+  rulesepcolor=\color{black!20},
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  commentstyle=\color{gray},
+  keywordstyle=\color{blue!80!black},
+  stringstyle=\color{myred}, % Use red for strings to match the custom \code{} style
+  breakatwhitespace=true,
+  xleftmargin=0pt,
+  xrightmargin=0pt,
+  aboveskip=0.5ex,
+  belowskip=0.5ex
+}
+
+% FORMATTING
+\setstretch{0.9} % Reduce line spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+% Reduce section spacing and change color
+\sectionfont{\fontsize{8}{9}\selectfont\bfseries\color{black}} % Main section font: 8pt
+% Reduce subsection spacing and make subsections blue
+\makeatletter
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
+    {0.1ex}% space before subsection
+    {0.1ex}% space after subsection
+    {\fontsize{8}{9}\bfseries\color{blue}}} % Subsection font: 8pt
+\makeatother
+
+% Custom command for red-highlighted code/commands (for in-line use)
+\newcommand{\code}[1]{\textcolor{myred}{\texttt{#1}}}
+
+% Custom small text wrapper - ensuring 8pt for body text
+\newcommand{\smalltext}[1]{%
+  {\fontsize{8}{9}\selectfont\sloppy #1\par}%
+}
+
+% DOCUMENT START
+\begin{document}
+\fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
+\pagestyle{empty}
+\begin{multicols}{3}
+% \textbf{algorithm}: a well-defined computational procedure designed to solve a problem. It consists of a sequence of precise steps that take some inputs, process them systematically, and produce corresponding outputs. 
+\subsection{Stack overflow}
+\smalltext{
+A stack overflow error most commonly occurs when a recursive function makes an exceedingly large numbers of calls to itself (usually because of not properly setting up a base case), causing the memory allocated for a function’s call stack to overflow.
+Python prevents this from happening by throwing a RecursionError when a certain number of recursive calls are made (this number is system-dependent)
+}
+
+\subsection{Binary search}
+\smalltext{
+A stack overflow error most commonly occurs when a recursive function makes an exceedingly large numbers of calls to itself (usually because of not properly setting up a base case), causing the memory allocated for a function’s call stack to overflow.
+Python prevents this from happening by throwing a RecursionError when a certain number of recursive calls are made (this number is system-dependent)
+}
+\begin{lstlisting}[language=Python]
+def binary_search(data, key):
+    """
+    Examples
+    --------
+    >>> binary_search([1, 7, 35, 45, 67], 3)
+    False
+    >>> binary_search([1, 7, 35, 45, 67], 7)
+    True
+    """
+    if len(data) == 1:
+        return data[0] == key
+
+    mid = len(data)//2
+    if key < data[mid]:
+        return binary_search(data[:mid], key)
+    else:
+        return binary_search(data[mid:], key)
+\end{lstlisting}
+\textbf{Fibonacci Recursion}: Time Complexity: $O(2^n)$ \\
+Space Complexity: $O(n)$ \\
+\begin{lstlisting}[language=Python]
+  def f(n):
+    if n == 1 or n == 2:
+        return 1
+    else: 
+        return f(n-1) + f(n-2)
+\end{lstlisting}
+    
+\subsection{Linked-list}
+\smalltext{
+A stack overflow error most commonly occurs when a recursive function makes an exceedingly large numbers of calls to itself (usually because of not properly setting up a base case), causing the memory allocated for a function’s call stack to overflow.
+Python prevents this from happening by throwing a RecursionError when a certain number of recursive calls are made (this number is system-dependent)
+}
+
+\subsection{Binary Tree}
+\begin{lstlisting}[language=Python]
+class BinaryTree:
+    
+    def __init__(self, item):
+        self.item = item
+        self.left = None  # type = BinaryTree
+        self.right = None # type = BinaryTree
+    
+    def insert(self, item):
+        # pick a random side to insert on
+        left = np.random.rand() < 0.5
+        if item == left:
+            return
+        if left:
+            if self.left is None:
+                self.left = BinaryTree(item)
+            else:
+                self.left.insert(item)
+        else:
+            if self.right is None:
+                self.right = BinaryTree(item)
+            else:
+                self.right.insert(item)
+    
+    def contains(self, item):
+        if self.item == item:
+            return True
+        
+        if self.left is not None:
+            if self.left.contains(item):
+                return True
+
+        if self.right is not None:
+            if self.right.contains(item):
+                return True
+
+        return False
+    
+    def print_tree(self, level=0, prefix="Root: "):
+        """Recursively prints the tree structure."""
+        print("    " * level + prefix + str(self.item))
+        if self.left:
+            self.left.print_tree(level + 1, prefix="L--- ")
+        if self.right:
+            self.right.print_tree(level + 1, prefix="R--- ")
+    
+    # We would want some more functions here, e.g. to add/remove things from the tree.
+\end{lstlisting}
+\textbf{nearest neighbour}: time complexity for $n$ points in $k$ dimensions $O(nk)$ \\
+
+\subsection{K-D Trees}
+\smalltext{
+But, as we’ve seen with trees and hash tables, sometime we speed things up with better data structures.
+One of the classic ways to speed up nearest neighbours is a data structure call the k-d tree.
+Basic idea: \\
+In each recursive step, there is a certain number of datapoints. If there’s only one, we’re done.\\
+Otherwise, for one of the two dimensions (we alternate back and forth), find the median value along the dimension.\\
+Split the data into two subsets based on being above or below that median, and build a (sub)tree for each of those subsets.\\
+Starting from the full dataset, you will create a tree where each leaf is a datapoint.\\
+You can find an approximate nearest neighbour by traversing the down the tree using the same decision points as were used to original split the data; the final leaf is the desired neighbour.\\
+}
+
+\subsection{Timing experiments}
+\begin{lstlisting}[language=Python]
+n_sizes = [100, 1000, 10_000, 100_000]
+
+results = defaultdict(list)
+results["n"] = n_sizes
+
+d = 10
+
+for n in n_sizes:
+    print('n: ', n)
+    X = np.random.rand(n, d)
+    query = np.random.rand(1, d)
+
+    print("  KDTree")
+    time = %timeit -q -o -r 3 sklearn.neighbors.KDTree(X)
+    results["KDTree init"].append(time.average)
+    KDT = sklearn.neighbors.KDTree(X)
+
+    time = %timeit -q -o -r 3 KDT.query(query)
+    results["KDTree query"].append(time.average)
+
+    print("  Brute force")
+    time = %timeit -q -o -r 3 nearest_neighbour(X, query)
+    results["Brute force"].append(time.average)
+\end{lstlisting}
+
+\smalltext{
+  Other nearest neighbour approaches \\
+  Note: there are other nearest neighbour approaches besides k-d trees, including some very fast approximate algorithms.\\
+  In general, you can often do something faster if the result can be slightly wrong. \\
+  There are approaches based on hashing instead of trees. \\
+}
+
+\subsection{amortization of hash table growth}
+\smalltext{
+  Growth is slow, but only occurs rarely, and so the cost “averages out” because after adding $n$ elements you’ve spent $O(n)$ time on growth, for an average of $O(1)$ per insertion.
+}
+\end{multicols}
+\end{document}
