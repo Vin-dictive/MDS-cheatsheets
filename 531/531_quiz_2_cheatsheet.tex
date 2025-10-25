@@ -2,7 +2,7 @@
 
 % PACKAGES
 \usepackage[letterpaper, margin=0.1in]{geometry}
-\usepackage{amsmath, amssymb}
+\usepackage{amsmath, amssymb, geometry}
 \usepackage{multicol}
 \usepackage{setspace}
 \usepackage{sectsty}
@@ -11,6 +11,7 @@
 \usepackage{xcolor}
 \usepackage{listings}
 \usepackage{enumitem}
+\usepackage{booktabs} % For better tables if needed
 
 % Define a custom color for code highlighting and environment
 \definecolor{myred}{RGB}{204, 0, 0} % A strong red
@@ -43,7 +44,7 @@
 \setlength{\parskip}{0pt}
 
 % Reduce section spacing and change color
-\sectionfont{\fontsize{8}{9}\selectfont\bfseries} % Main section font: 8pt
+\sectionfont{\fontsize{8}{9}\selectfont\bfseries\color{black}} % Main section font: 8pt
 % Reduce subsection spacing and make subsections blue
 \makeatletter
 \renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
@@ -66,145 +67,119 @@
 \pagestyle{empty}
 \begin{multicols}{3}
 
-\section*{Visualization Reference Sheet}
-
-\subsection*{Altair (Python)}
-\smalltext{Create a data-aware chart using \code{alt.Chart(df)}.}
-
-\subsubsection*{Core Methods}
-\begin{itemize}
-\item \textbf{\code{alt.Chart(df)}}: Creates the initial data-aware chart object.
-\item \code{alt.mark\_point()} / \code{mark\_line()} / \textbf{\code{mark\_area()}} / \textbf{\code{mark\_bar()}} / \code{mark\_rect()} / \code{mark\_boxplot()}: Graphical mark. \code{mark\_rect()} is for 2D histogram/heatmap.
-\item \code{alt.encode(x='col1', color='col2', ...)}: Specify how data columns are encoded as visual channels.
-\item \textbf{Special Encoding Strings}: Use strings like \code{'count()'}, \code{'mean(col1)'}, \textbf{\code{'sum(col1)'}}, etc., for aggregate statistics.
-\item \code{alt.facet('col2', columns=1)}: Create multiple views (panels).
-\item \code{alt.properties(width=100, height=100)}: Set chart dimensions/properties.
-\item \code{alt.resolve\_scale(y='independent')}: Control shared/independent scales.
-\item \code{alt.transform\_density('col')}: Compute the \textbf{KDE} (Kernel Density Estimate).
-\item \code{alt.mark\_errorbar(extent='ci')} / \code{mark\_errorband()}: Show error bars/bands (\code{'ci'} or \code{'stdev'}).
-\item \code{alt.transform\_regression('x', 'y', groupby=['col'])}: Add a \textbf{regression line} (linear or other via \code{method}).
-\item \code{alt.transform\_loess('x', 'y', groupby=['col'])}: Add a \textbf{LOESS} curve.
-\item \code{alt.scale(scheme='colormap name')}: Apply a specific \textbf{colorscheme}.
-\item \textbf{Layering / Concatenation}: \code{chart1 + chart2} (Layer), \code{chart1 \& chart2} (Vertical), \code{chart1 | chart2} (Horizontal).
-\item \textbf{Interactivity}: \code{alt.interactive()}, \code{alt.selection\_interval()}, \textbf{\code{alt.selection\_point()}}, \code{alt.condition(...)}.
-\end{itemize}
-
-\subsubsection*{Encoding Helper Methods}
-\smalltext{Passed to helpers like \code{alt.Color}, \code{alt.X}, etc.}
-\begin{itemize}
-\item \code{.bin(maxbins=30)}: Group values into bins/buckets.
-\item \code{.scale(zero=False, range=(5, 40))}: Modify scale properties (e.g., range for size).
-\item \code{.stack(False)}: Control if marks (e.g. bars/areas) should stack.
-\item \code{.title('Col 1')}: Add a title to the axis.
-\item \code{.sort('-x')}: Sort/reorder based on another value (e.g., \code{'-x'} for descending 'x').
-\item \code{.axis(format=)}: Format labels (\code{'e'} for scientific, \code{'s'} for SI units, \code{'~s'} to remove trailing zeros).
-\item \code{.axis(tickCount = )}: Set the number of ticks.
-\end{itemize}
-
-\subsubsection*{Altair (Python) Examples}
-\smalltext{\textbf{Simple Chart}:}
-\begin{lstlisting}[language=Python]
-alt.Chart(df).mark_point().encode(
-    x='col1',
-    y=alt.Y('col2').title('Col 2')
-)
-\end{lstlisting}
-\smalltext{\textbf{Density Plot}:}
-\begin{lstlisting}[language=Python]
-alt.Chart(df).transform_density(
-    'col1', groupby=['col2'], as_=['col1', 'density']
-).mark_area().encode(
-    x='col1', y=alt.Y('density:Q').stack(False),
-    color='col2'
-)
-\end{lstlisting}
-\smalltext{\textbf{2D Histogram}:}
+\subsection{Overplotting}
+\smalltext{
+\textbf{Important Point ($\mathbf{X}$):} Lorem Ipsum \\
+}
+\smalltext{
+Plotting all the points in this df (there are around 50,000!) takes a little bit of time and causes the plot to become saturated so that we can't see individual observations.
+A 2D histogram is a type of heatmap, where count is mapped to color, you could also have used a mark that maps size to color, which might even be more effective but that is not as commonly seen.
+Here we can clearer see that a small area is much more dense than the others, although they looked similar in the saturated plot. How can we zoom into this area?
+}
 \begin{lstlisting}[language=Python]
 alt.Chart(diamonds).mark_rect().encode(
     alt.X('carat').bin(maxbins=40),
     alt.Y('price').bin(maxbins=40),
-    alt.Color('count()'),
-    alt.Size('count()')
+    alt.Color('count()')
 )
 \end{lstlisting}
-\smalltext{\textbf{Scatter Plot Matrix (\code{alt.repeat})}:}
+\smalltext{
+    Instead of squares,\textbf{hexagonal bins} can be used. These have theoretically superior qualities over squares, such as a more natural notation of neighbors. \\
+    2 dimensional \textbf{KDEs} in ggplot. This works just like 1D KDEs, except that the kernel on each data point extends in 2 dimensions \\
+    Use \textbf{ridges contours}, similar to a topographic map. These contour plots are often less intuitive than the density plot above, so the recommendation is to use the density plot instead.
+}
+\begin{lstlisting}[language=R]
+ggplot(diamonds) +
+    aes(x = carat,
+        y = price) +
+    geom_bin2d() or geom_hex() or  geom_density_2d_filled() or geom_density_2d()
+\end{lstlisting}
+
+\subsection{Axis label formatting}
+\smalltext{
+\textbf{Scientific Notation \& Grid Tick Modifications} \\
+Scientific notation can be useful for internal analysis or when displaying very large or very small numbers. 
+However, it may be confusing for a general audience. 
+Consider formatting axis labels using plain numbers or appropriate unit prefixes (e.g., thousands, millions, micro, milli) to improve readability. \\[6pt]
+The number of grid ticks can be modified using \texttt{tickCount}. 
+Note that \texttt{tickCount} cannot be applied to binned data, so the plot has been adjusted here to demonstrate its effect.
+}
+
 \begin{lstlisting}[language=Python]
-alt.Chart(df).mark_point().encode(
-    alt.X(alt.repeat('row')).type('quantitative'),
-    alt.Y(alt.repeat('column')).type('quantitative')
-).repeat(
-    column=['col1', 'col2', 'col3'],
-    row=['col1', 'col2', 'col3'],
+.axis(format='e') # For e like notation
+.axis(format='s') # Standard international (SI) units are often easier to digest. 
+.axis(format='~s') # A prefaced ~ removes trailing zeros. 
+.axis(format='\$~s') # Formaters can also be combined.
+.alt.X('carat').axis(None),
+.alt.Y('price').axis(tickCount=2) 
+alt.themes.enable('dark')
+alt.Color('count()').legend(None) # remove a legend 
+alt.Y('price').bin(maxbins=400).scale(domain=(0, 2000), reverse=True), #Reversing an axis
+\end{lstlisting}
+\begin{lstlisting}[language=R]
+ggplot(diamonds) +
+    aes(x = carat,
+        y = price) +
+    geom_hex() +
+    scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_si(''))) +
+    scale_y_continuous(labels = scales::label_dollar()) +
+    scale_y_continuous(labels = scales::label_dollar(scale = .001, suffix = "K")) +
+    scale_fill_continuous(labels = scales::label_number(scale_cut = scales::cut_si(''))) +
+    guides(fill = "none") # remove a legend 
+    scale_x_continuous(
+        limits = c(10, 31), oob = scales::oob_keep, #scale limit
+        labels = scales::label_dollar(), #label formater
+        breaks = scales::pretty_breaks(n = 10) #tick count
+    ) + 
+    scale_y_continuous(limits = c(2000, 0), trans = 'reverse') #reversing an axis
+    scale_fill_continuous(trans = 'reverse')
+\end{lstlisting}
+
+\subsection{Labels and Subtitles }
+\begin{lstlisting}[language=python]
+alt.Chart(
+    diamonds,
+    title=alt.Title(
+        text='Higher carat diamonds are more expensive',
+        subtitle='But most diamonds are of low carat'
+    )
+).mark_rect().encode(
+    alt.X('carat').bin(maxbins=40).title('Carat'),
+    alt.Y('price').bin(maxbins=40).title('Price'),
+    alt.Color('count()').title('Number of Records')
 )
 \end{lstlisting}
-\smalltext{\textbf{Interactivity}:}
+
+\begin{lstlisting}[language=R]
+ggplot(diamonds) +
+    aes(x = carat,
+        y = price) +
+    geom_hex() +
+    labs(x = 'Carat', y = 'Price', fill = 'Number', title = 'Diamonds') +
+    scale_y_continuous(labels = scales::label_dollar())
+\end{lstlisting}
+
+\smalltext{
+Trendlines (also sometimes called “lines of best fit”, or “fitted lines”) are good to highlight general trends in the data that can be hard to elucidate by looking at the raw data points. This can happen if there are many data points or many groups inside the data.
+A moving average becomes a bit complicated because there are so many y-values for the exact same x-value, so we would need to calculate the average for each year first, and then move/roll over that, which can be done using the window\_transform method in Altair
+If it is important that the line has values that are easy to interpret, choose a rolling mean (or maybe a mean if it is not too noisy). These are also the most straightforward trendlines when communicating data to a general audience.
+If you think a simple line equation (e.g. linear) describes your data well, this can be advantageous since you would know that your data follows a set pattern, and it is easy to predict how the data behaves outside the values you have collected (of course still with more uncertainty the further away from your data you predict).
+If you are mainly interested in highlighting a trend in the current data, and the two situations described above are not of great importance for your figure, then a loess line could be suitable. It has the advantage that it describes trends in data very “naturally”, meaning that it highlights patterns we would tend to highlight ourselves in qualitative assessment. It also less strict in its statistical assumption compared to e.g. a linear regression, so you don’t have to worry about finding the correct equation for the line, and assessing whether your data truly follows that equation globally. A downside is that it is hard to extrapolate this trend outside the available data.
+}
+
+
+\subsection{When to choose which trendline? Reduce content }
+\smalltext{
+Trendlines (also sometimes called “lines of best fit”, or “fitted lines”) are good to highlight general trends in the data that can be hard to elucidate by looking at the raw data points. This can happen if there are many data points or many groups inside the data.
+A moving average becomes a bit complicated because there are so many y-values for the exact same x-value, so we would need to calculate the average for each year first, and then move/roll over that, which can be done using the window\_transform method in Altair
+If it is important that the line has values that are easy to interpret, choose a rolling mean (or maybe a mean if it is not too noisy). These are also the most straightforward trendlines when communicating data to a general audience.
+If you think a simple line equation (e.g. linear) describes your data well, this can be advantageous since you would know that your data follows a set pattern, and it is easy to predict how the data behaves outside the values you have collected (of course still with more uncertainty the further away from your data you predict).
+If you are mainly interested in highlighting a trend in the current data, and the two situations described above are not of great importance for your figure, then a loess line could be suitable. It has the advantage that it describes trends in data very “naturally”, meaning that it highlights patterns we would tend to highlight ourselves in qualitative assessment. It also less strict in its statistical assumption compared to e.g. a linear regression, so you don’t have to worry about finding the correct equation for the line, and assessing whether your data truly follows that equation globally. A downside is that it is hard to extrapolate this trend outside the available data.
+}
+
 \begin{lstlisting}[language=Python]
-brush = alt.selection_interval()
-alt.Chart(df).mark_circle().encode(
-    x='xcol', y='ycol',
-    color = alt.condition(brush, 'column name', alt.value('color code'))
-).add_params(brush)
-\end{lstlisting}
-\hrule
+points + points.mark_line().encode(y='mean(Horsepower)')
 
-\subsection*{ggplot (R)}
-\smalltext{Create a data-aware chart using \code{ggplot(df)}.}
-
-\subsubsection*{Core Functions}
-\begin{itemize}
-\item \code{ggplot(df)}: Creates the initial data-aware chart object.
-\item \code{aes(x=col1, color=col2, ...)}: Specify visual \textbf{aesthetics}.
-\item \code{geom\_point()} / \code{geom\_line()} / \code{geom\_area()} / \code{geom\_bar()} / \textbf{\code{geom\_histogram()}} / \code{geom\_boxplot()} / \code{geom\_density()} / \textbf{\code{geom\_violin()}}: Geometric marks.
-\item \code{geom\_*(stat='summary', fun=mean)}: Compute aggregate statistics (e.g., \code{mean}).
-\item \code{facet\_wrap(~col1, ncol=1, scales='free')}: Create multiple views.
-\item \code{reorder(col1, -col2)}: Sort/reorder a column based on another value (e.g., \code{-col2} for descending).
-\item \code{ggtitle(title)}: Adds a title.
-\item \code{labs(x = 'Col 1', fill = 'Col 2')}: Modifies labels.
-\item \code{geom\_() + geom\_()}: Layer multiple geoms.
-\item \code{geom\_bin2d()}: \textbf{2D histogram}. \code{geom\_hex()} for hexagonal.
-\item \code{GGally::ggpairs(df)}: \textbf{Scatterplot matrix} (requires \code{select\_if(is.numeric)}).
-\item \code{geom\_smooth(se = FALSE, method = 'lm')}: Add a smooth curve. \code{se} controls the confidence interval.
-\item \textbf{\code{cowplot::plot\_grid(p1, p2, labels)}}: Arrange multiple plots (requires \code{cowplot} package).
-\end{itemize}
-
-\subsubsection*{Scale and Theme Modifications}
-\begin{itemize}
-\item \code{scale\_size(range = c(5, 40))}: Change the size scale range.
-\item \code{theme(text = element\_text(size = 24))}: Modify non-data components (e.g., text size).
-\item \code{scale\_y\_continuous(labels, breaks, limits)}: Modify Y-axis properties. Labels can use \code{scales::label\_scientific()}, \code{scales::label\_dollar()}.
-\item \code{scale\_fill\_continuous(labels, trans='reverse')}: Control color fill scale. \code{trans='reverse'} reverses the gradient.
-\item \code{scale\_color\_brewer(palette='Dark2')}: Apply RColorBrewer palettes.
-\item \code{scale\_color\_viridis\_c(trans, direction=1)}: Apply Viridis scale (\code{direction=-1} reverses the gradient).
-\end{itemize}
-
-\subsubsection*{ggplot (R) Examples}
-\smalltext{\textbf{Simple Chart}:}
-\begin{lstlisting}[language=R]
-library(tidyverse)
-my_data |> ggplot(aes(x = col1, y = col2)) +
-    geom_point()
-\end{lstlisting}
-\smalltext{\textbf{Density Plot (Geom Shortcut)}:}
-\begin{lstlisting}[language=R]
-ggplot(df, aes(x = col1, color = col2)) +
-    geom_density()
-\end{lstlisting}
-\smalltext{\textbf{2D Histogram}:}
-\begin{lstlisting}[language=R]
-ggplot(df, aes(x = xcol, y = ycol)) +
-    geom_bin2d()
-\end{lstlisting}
-\smalltext{\textbf{Hiding an Axis}:}
-\begin{lstlisting}[language=R]
-ggplot(df, aes(x = xcol, y = ycol)) +
-    geom_point() +
-    theme(axis.title.x = element_blank(),
-          axis.text.x = element_blank(),
-          axis.ticks.x = element_blank())
-\end{lstlisting}
-\smalltext{\textbf{Scatter Plot Matrix}:}
-\begin{lstlisting}[language=R]
-GGally::ggpairs(df %>% select_if(is.numeric))
 \end{lstlisting}
 
 \end{multicols}
