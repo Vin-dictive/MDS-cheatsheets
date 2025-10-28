@@ -67,20 +67,69 @@
 \pagestyle{empty}
 \begin{multicols}{3}
 
-\subsection{Overplotting}
+\subsection{General Structure}
+\begin{lstlisting}[language=Python]
+  rating_density = alt.Chart(df, title="Title").transform_density(
+    density='col',
+    groupby=['col2'],
+    as_=['col', 'density']
+).mark_area(
+    opacity=0.6,
+    line={'color': 'white'}
+).encode(
+    x=alt.X('col1:Q',
+            title='the value',
+            scale=alt.Scale(domain=[0, 10000]),
+            axis=alt.Axis(format='~s',grid=False,tickCount=10)),
+    y=alt.Y('density:Q',
+            title='density',
+            scale=alt.Scale(domain=[0, 0.000100]),
+            axis=alt.Axis(format='.6f',grid=False)).stack(False),
+    color=alt.Color('where:N',
+                    scale=alt.Scale(
+                        domain=['My state', 'Neighboring states'],
+                        range=['#A0D2E8', '#A0E8AF']
+                    ),
+                    legend=alt.Legend(
+                        orient='top' 
+                    )
+                   )
+).properties(
+    width=600,
+    height=400
+)
+\end{lstlisting}
+\begin{lstlisting}[language=R]
+  options(repr.plot.width=7, repr.plot.height=3)
+
+chart <- ggplot(wages) +
+    aes(
+        x = salary,
+        y = when,
+        fill = when
+    ) +
+    geom_violin() +
+    geom_point(stat = 'summary', fun = median, color = 'White') +
+    geom_point(stat = 'summary', fun = mean, color = 'Black') +
+    labs(
+        x = "Worker Salary ($)",
+        y = "When",
+        title = "Salary Distribution Before and After Policy Implementation" 
+    ) +
+    scale_x_continuous(
+        limits = c(10, 40), oob = scales::oob_keep,
+                labels = scales::dollar_format(), 
+    ) 
+chart
+\end{lstlisting}
+
+\subsection{HEAT MAPS}
 \smalltext{
-\textbf{Important Point ($\mathbf{X}$):} Lorem Ipsum \\
-}
-\smalltext{
-Plotting all the points in this df (there are around 50,000!) takes a little bit of time and causes the plot to become saturated so that we can't see individual observations.
 A 2D histogram is a type of heatmap, where count is mapped to color, you could also have used a mark that maps size to color, which might even be more effective but that is not as commonly seen.
-Here we can clearer see that a small area is much more dense than the others, although they looked similar in the saturated plot. How can we zoom into this area?
 }
 \begin{lstlisting}[language=Python]
-alt.Chart(diamonds).mark_rect().encode(
-    alt.X('carat').bin(maxbins=40),
-    alt.Y('price').bin(maxbins=40),
-    alt.Color('count()')
+alt.Chart(df).mark_rect().encode(alt.X('col1').bin(maxbins=40),
+alt.Y('col2').bin(maxbins=40),alt.Color('count()')
 )
 \end{lstlisting}
 \smalltext{
@@ -89,98 +138,187 @@ alt.Chart(diamonds).mark_rect().encode(
     Use \textbf{ridges contours}, similar to a topographic map. These contour plots are often less intuitive than the density plot above, so the recommendation is to use the density plot instead.
 }
 \begin{lstlisting}[language=R]
-ggplot(diamonds) +
-    aes(x = carat,
-        y = price) +
-    geom_bin2d() or geom_hex() or  geom_density_2d_filled() or geom_density_2d()
+ggplot(df) + aes(x = col1, y = col2) + geom_bin2d() or geom_hex() or  geom_density_2d_filled() or geom_density_2d()
 \end{lstlisting}
 
-\subsection{Axis label formatting}
+\subsection{AXIS LABEL FORMATTING}
 \smalltext{
 \textbf{Scientific Notation \& Grid Tick Modifications} \\
-Scientific notation can be useful for internal analysis or when displaying very large or very small numbers. 
-However, it may be confusing for a general audience. 
-Consider formatting axis labels using plain numbers or appropriate unit prefixes (e.g., thousands, millions, micro, milli) to improve readability. \\[6pt]
-The number of grid ticks can be modified using \texttt{tickCount}. 
+Scientific notation, Consider formatting axis labels using plain numbers or appropriate unit prefixes (e.g., thousands, millions, micro, milli) to improve readability. \\[6pt]
 Note that \texttt{tickCount} cannot be applied to binned data, so the plot has been adjusted here to demonstrate its effect.
 }
 
 \begin{lstlisting}[language=Python]
-.axis(format='e') # For e like notation
-.axis(format='s') # Standard international (SI) units are often easier to digest. 
-.axis(format='~s') # A prefaced ~ removes trailing zeros. 
-.axis(format='\$~s') # Formaters can also be combined.
-.alt.X('carat').axis(None),
-.alt.Y('price').axis(tickCount=2) 
-alt.themes.enable('dark')
+.alt.X('col').axis(format='e') # For e like notation
+.alt.X('col').axis(format='s') # Standard international (SI) units
+.alt.X('col').axis(format='~s') # Removes trailing zeros
+.alt.X('col').axis(format='\$~s') # Formaters can also be combined.
+.alt.X('col').axis(format='.1%') # Decimal formats
+.alt.X('col').axis(None) #Remove an axis altogether
+.alt.Y('col').axis(tickCount=2) #ticks on axis
+.alt.Y('col').axis(grid=False) #Remove grid
+.alt.Y('col').sort('-y') #Sort y axis
+alt.Y('coly').bin(maxbins=400).scale(domain=[0, 2000]), #Set scale
+alt.themes.enable('dark') #Dark theme scale
 alt.Color('count()').legend(None) # remove a legend 
-alt.Y('price').bin(maxbins=400).scale(domain=(0, 2000), reverse=True), #Reversing an axis
+alt.Y('coly').bin(maxbins=400).scale(domain=(0, 2000), reverse=True), #Reversing an axis
+alt.Y('col:Q',bin=alt.Bin(maxbins=20),
+        title='Y Label', #Set Label
+        axis=alt.Axis(format='.1%', titleFontSize=14, labelFontSize=12))
 \end{lstlisting}
 \begin{lstlisting}[language=R]
-ggplot(diamonds) +
-    aes(x = carat,
-        y = price) +
-    geom_hex() +
-    scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_si(''))) +
-    scale_y_continuous(labels = scales::label_dollar()) +
-    scale_y_continuous(labels = scales::label_dollar(scale = .001, suffix = "K")) +
-    scale_fill_continuous(labels = scales::label_number(scale_cut = scales::cut_si(''))) +
-    guides(fill = "none") # remove a legend 
-    scale_x_continuous(
-        limits = c(10, 31), oob = scales::oob_keep, #scale limit
-        labels = scales::label_dollar(), #label formater
-        breaks = scales::pretty_breaks(n = 10) #tick count
-    ) + 
-    scale_y_continuous(limits = c(2000, 0), trans = 'reverse') #reversing an axis
-    scale_fill_continuous(trans = 'reverse')
+ggplot(df) + aes(x = colx,y = coly) + geom_hex() +
+  guides(fill = "none") # remove a legend 
+  scale_x_continuous(
+    labels = scales::label_dollar(scale = .001, suffix = "K"),
+    labels = scales::label_number(scale_cut = scales::cut_si('')),
+    limits = c(10, 31), oob = scales::oob_keep, #scale limit
+    limits = c(2000, 0), trans = 'reverse', #reversing an axis
+    labels = scales::label_dollar(), #label formater
+    breaks = scales::pretty_breaks(n = 10) #tick count
+  )
+\end{lstlisting}
+\begin{lstlisting}[language=R]
+ggplot(df) + aes(x = col1, y = col2) + geom_hex() +
+  labs(
+    x = 'col1',
+    y = 'col2',
+    title = 'title',
+    subtitle = 'subtitle'
+  )
 \end{lstlisting}
 
-\subsection{Labels and Subtitles }
-\begin{lstlisting}[language=python]
-alt.Chart(
-    diamonds,
-    title=alt.Title(
-        text='Higher carat diamonds are more expensive',
-        subtitle='But most diamonds are of low carat'
-    )
-).mark_rect().encode(
-    alt.X('carat').bin(maxbins=40).title('Carat'),
-    alt.Y('price').bin(maxbins=40).title('Price'),
-    alt.Color('count()').title('Number of Records')
+\subsection{Trendlines - Mean Line}
+\smalltext{
+Trendlines (also sometimes called “lines of best fit”, or “fitted lines”) are good to highlight general trends in the data that can be hard to elucidate by looking at the raw data points. This can happen if there are many data points or many groups inside the data.
+}
+\begin{lstlisting}[language=Python]
+points + points.mark_line().encode(y='mean(Horsepower)')
+\end{lstlisting}
+\begin{lstlisting}[language=R]
+ggplot(cars) + aes(x = Year, y = Horsepower, color = Origin) +
+  geom_point() + geom_line(stat = 'summary', fun = 'mean')
+\end{lstlisting}
+\subsection{Trendlines - Regression Lines}
+\smalltext{
+If you want an easy-to-interpret trend line, use a rolling mean 
+(or a simple mean if the data isn’t too noisy). It naturally 
+highlights patterns as we would notice them visually and requires fewer 
+statistical assumptions than methods like \textbf{linear regression}. 
+}
+\begin{lstlisting}[language=Python]
+points +  points.mark_line(size=3).transform_regression(
+    'Year',
+    'Horsepower',
+    groupby=['Origin'],
+    method='poly' #for regression line that is quadratic, polynomial
 )
 \end{lstlisting}
 
-\begin{lstlisting}[language=R]
-ggplot(diamonds) +
-    aes(x = carat,
-        y = price) +
-    geom_hex() +
-    labs(x = 'Carat', y = 'Price', fill = 'Number', title = 'Diamonds') +
-    scale_y_continuous(labels = scales::label_dollar())
-\end{lstlisting}
-
+\subsection{Trendlines - loess/lowess Lines}
 \smalltext{
-Trendlines (also sometimes called “lines of best fit”, or “fitted lines”) are good to highlight general trends in the data that can be hard to elucidate by looking at the raw data points. This can happen if there are many data points or many groups inside the data.
-A moving average becomes a bit complicated because there are so many y-values for the exact same x-value, so we would need to calculate the average for each year first, and then move/roll over that, which can be done using the window\_transform method in Altair
-If it is important that the line has values that are easy to interpret, choose a rolling mean (or maybe a mean if it is not too noisy). These are also the most straightforward trendlines when communicating data to a general audience.
-If you think a simple line equation (e.g. linear) describes your data well, this can be advantageous since you would know that your data follows a set pattern, and it is easy to predict how the data behaves outside the values you have collected (of course still with more uncertainty the further away from your data you predict).
-If you are mainly interested in highlighting a trend in the current data, and the two situations described above are not of great importance for your figure, then a loess line could be suitable. It has the advantage that it describes trends in data very “naturally”, meaning that it highlights patterns we would tend to highlight ourselves in qualitative assessment. It also less strict in its statistical assumption compared to e.g. a linear regression, so you don’t have to worry about finding the correct equation for the line, and assessing whether your data truly follows that equation globally. A downside is that it is hard to extrapolate this trend outside the available data.
+Where the w stands for “weighted”. You can fit multiple equations (usually linear and quadratic) to smaller subsets of the data, and add them together to get the final line. 
+\textbf{bandwidth} parameter controls how much the loess fit should be influenced by local variation in the data, similar to the effect of the bandwidth parameter for a KDE.
+bandwidth of 1 corresponds to using all the data and will be similar to a linear regression
 }
-
-
-\subsection{When to choose which trendline? Reduce content }
-\smalltext{
-Trendlines (also sometimes called “lines of best fit”, or “fitted lines”) are good to highlight general trends in the data that can be hard to elucidate by looking at the raw data points. This can happen if there are many data points or many groups inside the data.
-A moving average becomes a bit complicated because there are so many y-values for the exact same x-value, so we would need to calculate the average for each year first, and then move/roll over that, which can be done using the window\_transform method in Altair
-If it is important that the line has values that are easy to interpret, choose a rolling mean (or maybe a mean if it is not too noisy). These are also the most straightforward trendlines when communicating data to a general audience.
-If you think a simple line equation (e.g. linear) describes your data well, this can be advantageous since you would know that your data follows a set pattern, and it is easy to predict how the data behaves outside the values you have collected (of course still with more uncertainty the further away from your data you predict).
-If you are mainly interested in highlighting a trend in the current data, and the two situations described above are not of great importance for your figure, then a loess line could be suitable. It has the advantage that it describes trends in data very “naturally”, meaning that it highlights patterns we would tend to highlight ourselves in qualitative assessment. It also less strict in its statistical assumption compared to e.g. a linear regression, so you don’t have to worry about finding the correct equation for the line, and assessing whether your data truly follows that equation globally. A downside is that it is hard to extrapolate this trend outside the available data.
-}
-
 \begin{lstlisting}[language=Python]
-points + points.mark_line().encode(y='mean(Horsepower)')
+points +  points.mark_line(size=3).transform_loess(
+    'Year',
+    'Horsepower',
+    groupby=['Origin'],
+    bandwidth=0.8 #optional param
+)
+\end{lstlisting}
+\begin{lstlisting}[language=R]
+ggplot(cars) + 
+    aes(x = Year,
+        y = Horsepower,
+        color = Origin,
+        fill = Origin) + #color the confidence interval the same as the lines.
+    geom_point() +
+    geom_smooth() #Introduce CI
+    geom_smooth(se = FALSE, size = 2, span=1) #Introduce bandwidth use span
+    geom_smooth(se = FALSE, size = 2, method = 'lm') #linear regression instead of loess
+\end{lstlisting}
+\subsection{When to choose which trendline:}
+\begin{itemize}
+    \item \textbf{Rolling mean / mean:} Best for clear, easy-to-read trends and general audiences. Simple and intuitive, but not suitable for predictions beyond your data.
+    \item \textbf{Linear (or similar model):} Use when your data follows a clear equation. Good for showing consistent patterns and making predictions outside your data range.
+    \item \textbf{Loess (or smooth curve):} Ideal for showing natural, flexible trends in current data without assuming a strict model, though poor for extrapolation.
+\end{itemize}
 
+\subsection{Color schemes/maps:}
+\includegraphics[width=0.5\linewidth, height=2cm]{HSL.png}
+\includegraphics[width=0.5\linewidth, height=2cm]{seq-not.png}
+\includegraphics[width=0.5\linewidth, height=2cm]{seq.png}
+\smalltext{
+colormap is useful for (categorical, sequential, diverging, cyclic) \\
+\textbf{Categorical:} Single color for each category \\
+\textbf{Sequential:} Shades of a color \\
+}
+\begin{lstlisting}[language=Python]
+#Sequential
+alt.Chart(iris).mark_circle(size=100).encode(
+    x='petalWidth',
+    y='petalLength',
+    color=alt.Color('petalWidth').scale(scheme='viridis', reverse=True)
+)
+#Diverging has a natural midpoint, 
+# such as a correlation that is defined from -1 to 1
+corr_df = data.gapminder().corr(numeric_only=True).stack().reset_index(name='corr')
+alt.Chart(corr_df).mark_rect().encode(
+    x='level_0',
+    y='level_1',
+    tooltip='corr',
+    color=alt.Color('corr').scale(domain=(-1, 1), scheme='purpleorange')
+).properties(
+    width=200,
+    height=200
+)
+\end{lstlisting}
+\begin{lstlisting}[language=R]
+#Sequential
+ggplot(iris) + 
+    aes(x = Petal.Width,
+        y = Petal.Length,
+        color = Petal.Width) +
+    geom_point(size = 5) +
+    scale_color_viridis_c()
+#Diverging has a natural midpoint, 
+# such as a correlation that is defined from -1 to 1
+ggplot(corr_df) +
+    aes(x = level_0,
+        y = level_1,
+        fill = corr) +
+    geom_tile() +
+    ggthemes::scale_fill_gradient2_tableau()
 \end{lstlisting}
 
+\subsection{Direct labeling instead of using a legend}
+\begin{lstlisting}[language=Python]
+lines = alt.Chart(stocks).mark_line().encode(
+    x='date',
+    y='price',
+    color=alt.Color('symbol').legend(None)
+)
+text = alt.Chart(stock_order).mark_text(dx=20).encode(
+    x='date',
+    y='price',
+    text='symbol',
+    color='symbol'
+)
+lines + text
+\end{lstlisting}
+\begin{lstlisting}[language=R]
+ggplot(stocks) + 
+    aes(x = date,
+        y = price,
+        color = symbol,
+        label = symbol) +
+    geom_line() +
+    geom_text(data = stock_order, vjust=-1) +
+    ggthemes::scale_color_tableau() +
+    theme(legend.position = 'none')
+\end{lstlisting}
 \end{multicols}
 \end{document}
