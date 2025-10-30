@@ -333,12 +333,9 @@ err_bars = alt.Chart(cars).mark_errorbar(extent='ci', rule=alt.LineConfig(size=2
  + err_bars.mark_point(color='black').encode(x='mean(Horsepower)'))
 \end{lstlisting}
 \begin{lstlisting}[language=R]
-ggplot(cars) + aes(x = Year,y = Horsepower,color = Origin,fill = Origin) +
-    geom_line(stat = 'summary', fun = mean) +
+    geom_line(stat = 'summary', fun = mean) + #for line chart with CI
     geom_ribbon(stat = 'summary', fun.data = mean_cl_boot, alpha=0.5, color = NA)
-ggplot(cars) +
-    aes(x = Horsepower,y = Origin) +
-    geom_violin(color = NA, fill = 'steelblue', alpha = 0.4) +
+    geom_violin(color = NA, fill = 'steelblue', alpha = 0.4) + #for point chart with CI bar lines
     geom_pointrange(stat = 'summary', fun.data = mean_cl_boot, size = 0.7)
 \end{lstlisting}
 \includegraphics[width=0.5\linewidth, height=2cm]{ci.png}
