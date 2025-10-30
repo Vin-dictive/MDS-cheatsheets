@@ -251,6 +251,7 @@ ggplot(cars) +
 \includegraphics[width=0.5\linewidth, height=2cm]{HSL.png}
 \includegraphics[width=0.5\linewidth, height=2cm]{seq-not.png}
 \includegraphics[width=0.5\linewidth, height=2cm]{seq.png}
+\includegraphics[width=0.5\linewidth, height=2cm]{diverge.png}
 \smalltext{
 colormap is useful for (categorical, sequential, diverging, cyclic) \\
 \textbf{Categorical:} Single color for each category \\
@@ -320,5 +321,78 @@ ggplot(stocks) +
     ggthemes::scale_color_tableau() +
     theme(legend.position = 'none')
 \end{lstlisting}
+
+\subsection{Confidence Intervals}
+\begin{lstlisting}[language=Python]
+points.mark_errorband(extent='ci') + points.encode(y='mean(Horsepower)').mark_line() #add meanline with CI
+err_bars = alt.Chart(cars).mark_errorbar(extent='ci', rule=alt.LineConfig(size=2)).encode(
+    x='Horsepower',
+    y='Origin'
+)
+(err_bars.mark_tick(color='lightgrey')
+ + err_bars
+ + err_bars.mark_point(color='black').encode(x='mean(Horsepower)'))
+\end{lstlisting}
+\begin{lstlisting}[language=R]
+ggplot(cars) + aes(x = Year,y = Horsepower,color = Origin,fill = Origin) +
+    geom_line(stat = 'summary', fun = mean) +
+    geom_ribbon(stat = 'summary', fun.data = mean_cl_boot, alpha=0.5, color = NA)
+ggplot(cars) +
+    aes(x = Horsepower,y = Origin) +
+    geom_violin(color = NA, fill = 'steelblue', alpha = 0.4) +
+    geom_pointrange(stat = 'summary', fun.data = mean_cl_boot, size = 0.7)
+\end{lstlisting}
+\includegraphics[width=0.5\linewidth, height=2cm]{ci.png}
+
+\subsection{Figure composition}
+\begin{lstlisting}[language=Python]
+mpg_weight & hp_weight #Concatenate plots vertically
+mpg_weight | hp_weight #Concatenate plots Horizontally
+plot_grid(hp_weight, mpg_weight) #Concatenate plots Horizontally
+plot_grid(origin_count, mpg_weight, ncol=1) #Concatenate plots vertically
+alt.Chart(cars).mark_circle().encode(...).interactive() #Panning and zooming
+brush = alt.selection_interval()
+alt.Chart(cars).mark_circle().encode(...).add_params(brush) #Interval selections
+\end{lstlisting}
+
+\subsection{Highlighting points with selections}
+\begin{lstlisting}[language=Python]
+brush = alt.selection_interval()
+alt.Chart(cars).mark_circle().encode(
+    x='Horsepower',
+    y='Miles_per_Gallon',
+    color=alt.condition(brush, 'Origin', alt.value('lightgray'))
+).add_params(brush)
+\end{lstlisting}
+
+\subsection{Linking selections across plots}
+\begin{lstlisting}[language=Python]
+brush = alt.selection_interval(resolve='union')  # The default is 'global' #resolve='intersect'
+points = alt.Chart(cars).mark_circle().encode(
+    x='Horsepower',
+    y='Miles_per_Gallon',
+    color=alt.condition(brush, 'Origin', alt.value('lightgray'))
+).add_params(brush)
+points | points.encode(y='Weight_in_lbs')
+\end{lstlisting}
+
+\subsection{Click selections}
+\begin{lstlisting}[language=Python]
+brush = alt.selection_interval()
+click = alt.selection_point(fields=['Origin'], on='mouseover')
+points = alt.Chart(cars).mark_circle().encode(
+    x='Horsepower',
+    y='Miles_per_Gallon',
+    color=alt.condition(brush, 'Origin', alt.value('lightgray'))
+).add_params(brush)
+bars = alt.Chart(cars).mark_bar().encode(
+    x='count()',
+    y='Origin',
+    color='Origin',
+    opacity=alt.condition(click, alt.value(0.9), alt.value(0.2))
+).add_params(click)
+points & bars
+\end{lstlisting}
+
 \end{multicols}
 \end{document}
