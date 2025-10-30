@@ -183,8 +183,7 @@ ggplot(df) + aes(x = col1, y = col2) + geom_hex() +
   labs(
     x = 'col1',
     y = 'col2',
-    title = 'title',
-    subtitle = 'subtitle'
+    title = 'title'
   )
 \end{lstlisting}
 
@@ -237,8 +236,8 @@ ggplot(cars) +
         fill = Origin) + #color the confidence interval the same as the lines.
     geom_point() +
     geom_smooth() #Introduce CI
-    geom_smooth(se = FALSE, size = 2, span=1) #Introduce bandwidth use span
-    geom_smooth(se = FALSE, size = 2, method = 'lm') #linear regression instead of loess
+    geom_smooth(se = FALSE, linewidth = 1, span=1) #Introduce bandwidth use span
+    geom_smooth(se = FALSE, linewidth = 1, method = 'lm') #linear regression instead of loess
 \end{lstlisting}
 \subsection{When to choose which trendline:}
 \begin{itemize}
