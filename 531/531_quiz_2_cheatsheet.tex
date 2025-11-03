@@ -16,26 +16,40 @@
 % Define a custom color for code highlighting and environment
 \definecolor{myred}{RGB}{204, 0, 0} % A strong red
 \definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
-
+\setlist[itemize]{
+    noitemsep,  % Removes vertical space between list items
+    topsep=0pt,  % Removes space before the list
+    partopsep=0pt, % Removes extra space when a list begins mid-paragraph
+    parsep=0pt, % Removes space between paragraphs within an item
+    leftmargin=*, % Sets the left margin to the minimum necessary
+    labelsep=0.5em, % You can slightly adjust the space between the bullet and the text
+}
 % LISTINGS SETUP for R and Python
 \lstset{
-  basicstyle=\ttfamily\scriptsize\color{black}, % Tiny font for code
+  basicstyle=\ttfamily\scriptsize\color{black},
   backgroundcolor=\color{mygray},
   frame=single,
   frameround=tttt,
-  framesep=3pt,
-  rulesepcolor=\color{black!20},
+  framesep=0pt,        % no padding between code and frame
+  rulecolor=\color{black!20},
+  rulesep=0pt,         % no space between rules
   breaklines=true,
   columns=fullflexible,
   showstringspaces=false,
   commentstyle=\color{gray},
   keywordstyle=\color{blue!80!black},
-  stringstyle=\color{myred}, % Use red for strings to match the custom \code{} style
+  stringstyle=\color{myred},
   breakatwhitespace=true,
-  xleftmargin=0pt,
-  xrightmargin=0pt,
-  aboveskip=0.5ex,
-  belowskip=0.5ex
+  xleftmargin=0pt,     % no left margin
+  xrightmargin=0pt,    % no right margin
+  aboveskip=0pt,       % no space above listing
+  belowskip=0pt,       % no space below listing
+  abovecaptionskip=0pt,
+  belowcaptionskip=0pt,
+  framexleftmargin=0pt,
+  framexrightmargin=0pt,
+  framextopmargin=0pt,
+  framexbottommargin=0pt
 }
 
 % FORMATTING
@@ -69,68 +83,28 @@
 
 \subsection{General Structure}
 \begin{lstlisting}[language=Python]
-  rating_density = alt.Chart(df, title="Title").transform_density(
-    density='col',
-    groupby=['col2'],
-    as_=['col', 'density']
-).mark_area(
-    opacity=0.6,
-    line={'color': 'white'}
-).encode(
-    x=alt.X('col1:Q',
-            title='the value',
-            scale=alt.Scale(domain=[0, 10000]),
-            axis=alt.Axis(format='~s',grid=False,tickCount=10)),
-    y=alt.Y('density:Q',
-            title='density',
-            scale=alt.Scale(domain=[0, 0.000100]),
-            axis=alt.Axis(format='.6f',grid=False)).stack(False),
-    color=alt.Color('where:N',
-                    scale=alt.Scale(
-                        domain=['My state', 'Neighboring states'],
-                        range=['#A0D2E8', '#A0E8AF']
-                    ),
-                    legend=alt.Legend(
-                        orient='top' 
-                    )
-                   )
-).properties(
-    width=600,
-    height=400
-)
+  rating_density = alt.Chart(df, title="Title").encode(
+    x=alt.X('col1:Q',title='the value',scale=alt.Scale(domain=[0, 10000]),axis=alt.Axis(format='~s',grid=False,tickCount=10)),
+    y=alt.Y('density:Q',title='density',scale=alt.Scale(domain=[0, 0.000100]),axis=alt.Axis(format='.6f',grid=False)).stack(False),
+    color=alt.Color('where:N', scale=alt.Scale(domain=['My state', 'Neighboring states'],range=['#A0D2E8', '#A0E8AF']),
+        legend=alt.Legend(orient='top'))
+).properties( width=600, height=400)
 \end{lstlisting}
 \begin{lstlisting}[language=R]
-  options(repr.plot.width=7, repr.plot.height=3)
-
-chart <- ggplot(wages) +
-    aes(
-        x = salary,
-        y = when,
-        fill = when
-    ) +
-    geom_violin() +
-    geom_point(stat = 'summary', fun = median, color = 'White') +
+options(repr.plot.width=7, repr.plot.height=3)
+chart <- ggplot(wages) + aes(x = salary,y = when,fill = when) +
+    geom_violin() + geom_point(stat = 'summary', fun = median, color = 'White') +
     geom_point(stat = 'summary', fun = mean, color = 'Black') +
-    labs(
-        x = "Worker Salary ($)",
-        y = "When",
-        title = "Salary Distribution Before and After Policy Implementation" 
-    ) +
-    scale_x_continuous(
-        limits = c(10, 40), oob = scales::oob_keep,
-                labels = scales::dollar_format(), 
-    ) 
-chart
+    labs(x = "Worker Salary ($)",y = "When",title = "Title") +
+    scale_x_continuous(limits = c(10, 40), oob = scales::oob_keep,labels = scales::dollar_format()) 
 \end{lstlisting}
-
-\subsection{HEAT MAPS}
+\subsection{Heat Maps}
 \smalltext{
 A 2D histogram is a type of heatmap, where count is mapped to color, you could also have used a mark that maps size to color, which might even be more effective but that is not as commonly seen.
 }
 \begin{lstlisting}[language=Python]
 alt.Chart(df).mark_rect().encode(alt.X('col1').bin(maxbins=40),
-alt.Y('col2').bin(maxbins=40),alt.Color('count()')
-)
+alt.Y('col2').bin(maxbins=40),alt.Color('count()'))
 \end{lstlisting}
 \smalltext{
     Instead of squares,\textbf{hexagonal bins} can be used. These have theoretically superior qualities over squares, such as a more natural notation of neighbors. \\
@@ -141,13 +115,11 @@ alt.Y('col2').bin(maxbins=40),alt.Color('count()')
 ggplot(df) + aes(x = col1, y = col2) + geom_bin2d() or geom_hex() or  geom_density_2d_filled() or geom_density_2d()
 \end{lstlisting}
 
-\subsection{AXIS LABEL FORMATTING}
+\subsection{Axis Label Formatting}
 \smalltext{
-\textbf{Scientific Notation \& Grid Tick Modifications} \\
-Scientific notation, Consider formatting axis labels using plain numbers or appropriate unit prefixes (e.g., thousands, millions, micro, milli) to improve readability. \\[6pt]
-Note that \texttt{tickCount} cannot be applied to binned data, so the plot has been adjusted here to demonstrate its effect.
+\textcolor{red}{Scientific Notation \& Grid Tick Modifications} 
+Scientific notation, Consider formatting axis labels using plain numbers or appropriate unit prefixes (e.g., thousands, millions, micro, milli) to improve readability.
 }
-
 \begin{lstlisting}[language=Python]
 .alt.X('col').axis(format='e') # For e like notation
 .alt.X('col').axis(format='s') # Standard international (SI) units
@@ -168,7 +140,7 @@ alt.Y('col:Q',bin=alt.Bin(maxbins=20),
 \end{lstlisting}
 \begin{lstlisting}[language=R]
 ggplot(df) + aes(x = colx,y = coly) + geom_hex() +
-  guides(fill = "none") # remove a legend 
+  guides(fill = "none") + # remove a legend 
   scale_x_continuous(
     labels = scales::label_dollar(scale = .001, suffix = "K"),
     labels = scales::label_number(scale_cut = scales::cut_si('')),
@@ -178,18 +150,10 @@ ggplot(df) + aes(x = colx,y = coly) + geom_hex() +
     breaks = scales::pretty_breaks(n = 10) #tick count
   )
 \end{lstlisting}
-\begin{lstlisting}[language=R]
-ggplot(df) + aes(x = col1, y = col2) + geom_hex() +
-  labs(
-    x = 'col1',
-    y = 'col2',
-    title = 'title'
-  )
-\end{lstlisting}
 
-\subsection{Trendlines - Mean Line}
+\subsection{Trendlines}
 \smalltext{
-Trendlines (also sometimes called “lines of best fit”, or “fitted lines”) are good to highlight general trends in the data that can be hard to elucidate by looking at the raw data points. This can happen if there are many data points or many groups inside the data.
+\textcolor{red}{Mean Line} also called “lines of best fit”, or “fitted lines” are good to highlight general trends in the data that can be hard to elucidate by looking at the raw data points.
 }
 \begin{lstlisting}[language=Python]
 points + points.mark_line().encode(y='mean(Horsepower)')
@@ -198,197 +162,157 @@ points + points.mark_line().encode(y='mean(Horsepower)')
 ggplot(cars) + aes(x = Year, y = Horsepower, color = Origin) +
   geom_point() + geom_line(stat = 'summary', fun = 'mean')
 \end{lstlisting}
-\subsection{Trendlines - Regression Lines}
 \smalltext{
-If you want an easy-to-interpret trend line, use a rolling mean 
-(or a simple mean if the data isn’t too noisy). It naturally 
-highlights patterns as we would notice them visually and requires fewer 
-statistical assumptions than methods like \textbf{linear regression}. 
+\textcolor{red}{Regression Lines} Easy-to-interpret trend line, use a rolling mean. It naturally highlights patterns as we would notice them visually and requires fewer 
+statistical assumptions than methods like \textbf{linear regression}. regression line that is quadratic, polynomial
 }
 \begin{lstlisting}[language=Python]
 points +  points.mark_line(size=3).transform_regression(
-    'Year',
-    'Horsepower',
-    groupby=['Origin'],
-    method='poly' #for regression line that is quadratic, polynomial
-)
+'Year','Horsepower',groupby=['Origin'],method='poly')
 \end{lstlisting}
-
-\subsection{Trendlines - loess/lowess Lines}
 \smalltext{
+\textcolor{red}{loess/lowess Lines}
 Where the w stands for “weighted”. You can fit multiple equations (usually linear and quadratic) to smaller subsets of the data, and add them together to get the final line. 
 \textbf{bandwidth} parameter controls how much the loess fit should be influenced by local variation in the data, similar to the effect of the bandwidth parameter for a KDE.
 bandwidth of 1 corresponds to using all the data and will be similar to a linear regression
 }
 \begin{lstlisting}[language=Python]
 points +  points.mark_line(size=3).transform_loess(
-    'Year',
-    'Horsepower',
-    groupby=['Origin'],
-    bandwidth=0.8 #optional param
-)
+'Year','Horsepower',groupby=['Origin'],method='poly',bandwidth=0.8)
 \end{lstlisting}
 \begin{lstlisting}[language=R]
-ggplot(cars) + 
-    aes(x = Year,
-        y = Horsepower,
-        color = Origin,
-        fill = Origin) + #color the confidence interval the same as the lines.
-    geom_point() +
-    geom_smooth() #Introduce CI
+ggplot(cars) + #color the confidence interval the same as the lines.
+aes(x = Year,y = Horsepower, color = Origin, fill = Origin) + 
+    geom_point() +  geom_smooth() #Introduce CI
     geom_smooth(se = FALSE, linewidth = 1, span=1) #Introduce bandwidth use span
     geom_smooth(se = FALSE, linewidth = 1, method = 'lm') #linear regression instead of loess
 \end{lstlisting}
 \subsection{When to choose which trendline:}
-\begin{itemize}
-    \item \textbf{Rolling mean / mean:} Best for clear, easy-to-read trends and general audiences. Simple and intuitive, but not suitable for predictions beyond your data.
-    \item \textbf{Linear (or similar model):} Use when your data follows a clear equation. Good for showing consistent patterns and making predictions outside your data range.
-    \item \textbf{Loess (or smooth curve):} Ideal for showing natural, flexible trends in current data without assuming a strict model, though poor for extrapolation.
-\end{itemize}
+\textcolor{red}{Rolling mean / mean:} Best for clear, easy-to-read trends and general audiences. Simple and intuitive, but not suitable for predictions beyond your data.
+ \textcolor{red}{Linear (or similar model):} Use when your data follows a clear equation. Good for showing consistent patterns and making predictions outside your data range.
+ \textcolor{red}{Loess (or smooth curve):} Ideal for showing natural, flexible trends in current data without assuming a strict model, though poor for extrapolation.
 
 \subsection{Color schemes/maps:}
-\includegraphics[width=0.5\linewidth, height=2cm]{HSL.png}
-\includegraphics[width=0.5\linewidth, height=2cm]{seq-not.png}
-\includegraphics[width=0.5\linewidth, height=2cm]{seq.png}
-\includegraphics[width=0.5\linewidth, height=2cm]{diverge.png}
+\includegraphics[width=0.20\linewidth, height=2cm]{HSL.png}
+\includegraphics[width=0.20\linewidth, height=2cm]{seq-not.png}
+\includegraphics[width=0.20\linewidth, height=2cm]{seq.png}
+\includegraphics[width=0.20\linewidth, height=2cm]{diverge.png}
 \smalltext{
-colormap is useful for (categorical, sequential, diverging, cyclic) \\
+\textcolor{red}{Colormap} is useful for (categorical, sequential, diverging, cyclic) and \textcolor{red}{correlation maps}\\
 \textbf{Categorical:} Single color for each category \\
 \textbf{Sequential:} Shades of a color \\
 }
 \begin{lstlisting}[language=Python]
 #Sequential
-alt.Chart(iris).mark_circle(size=100).encode(
-    x='petalWidth',
-    y='petalLength',
-    color=alt.Color('petalWidth').scale(scheme='viridis', reverse=True)
-)
-#Diverging has a natural midpoint, 
-# such as a correlation that is defined from -1 to 1
-corr_df = data.gapminder().corr(numeric_only=True).stack().reset_index(name='corr')
+alt.Chart(iris).mark_circle(size=100).encode(x='col1', y='col2',
+    color=alt.Color('petalWidth').scale(scheme='viridis', reverse=True))
+#Diverging has a natural midpoint, correlation that is defined from -1 to 1
+corr_df = data.gapminder().corr(
+    numeric_only=True).stack().reset_index(name='corr')
 alt.Chart(corr_df).mark_rect().encode(
-    x='level_0',
-    y='level_1',
-    tooltip='corr',
-    color=alt.Color('corr').scale(domain=(-1, 1), scheme='purpleorange')
-).properties(
-    width=200,
-    height=200
-)
+    x='level_0',y='level_1',tooltip='corr',
+    color=alt.Color('corr').scale(domain=(-1, 1), 
+    scheme='purpleorange'))
 \end{lstlisting}
 \begin{lstlisting}[language=R]
 #Sequential
-ggplot(iris) + 
-    aes(x = Petal.Width,
-        y = Petal.Length,
-        color = Petal.Width) +
-    geom_point(size = 5) +
-    scale_color_viridis_c()
-#Diverging has a natural midpoint, 
-# such as a correlation that is defined from -1 to 1
-ggplot(corr_df) +
-    aes(x = level_0,
-        y = level_1,
-        fill = corr) +
-    geom_tile() +
-    ggthemes::scale_fill_gradient2_tableau()
+ggplot(iris) + aes(x = col1,y = col2,color = Petal.Width) +
+    geom_point(size = 5) + scale_color_viridis_c()
+#Diverging has a natural midpoint, correlation that is defined from -1 to 1
+ggplot(corr_df) + aes(x = level_0,y = level_1,fill = corr) +
+    geom_tile() + ggthemes::scale_fill_gradient2_tableau()
+    + scale_color_manual(values = c('#FF7F50', '#4682B4', '#663399')) #Custom color mapping
 \end{lstlisting}
 
 \subsection{Direct labeling instead of using a legend}
 \begin{lstlisting}[language=Python]
 lines = alt.Chart(stocks).mark_line().encode(
-    x='date',
-    y='price',
-    color=alt.Color('symbol').legend(None)
-)
+    x='date', y='price', color=alt.Color('symbol').legend(None))
 text = alt.Chart(stock_order).mark_text(dx=20).encode(
-    x='date',
-    y='price',
-    text='symbol',
-    color='symbol'
-)
+    x='date', y='price', text='symbol', color='symbol')
 lines + text
 \end{lstlisting}
 \begin{lstlisting}[language=R]
 ggplot(stocks) + 
-    aes(x = date,
-        y = price,
-        color = symbol,
-        label = symbol) +
-    geom_line() +
-    geom_text(data = stock_order, vjust=-1) +
-    ggthemes::scale_color_tableau() +
-    theme(legend.position = 'none')
+    aes(x = date,y = price,color = symbol,label = symbol) +
+    geom_line() + geom_text(data = stock_order, vjust=-1) +
+    ggthemes::scale_color_tableau() + theme(legend.position = 'none')
 \end{lstlisting}
 
 \subsection{Confidence Intervals}
+\smalltext{By default this mark show the standard deviation of the points, but we can change the extent to use bootstrapping on the sample data to construct the 95\% confidence interval of the mean.}
 \begin{lstlisting}[language=Python]
-points.mark_errorband(extent='ci') + points.encode(y='mean(Horsepower)').mark_line() #add meanline with CI
+points.mark_errorband(extent='ci') + points.encode(y='mean(Horsepower)').mark_line()
 err_bars = alt.Chart(cars).mark_errorbar(extent='ci', rule=alt.LineConfig(size=2)).encode(
-    x='Horsepower',
-    y='Origin'
-)
-(err_bars.mark_tick(color='lightgrey')
- + err_bars
- + err_bars.mark_point(color='black').encode(x='mean(Horsepower)'))
+    x='Horsepower',y='Origin')
+(err_bars.mark_tick(color='lightgrey') + err_bars + err_bars.mark_point(color='black').encode(x='mean(Horsepower)'))
 \end{lstlisting}
 \begin{lstlisting}[language=R]
-    geom_line(stat = 'summary', fun = mean) + #for line chart with CI
-    geom_ribbon(stat = 'summary', fun.data = mean_cl_boot, alpha=0.5, color = NA)
-    geom_violin(color = NA, fill = 'steelblue', alpha = 0.4) + #for point chart with CI bar lines
-    geom_pointrange(stat = 'summary', fun.data = mean_cl_boot, size = 0.7)
+geom_line(stat = 'summary', fun = mean) + #for line chart with CI
+geom_ribbon(stat = 'summary', fun.data = mean_cl_boot, alpha=0.5, color = NA)
+geom_violin(color = NA, fill = 'steelblue', alpha = 0.4) + #for point chart with CI bar lines
+geom_pointrange(stat = 'summary', fun.data = mean_cl_boot, size = 0.7)
 \end{lstlisting}
-\includegraphics[width=0.5\linewidth, height=2cm]{ci.png}
-
+\includegraphics[width=0.20\linewidth, height=2cm]{ci.png}
+\includegraphics[width=0.20\linewidth, height=2cm]{slope.png}
+\includegraphics[width=0.2\linewidth, height=2cm]{Pairwise.png}
+\includegraphics[width=0.2\linewidth, height=2cm]{pairwise2.png}
+\subsection{Pairwise comparisons}
+Slop plot above. A scatter plot could also work for this comparison, ideally with a diagonal line at zero difference. 
+A good alternative to a pair-wise slope plot would be a scatter plot of the paired measurements or a histograms of the differences. This don't necessarily have all the advantages of a slope plot, but can often effectively visualize pair-wise measurements either on their own, or in combination with a slope plot.
+\begin{lstlisting}[language=R]
+ggplot(scores_this_year) + aes(x = score,fill = score_type) +
+geom_density(alpha=0.4)
+ggplot(plot) + aes(x=score_type,y=score,group=time) +
+geom_line(aes(color = self_belief), size = 0.8) + geom_point(size=3)
+p <- ggplot(scores_this_year |> pivot_wider(names_from = score_type, values_from = score)) +
+    aes(x = student_score,
+        y = estimated_class_mean,
+       color = diff) +
+    geom_abline(slope = 1, intercept = 0, color = 'white', size = 3) +
+    geom_point(size = 3) + 
+    # Compare over square plot with same axis extents makes it easier to judge trends
+    scale_x_continuous(limits=c(2, 16)) +
+    scale_y_continuous(limits=c(2, 16)) 
+\end{lstlisting}
 \subsection{Figure composition}
 \begin{lstlisting}[language=Python]
 mpg_weight & hp_weight #Concatenate plots vertically
 mpg_weight | hp_weight #Concatenate plots Horizontally
-plot_grid(hp_weight, mpg_weight) #Concatenate plots Horizontally
-plot_grid(origin_count, mpg_weight, ncol=1) #Concatenate plots vertically
-alt.Chart(cars).mark_circle().encode(...).interactive() #Panning and zooming
+.mark_*().encode(...).interactive() #Panning&zooming
 brush = alt.selection_interval()
-alt.Chart(cars).mark_circle().encode(...).add_params(brush) #Interval selections
+.mark_*().encode(...).add_params(brush) #IntervalSelections
+\end{lstlisting}
+\begin{lstlisting}[language=R]
+plot_grid(hp_weight, mpg_weight) #Horizontally
+plot_grid(origin_count, mpg_weight, ncol=1) # vertical
 \end{lstlisting}
 
-\subsection{Highlighting points with selections}
+\subsection{Selection Intervals}
 \begin{lstlisting}[language=Python]
-brush = alt.selection_interval()
-alt.Chart(cars).mark_circle().encode(
-    x='Horsepower',
-    y='Miles_per_Gallon',
-    color=alt.condition(brush, 'Origin', alt.value('lightgray'))
-).add_params(brush)
-\end{lstlisting}
-
-\subsection{Linking selections across plots}
-\begin{lstlisting}[language=Python]
-brush = alt.selection_interval(resolve='union')  # The default is 'global' #resolve='intersect'
-points = alt.Chart(cars).mark_circle().encode(
-    x='Horsepower',
-    y='Miles_per_Gallon',
-    color=alt.condition(brush, 'Origin', alt.value('lightgray'))
-).add_params(brush)
-points | points.encode(y='Weight_in_lbs')
-\end{lstlisting}
-
-\subsection{Click selections}
-\begin{lstlisting}[language=Python]
-brush = alt.selection_interval()
+#Highlighting points with selections
+brush = alt.selection_interval(resolve='union')  #The default is 'global' #resolve='intersect'
 click = alt.selection_point(fields=['Origin'], on='mouseover')
-points = alt.Chart(cars).mark_circle().encode(
-    x='Horsepower',
-    y='Miles_per_Gallon',
-    color=alt.condition(brush, 'Origin', alt.value('lightgray'))
+alt.Chart(cars).mark_circle().encode(
+    x='col1', y='col2', color=alt.condition(brush, 'Origin', alt.value('lightgray'))
 ).add_params(brush)
+points | points.encode(y='Weight_in_lbs') #Linking selections across plots
 bars = alt.Chart(cars).mark_bar().encode(
-    x='count()',
-    y='Origin',
-    color='Origin',
-    opacity=alt.condition(click, alt.value(0.9), alt.value(0.2))
+    x='count()', y='Origin', color='Origin',
+     opacity=alt.condition(click, alt.value(0.9), alt.value(0.2))
 ).add_params(click)
-points & bars
+points & bars #Click selections
 \end{lstlisting}
+\subsection{Saving plots}
+\smalltext{
+    HTML can be sent as an email attachment. and still have interactive elements.
+}
+\begin{lstlisting}[language=Python]
+plot.save('plot.html',scale_factor=3) #python
+ggsave('plot-r.png',plot,dpi=96) #R
+\end{lstlisting}
+
+
 
 \end{multicols}
 \end{document}
