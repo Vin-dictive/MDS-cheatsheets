@@ -24,26 +24,32 @@
     leftmargin=*, % Sets the left margin to the minimum necessary
     labelsep=0.5em, % You can slightly adjust the space between the bullet and the text
 }
-
 % LISTINGS SETUP for R and Python
 \lstset{
-  basicstyle=\ttfamily\scriptsize\color{black}, % Tiny font for code
+  basicstyle=\ttfamily\scriptsize\color{black},
   backgroundcolor=\color{mygray},
   frame=single,
   frameround=tttt,
-  framesep=3pt,
-  rulesepcolor=\color{black!20},
+  framesep=0pt,        % no padding between code and frame
+  rulecolor=\color{black!20},
+  rulesep=0pt,         % no space between rules
   breaklines=true,
   columns=fullflexible,
   showstringspaces=false,
   commentstyle=\color{gray},
   keywordstyle=\color{blue!80!black},
-  stringstyle=\color{myred}, % Use red for strings to match the custom \code{} style
+  stringstyle=\color{myred},
   breakatwhitespace=true,
-  xleftmargin=0pt,
-  xrightmargin=0pt,
-  aboveskip=0.5ex,
-  belowskip=0.5ex
+  xleftmargin=0pt,     % no left margin
+  xrightmargin=0pt,    % no right margin
+  aboveskip=0pt,       % no space above listing
+  belowskip=0pt,       % no space below listing
+  abovecaptionskip=0pt,
+  belowcaptionskip=0pt,
+  framexleftmargin=0pt,
+  framexrightmargin=0pt,
+  framextopmargin=0pt,
+  framexbottommargin=0pt
 }
 
 % FORMATTING
@@ -99,16 +105,6 @@ Used for ordinal (ordered) categorical features (e.g., "Good", "Average", "Poor"
     \item \textbf{Multiple Ordinal Columns:} Pass a \textbf{list of lists} to the `categories` parameter of `OrdinalEncoder`, where each inner list contains the ordered categories for one column.
 \end{itemize}
 }
-\begin{lstlisting}[language=Python]
-from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
-ohe = OneHotEncoder(drop="if_binary", dtype=int, sparse_output=False)
-ohe_encoded = ohe.fit_transform(grades_df[['col']]).ravel()
-oe = OrdinalEncoder()
-oe_encoded = oe.fit_transform(grades_df[['col']]).ravel()
-data = { "oe_encoded": oe_encoded, 
-         "ohe_encoded": ohe_encoded}
-pd.DataFrame(data)
-\end{lstlisting}
 
 \subsection{Cases where it's OK to break the golden rule}
 \smalltext{
@@ -184,20 +180,6 @@ Treats hyperparameter selection as a large search problem.
     \item \textbf{Final Model:} After finding the best hyperparameters (`best\_params\_` based on `best\_score\_`), it automatically retrains a model on the entire training set with these best settings.
 \end{itemize}
 }
-\begin{lstlisting}[language=Python]
-from sklearn.model_selection import GridSearchCV
-# pipe_svm includes a preprocessor and an SVC
-param_grid = {
-    "svc__gamma": [0.001, 0.1, 10], # Exponential ranges are common
-    "svc__C": [0.1, 1.0, 100],
-}
-gs = GridSearchCV(pipe_svm, param_grid=param_grid, n_jobs=-1) 
-gs.fit(X_train, y_train)
-gs.best_score_ 
-best_C = gs.best_params_['svc__C']
-results = pd.DataFrame(gs.cv_results_)
-gs.score(X_test, y_test) #use the best parameters for scoring test
-\end{lstlisting}
 
 \subsection{Randomized Search: `RandomizedSearchCV`}
 \smalltext{
@@ -209,21 +191,19 @@ gs.score(X_test, y_test) #use the best parameters for scoring test
 \end{itemize}
 }
 \begin{lstlisting}[language=Python]
-from sklearn.model_selection import RandomizedSearchCV
-from scipy.stats import loguniform
-param_dist = {
-  "svc__C": loguniform(1e-3, 1e3),  # Sample log-uniform distribution
-  "svc__gamma": loguniform(1e-5, 1e3),
+from sklearn.model_selection import GridSearchCV
+# pipe_svm includes a preprocessor and an SVC
+param_grid = {
+    "svc__gamma": [0.001, 0.1, 10], # Exponential ranges are common
+    "svc__C": [0.1, 1.0, 100],
 }
-rs = RandomizedSearchCV(
-  pipe_svm, 
-  param_distributions=param_dist, 
-  n_iter=100, # Number of combinations to try
-  n_jobs=-1,
-  return_train_score=True,
-  random_state=123
-  )
-rs.fit(X_train, y_train)
+gs = GridSearchCV(pipe_svm, param_grid=param_grid, n_jobs=-1) 
+gs = RandomizedSearchCV(pipe_svm, param_distributions=param_dist, n_iter=100, # Number of combinations to try, n_jobs=-1, return_train_score=True, random_state=123)
+gs.fit(X_train, y_train)
+gs.best_score_ 
+best_C = gs.best_params_['svc__C']
+results = pd.DataFrame(gs.cv_results_)
+gs.score(X_test, y_test) #use the best parameters for scoring test
 \end{lstlisting}
 
 \subsection{Optimization Bias (Overfitting the Validation Set)}
@@ -235,6 +215,91 @@ rs.fit(X_train, y_train)
 \end{itemize}
 }
 
+\subsection*{Naive Bayes Classifier}
+\textcolor{red}{\textbf{Bernoulli Naive Bayes}} classifier is a variant of the Naive Bayes algorithm primarily used for \textbf{discrete binary data}. It is particularly effective for text classification tasks where features represent whether a certain word \emph{occurs} or \emph{does not occur} in a document.
+\begin{itemize}
+    \item \textbf{Binary Feature Vectors:}This classifier assumes that all feature vectors are binary (0s and 1s). It explicitly models the non-occurrence of a feature, unlike the Multinomial Naive Bayes model. For a document, a feature $x_i$ is 1 if the word is present and 0 if it is absent.
+    \item \textbf{Naive Assumption:} Like all Naive Bayes classifiers, it assumes that the features are \textbf{conditionally independent} given the class $C_k$.
+    \item \textbf{Classification Rule:} The goal is to find the class $\hat{C}$ that maximizes the posterior probability, based on Bayes' theorem:
+    \item \textbf{Conditional Probability (Likelihood):} The likelihood is the probability of a feature $x_i$ occurring (or not occurring) given class $C_k$.
+    where $p_{ik}$ is the probability that feature $i$ occurs (i.e., $x_i = 1$) in a document of class $C_k$.
+    \item \textbf{Smoothing (Additive/Laplace Smoothing):} To prevent zero probabilities when a feature does not occur with a certain class, Laplace smoothing is applied:
+    The default smoothing parameter $\alpha$ (often called \texttt{alpha} in code) is typically 1. High $\alpha$ means overfitting (means we are adding large counts to everything and so we are diluting the data), low means underfitting. 
+\end{itemize}
+\textcolor{red}{\textbf{Gaussian Naive Bayes}}This variant is used when features are continuous.
+\begin{itemize}
+    \item \textbf{Feature Vectors:} Assumed to be continuous and normally distributed. If not make it, using powerTranformer() (e.g., height, temperature)
+    \item \textbf{Conditional Probability (Likelihood):} The likelihood $P(x_i | C_k)$ is calculated using the Probability Density Function (PDF) of the Normal distribution
+    \item \textbf{Training:} The model simply needs to compute the $\mu_{ik}$ and $\sigma_{ik}^2$ for every feature $i$ and every class $C_k$ from the training data. There is no concept of "smoothing" as used in discrete models.
+\end{itemize}
+\begin{lstlisting}[language=Python]
+def gaussian_pdf(x, mean, variance):
+    return (1 / np.sqrt(2 * np.pi * variance)) * np.exp(-np.power(x - mean, 2) / (2 * variance))
+observed_weight = 106
+observed_sugar_content = 11
+likelihoods = {}
+for fruit in ['Apple', 'Orange']:
+    likelihoods[fruit] = {}
+    for feature, observed_value in [('Weight (in grams)', observed_weight), ('Sugar Content (in %)', observed_sugar_content)]:
+        mean = df[df['Fruit'] == fruit][feature].mean()
+        variance = df[df['Fruit'] == fruit][feature].var()
+        likelihoods[fruit][feature + "=" + str(observed_value)] = gaussian_pdf(observed_value, mean, variance)
+\end{lstlisting}
+\subsection*{Linear Models: Core Concepts}
+Linear models constitute a fundamental class of algorithms that make a prediction $\hat{y}$ using a \textbf{linear function} of the input features $\mathbf{x}$:
+where $\mathbf{w}$ is the vector of coefficients (weights) and $b$ is the bias (intercept).
+\begin{itemize}
+    \item \textbf{Linear Regression (Regression):} Predicts a \textbf{continuous} output $\hat{y} \in \mathbb{R}$. It optimizes the loss function (e.g., Mean Squared Error) to minimize the distance between $\hat{y}$ and the true output $y$.
+    \item \textbf{Logistic Regression (Classification):} Predicts a \textbf{probability score} for binary classification. The linear output is passed through the sigmoid function to map it to $[0, 1]$.
+    \item \textbf{Linear Support Vector Machine (Linear SVM):} A classification model that finds the hyperplane with the largest margin separating the classes. It is generally robust and efficient.
+\end{itemize}
 
+\subsection*{Model Parameters and Optimization}
+
+\begin{itemize}
+    \item \textbf{Hyperparameter:} A parameter whose value is set \textbf{prior} to the training process (e.g., $\alpha$ in Lasso/Ridge regularization, C in SVMs). It controls the model's complexity and learning rate.
+    \item \textbf{Interpretation of Coefficients ($w_i$):} The magnitude and sign of a coefficient $w_i$ indicate the strength and direction of the relationship between the feature $x_i$ and the prediction $\hat{y}$, assuming all other features remain constant.
+\end{itemize}
+
+\subsection*{Probability Scores and Functions}
+
+\begin{itemize}
+    \item \textbf{Predicting Probability Scores:} For classification, linear models often output a score that can be interpreted as the probability of belonging to a certain class (e.g., in Logistic Regression).
+    \item \textbf{The Sigmoid Function ($\sigma$):} Used in binary classification (like Logistic Regression) to map the linear output (logit) to a probability between 0 and 1.
+    \item \textbf{Sigmoid vs. Softmax:}
+    \begin{itemize}
+        \item \textbf{Sigmoid:} Used for \textbf{binary classification} or independent multi-label classification.
+        \item \textbf{Softmax:} Used for \textbf{multi-class classification} (one class mutually exclusive from others). It converts a vector of scores into a probability distribution that sums to 1.
+    \end{itemize}
+\end{itemize}
+
+\subsection*{Case Analysis}
+
+For a classification task predicting $P(\text{Class A})$:
+
+\begin{itemize}
+    \item \textbf{Most Confident Cases:} Predictions closest to 0 or 1 (e.g., 0.01 or 0.99). These are cases where the model is highly certain about its classification.
+    \item \textbf{Least Confident Cases:} Predictions closest to the decision boundary (e.g., 0.49 or 0.51). These are cases where the model is uncertain and the data point is near the separating hyperplane.
+    \item \textbf{Over Confident Cases:} High probability predictions (near 0 or 1) that turn out to be \textbf{wrong}. This often indicates poor calibration or overfitting.
+\end{itemize}
+
+\subsection*{Multi-Class Classification}
+
+\begin{itemize}
+    \item \textbf{Methods:} Handled either by extending the linear function to output a score for each class (e.g., using the \textbf{Softmax} function) or by decomposing the problem into multiple binary problems (e.g., One-vs-Rest).
+\end{itemize}
+
+\subsection{Strengths of Linear Models:}
+\begin{itemize}
+    \item \textbf{Interpretability:} Coefficients provide clear insight into feature importance.
+    \item \textbf{Efficiency:} Fast to train and predict, and scale well to large datasets.
+    \item \textbf{Simplicity:} Less prone to overfitting on low-dimensional data.
+\end{itemize}
+\subsection{Limitations of Linear Models:}
+\begin{itemize}
+    \item \textbf{Limited Expressiveness:} Cannot capture complex non-linear relationships without manual feature engineering (e.g., adding polynomial features).
+    \item \textbf{Sensitivity to Outliers:} Especially for Linear Regression, they can be easily skewed by extreme values.
+    \item \textbf{Independence Assumption:} Performance suffers if features are highly dependent on each other.
+\end{itemize}
 \end{multicols}
 \end{document}
