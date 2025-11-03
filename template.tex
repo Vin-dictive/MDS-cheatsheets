@@ -16,7 +16,14 @@
 % Define a custom color for code highlighting and environment
 \definecolor{myred}{RGB}{204, 0, 0} % A strong red
 \definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
-
+\setlist[itemize]{
+    noitemsep,  % Removes vertical space between list items
+    topsep=0pt,  % Removes space before the list
+    partopsep=0pt, % Removes extra space when a list begins mid-paragraph
+    parsep=0pt, % Removes space between paragraphs within an item
+    leftmargin=*, % Sets the left margin to the minimum necessary
+    labelsep=0.5em, % You can slightly adjust the space between the bullet and the text
+}
 % LISTINGS SETUP for R and Python
 \lstset{
   basicstyle=\ttfamily\scriptsize\color{black}, % Tiny font for code
@@ -66,6 +73,11 @@
 \fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
 \pagestyle{empty}
 \begin{multicols}{3}
+\begin{itemize}
+    \item \textbf{`handle\_unknown="ignore"`:} If an unseen category appears during testing/validation, it's ignored, and the resulting one-hot vector will have zeros for all category columns.
+    \item \textbf{`sparse\_output=False`:} Returns a dense NumPy array instead of a sparse matrix.
+    \item \textbf{Binary Features (`drop="if\_binary"`):} For a feature with only two categories (e.g., "yes"/"no"), this argument creates only **one** resulting column (e.g., $1$ for "yes" and $0$ for "no"), avoiding redundancy.
+\end{itemize}
 
 \subsection{Basic Terminology}
 \smalltext{

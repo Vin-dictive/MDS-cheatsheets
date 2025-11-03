@@ -1,0 +1,240 @@
+\documentclass[8pt,landscape]{article}
+
+% PACKAGES
+\usepackage[letterpaper, margin=0.1in]{geometry}
+\usepackage{amsmath, amssymb, geometry}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{booktabs} % For better tables if needed
+
+% Define a custom color for code highlighting and environment
+\definecolor{myred}{RGB}{204, 0, 0} % A strong red
+\definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
+\setlist[itemize]{
+    noitemsep,  % Removes vertical space between list items
+    topsep=0pt,  % Removes space before the list
+    partopsep=0pt, % Removes extra space when a list begins mid-paragraph
+    parsep=0pt, % Removes space between paragraphs within an item
+    leftmargin=*, % Sets the left margin to the minimum necessary
+    labelsep=0.5em, % You can slightly adjust the space between the bullet and the text
+}
+
+% LISTINGS SETUP for R and Python
+\lstset{
+  basicstyle=\ttfamily\scriptsize\color{black}, % Tiny font for code
+  backgroundcolor=\color{mygray},
+  frame=single,
+  frameround=tttt,
+  framesep=3pt,
+  rulesepcolor=\color{black!20},
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  commentstyle=\color{gray},
+  keywordstyle=\color{blue!80!black},
+  stringstyle=\color{myred}, % Use red for strings to match the custom \code{} style
+  breakatwhitespace=true,
+  xleftmargin=0pt,
+  xrightmargin=0pt,
+  aboveskip=0.5ex,
+  belowskip=0.5ex
+}
+
+% FORMATTING
+\setstretch{0.9} % Reduce line spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+% Reduce section spacing and change color
+\sectionfont{\fontsize{8}{9}\selectfont\bfseries\color{black}} % Main section font: 8pt
+% Reduce subsection spacing and make subsections blue
+\makeatletter
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
+    {0.1ex}% space before subsection
+    {0.1ex}% space after subsection
+    {\fontsize{8}{9}\bfseries\color{blue}}} % Subsection font: 8pt
+\makeatother
+
+% Custom command for red-highlighted code/commands (for in-line use)
+\newcommand{\code}[1]{\textcolor{myred}{\texttt{#1}}}
+
+% Custom small text wrapper - ensuring 8pt for body text
+\newcommand{\smalltext}[1]{%
+  {\fontsize{8}{9}\selectfont\sloppy #1\par}%
+}
+
+% DOCUMENT START
+\begin{document}
+\fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
+\pagestyle{empty}
+\begin{multicols}{3}
+
+\subsection{Preprocessing Categorical Features}
+\smalltext{
+Preprocessing is crucial for preparing data for machine learning models.
+}
+
+\subsection{One-Hot Encoding (OHE)}
+\smalltext{
+Used for nominal (unordered) categorical features. It creates a new binary column for each category.
+\begin{itemize}
+    \item \textbf{`handle\_unknown="ignore"`:} If an unseen category appears during testing/validation, it's ignored, and the resulting one-hot vector will have zeros for all category columns.
+    \item \textbf{`sparse\_output=False`:} Returns a dense NumPy array instead of a sparse matrix.
+    \item \textbf{Binary Features (`drop="if\_binary"`):} For a feature with only two categories (e.g., "yes"/"no"), this argument creates only one resulting column (e.g., $1$ for "yes" and $0$ for "no"), avoiding redundancy.
+\end{itemize}
+}
+\subsection{Ordinal Encoding}
+\smalltext{
+Used for ordinal (ordered) categorical features (e.g., "Good", "Average", "Poor"). It maps each category to an integer value.
+\begin{itemize}
+    \item \textbf{Difference from OHE:} Ordinal encoding uses a single column of integers, assuming an order. OHE uses multiple binary columns and assumes no order.
+    \item \textbf{Ordering:} Manually ordering categories is important to correctly reflect the underlying relationship.
+    \item \textbf{Unknown Categories:} Without careful configuration, an unknown category during testing/validation could lead to an error or an arbitrary value assignment, impacting model performance.
+    \item \textbf{Multiple Ordinal Columns:} Pass a \textbf{list of lists} to the `categories` parameter of `OrdinalEncoder`, where each inner list contains the ordered categories for one column.
+\end{itemize}
+}
+\begin{lstlisting}[language=Python]
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
+ohe = OneHotEncoder(drop="if_binary", dtype=int, sparse_output=False)
+ohe_encoded = ohe.fit_transform(grades_df[['col']]).ravel()
+oe = OrdinalEncoder()
+oe_encoded = oe.fit_transform(grades_df[['col']]).ravel()
+data = { "oe_encoded": oe_encoded, 
+         "ohe_encoded": ohe_encoded}
+pd.DataFrame(data)
+\end{lstlisting}
+
+\subsection{Cases where it's OK to break the golden rule}
+\smalltext{
+If it's some fix number of categories. For example, if it's something like provinces in Canada or majors taught at UBC. We know the categories in advance and this is one of the cases where it might be OK to violate the golden rule and pass the list of known/possible categories. It's OK to incorporate human knowledge in the model.
+}
+
+\subsection{Text Data Representation (NLP)}
+
+\smalltext{
+Raw text data (e.g., SMS, emails) has no fixed length, so it needs to be transformed into a fixed-length numerical representation.
+\begin{itemize}
+    \item \textbf{Popular Representations:} Bag-of-Words (BOW), TF-IDF, and Embedding representations.
+\end{itemize}
+}
+
+\subsection{CountVectorizer}
+\smalltext{
+Converts a collection of text documents (the \textbf{corpus}) into a matrix of token counts (Bag-of-Words representation).
+\begin{itemize}
+    \item \textbf{Output Structure:} Each row is a document, and each column is a unique word (token) in the vocabulary. The cell value is the word count in that document.
+    \item \textbf{Preprocessing:} By default, `CountVectorizer` performs \textbf{lowercasing} and gets rid of \textbf{punctuation}.
+    \item \textbf{Data Type:} `fit\_transform` expects a \textbf{Series} of text, unlike other transformers that take a DataFrame.
+    \item \textbf{Sparse Matrix:} The output is typically a Compressed Sparse Row (CSR) matrix because most documents only contain a small subset of the total vocabulary, leading to huge computational savings by only storing non-zero elements.
+\end{itemize}
+}
+\begin{lstlisting}[language=Python]
+from sklearn.feature_extraction.text import CountVectorizer
+vec = CountVectorizer() # X_counts is a sparse matrix of word counts
+X_counts = vec.fit_transform(toy_df["sms"])
+\end{lstlisting}
+
+\subsection{CountVectorizer Key Hyperparameters}
+\smalltext{
+\begin{itemize}
+    \item \textbf{`binary=True`:} Uses presence/absence ($1$ or $0$) of words instead of their counts.
+    \item \textbf{`max\_features`:} Only considers the top $k$ most frequent words in the corpus, controlling the number of features.
+    \item \textbf{`max\_df` / `min\_df`:} Ignores words that occur in too many (e.g., $90\%$ of documents - potentially a stopword) or too few documents, respectively.
+    \item \textbf{`ngram\_range`:} Considers sequences of words (n-grams) instead of single words.
+\end{itemize}
+}
+
+\subsection{Discretizing (Binning)}
+\smalltext{
+The process of transforming numeric features into categorical features.
+\begin{itemize}
+    \item \textbf{Purpose:} Easier interpretation, maintaining privacy (e.g., grouping ages), or capturing non-linear relationships in linear models.
+    \item \textbf{`sklearn` Tool:} Use the `KBinsDiscretizer` transformer.
+    \item \textbf{Example}: You might want to group ages into categories like children, teenager, young adults, middle-aged, and seniors for easier interpretation or to maintain privacy, or to capture non-linear relationships in linear models.
+
+\end{itemize}
+}
+
+\subsection{Hyperparameter Optimization Motivation}
+\smalltext{
+The fundamental goal of supervised machine learning is to generalize beyond the training data. We use cross-validation (CV) on the training set to tune hyperparameters (settings not learned from data, like C or `max\_depth`) and approximate the generalization error.
+\begin{itemize}
+    \item \textbf{Why it's needed:} Poor hyperparameters can lead to an underfit or overfit model.
+    \item \textbf{Methods:} Manual (expert knowledge) or Data-driven (Automated) optimization.
+\end{itemize}
+}
+\subsection{Automated Hyperparameter Search}
+\smalltext{
+Treats hyperparameter selection as a large search problem. 
+}
+\includegraphics[width=0.5\linewidth, height=2cm]{opti.png}
+
+\subsection{Exhaustive Grid Search: `GridSearchCV`}
+\smalltext{
+\begin{itemize}
+    \item \textbf{How it works:} Evaluates every possible combination (the Cartesian product) using cross-validation.
+    \item \textbf{Cost:} The required number of models grows exponentially with the number of hyperparameters. E.g., 5 hyperparameters with 10 values each means $10^5$ CV folds.
+    \item \textbf{Pipeline Syntax:} Hyperparameters in a pipeline are accessed using a double underscore (`\_ \_`), e.g., `svc\_ \_C` or `columntransformer\_ \_countvectorizer\_ \_max\_features`.
+    \item \textbf{Final Model:} After finding the best hyperparameters (`best\_params\_` based on `best\_score\_`), it automatically retrains a model on the entire training set with these best settings.
+\end{itemize}
+}
+\begin{lstlisting}[language=Python]
+from sklearn.model_selection import GridSearchCV
+# pipe_svm includes a preprocessor and an SVC
+param_grid = {
+    "svc__gamma": [0.001, 0.1, 10], # Exponential ranges are common
+    "svc__C": [0.1, 1.0, 100],
+}
+gs = GridSearchCV(pipe_svm, param_grid=param_grid, n_jobs=-1) 
+gs.fit(X_train, y_train)
+gs.best_score_ 
+best_C = gs.best_params_['svc__C']
+results = pd.DataFrame(gs.cv_results_)
+gs.score(X_test, y_test) #use the best parameters for scoring test
+\end{lstlisting}
+
+\subsection{Randomized Search: `RandomizedSearchCV`}
+\smalltext{
+\begin{itemize}
+    \item \textbf{How it works:} Samples configurations randomly from the defined hyperparameter space until a budget (`n\_iter`) is exhausted. It doesn't check every combination.
+    \item \textbf{Advantages:} Faster than Grid Search, especially when the number of hyperparameters is large. It's more likely to find important parameters because it's not wasting time exploring useless parameter values.
+    \item \textbf{Distributions:} Can draw values from continuous probability distributions (like `loguniform` for $C$ or `gamma`) instead of discrete lists.
+    \item \textbf{Recommendation:} Generally recommended over `GridSearchCV`, as it can explore the search space more effectively for a given computational budget.
+\end{itemize}
+}
+\begin{lstlisting}[language=Python]
+from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import loguniform
+param_dist = {
+  "svc__C": loguniform(1e-3, 1e3),  # Sample log-uniform distribution
+  "svc__gamma": loguniform(1e-5, 1e3),
+}
+rs = RandomizedSearchCV(
+  pipe_svm, 
+  param_distributions=param_dist, 
+  n_iter=100, # Number of combinations to try
+  n_jobs=-1,
+  return_train_score=True,
+  random_state=123
+  )
+rs.fit(X_train, y_train)
+\end{lstlisting}
+
+\subsection{Optimization Bias (Overfitting the Validation Set)}
+\smalltext{
+\begin{itemize}
+    \item \textbf{Concept:} When you search over a huge number of hyperparameter combinations, you risk getting a model with a seemingly low cross-validation error purely by chance (similar to taking many random tests and picking the best one).
+    \item \textbf{The effect:} The `best\_score\_` (CV score) becomes an overly optimistic estimate of the model's true performance.
+    \item \textbf{Solution:} This is why we must use a completely separate Test Set for the final evaluation (`gs.score(X\_test, y\_test)`). The test score is the true, unbiased estimate of generalization performance.
+\end{itemize}
+}
+
+
+\end{multicols}
+\end{document}
