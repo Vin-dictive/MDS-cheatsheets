@@ -23,7 +23,11 @@
   showstringspaces=false,
   keywordstyle=\color{blue},
   commentstyle=\color{gray},
-  stringstyle=\color{orange}
+  stringstyle=\color{orange},
+  xleftmargin=0pt,     % no left margin
+  xrightmargin=0pt,    % no right margin
+  aboveskip=0pt,       % no space above listing
+  belowskip=0pt,       % no space below listing
 }
 % FORMATTING
 \setstretch{0.9}
@@ -66,21 +70,18 @@ Regardless of the parent population distribution whose mean is $\mu$ and standar
 the Central Limit Theorem (CLT) states that the sampling distribution of the sample mean $\bar{X}$ 
 converges to a Normal distribution with mean $\mu$ and standard deviation $\dfrac{\sigma}{\sqrt{n}}$ 
 as the sample size $n$ increases, when sampling with replacement.
-The above CLT conditions can be mathematically defined as:
-\[
-\bar{X} \sim \mathcal{N}\left(\mu, \frac{\sigma}{\sqrt{n}}\right)
-\quad \text{as} \quad n \to \infty
-\]
 \subsection{Confidence Interval for Continuous Cases}
-Note we need to define \textbf{SE}:
-\[
-\text{Confidence Interval} = \text{Point Estimate} \pm 
-\underbrace{Z_{1-\alpha/2} \times \text{SE}}_{\text{MoE}}
-\]
-From the CLT definition, the \textbf{standard error} would be:
-\[
-\text{SE} = \frac{\hat{\sigma}}{\sqrt{n}}
-\]
+Note we need to define \textbf{SE}:$\text{Confidence Interval} = \text{Point Estimate} \pm \underbrace{Z\_{1-\alpha/2} \times \text{SE}}\_{\text{MoE}}$ \\
+From the CLT definition, the \textbf{standard error} would be:$\text{SE} = \frac{\hat{\sigma}}{\sqrt{n}}$ \\
+
+\textbf{CL} - \textbf{$\alpha$} - \textbf{$\alpha/2$} - \textbf{$z\_{\alpha/2}$-Critical value} \\
+        90\% - 0.10 - 0.050 - 1.645 \\
+        95\% - 0.05 - 0.025 - 1.960 \\
+        98\% - 0.02 - 0.010 - 2.326 \\
+        99\% - 0.01 - 0.005 - 2.576 \\
+        99.5\% - 0.005 - 0.0025 - 2.807 \\
+        99.9\% - 0.001 - 0.0005 - 3.291 \\
+  
 }
 \begin{lstlisting}[language=R]
 #Calculate proportions
@@ -143,7 +144,8 @@ If p-value  $ < \alpha$, then we have enough statistical evidence to reject the 
 }
 
 \section{Continuous}
-\includegraphics[width=0.9\linewidth]{t-test.png}
+\includegraphics[width=0.5\linewidth, height=2cm]{t-test.png}
+
 \subsection{One-sample t-test}
 \subsection{two-sample t-test}
 \begin{lstlisting}[language=R]
@@ -214,15 +216,61 @@ p_value <- summary(res)[[1]]$'Pr(>F)'[1]
 }
 
 \begin{lstlisting}[language=R]
+qqnorm(res3$residuals)
 shapiro.test(res$residuals)
 leveneTest(flipper_length_mm ~ species, data = penguins)
 \end{lstlisting}
 
 \subsection{Nonparametric Alternative: Kruskal-Wallis Test}  
+\begin{lstlisting}[language=R]
+kruskal.test(bill_length_mm ~ species, data = penguins)
+\end{lstlisting}
 \smalltext{
 When the normality assumption is violated, the Kruskal-Wallis Test serves as a robust alternative, comparing group medians based on the ranks of the data rather than the raw values. \\
 When comparing two groups in ANOVA, the $p$-value matches the two-sample $t$-test, and the $F$-statistic equals the square of the $t$-statistic ($\text{F} \approx t^2$). \\ 
-When comparing two categories in the $\chi^2$ test for independence, the test statistic and $p$-value match the two-sample proportion test.\\
+Since the Kruskal-Wallis test avoids assumptions about data distribution and variability, we make interpretations on the median (not mean), which better reflects the central tendency in the case of outliers or skewness.
+}
+\subsection*{Type I Error ($\alpha$)}
+\smalltext{
+
+\begin{itemize}
+    \item We commit a \textbf{Type I error} if we \textbf{reject $H_0$} when, in fact, it is \textbf{true} (a \textbf{false positive}).
+    \item The Type I error rate is represented by the symbol $\alpha$, known as the \textbf{significance level}.
+    \item It's the primary error rate we control (e.g., using the rule $p\text{-value} < \alpha$).
+    \item \textbf{Conditional Probability:} $ \alpha = P(\text{reject } H_0 | H_0 \text{ true}) $
+\end{itemize}
+
+\subsection*{Type II Error ($\beta$)}
+\begin{itemize}
+    \item We commit a \textbf{Type II error} if we \textbf{fail to reject $H_0$} when, in fact, it is \textbf{not true} (a \textbf{false negative}).
+    \item The Type II error rate is denoted by the symbol $\beta$.
+    \item Its complement, $(1 - \beta)$, is the \textbf{power of the test} (our ability to correctly reject a false null hypothesis).
+    \item \textbf{Conditional Probability:} $ \beta = P(\text{fail to reject } H_0 | H_0 \text{ false}) $
+\end{itemize}
+}
+\section*{The Power of a Test}
+\smalltext{The power of a test ($1-\beta$) is the true positive rate. In other words, it is the probability of correctly rejecting $H_O$ when it should be rejected because it is false.
+pnorm(qnorm(0.025), mean=-3, sd=1)
+}
+
+\section*{Cohen’s Effect Size}
+\smalltext{
+  There are different ways to compute effect size, and a popular one is called Cohen’s effect size d
+}
+
+\section*{The $p$-value}
+\smalltext{
+Intuitively, a small p-value indicates that your observed test statistic is highly unlikely under $H_O$
+}
+
+\section*{The $p$-hacking}
+\smalltext{
+The misuse of p-values in scientific research include cherry-picking data in order to get a “significant result” in a given statistical study.
+}
+\section*{Double Dipping}
+\smalltext{
+if we look at all of the data and then use that same data to test our hypotheses it can lead to an issue in inference called double dipping. The consequence of this is our 
+p-values are no longer controlling for the type I error rate, and results could be misleading.
 }
 
 
