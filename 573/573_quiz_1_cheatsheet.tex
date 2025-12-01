@@ -1,0 +1,256 @@
+\documentclass[8pt,landscape]{article}
+
+% PACKAGES
+\usepackage[letterpaper, margin=0.1in]{geometry}
+\usepackage{amsmath, amssymb, geometry}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{booktabs} % For better tables if needed
+
+% Define a custom color for code highlighting and environment
+\definecolor{myred}{RGB}{204, 0, 0} % A strong red
+\definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
+\setlist[itemize]{
+    noitemsep,  % Removes vertical space between list items
+    topsep=0pt,  % Removes space before the list
+    partopsep=0pt, % Removes extra space when a list begins mid-paragraph
+    parsep=0pt, % Removes space between paragraphs within an item
+    leftmargin=*, % Sets the left margin to the minimum necessary
+    labelsep=0.5em, % You can slightly adjust the space between the bullet and the text
+}
+% LISTINGS SETUP for R and Python
+\lstset{
+  basicstyle=\ttfamily\scriptsize\color{black},
+  backgroundcolor=\color{mygray},
+  frame=single,
+  frameround=tttt,
+  framesep=0pt,        % no padding between code and frame
+  rulecolor=\color{black!20},
+  rulesep=0pt,         % no space between rules
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  commentstyle=\color{gray},
+  keywordstyle=\color{blue!80!black},
+  stringstyle=\color{myred},
+  breakatwhitespace=true,
+  xleftmargin=0pt,     % no left margin
+  xrightmargin=0pt,    % no right margin
+  aboveskip=0pt,       % no space above listing
+  belowskip=0pt,       % no space below listing
+  abovecaptionskip=0pt,
+  belowcaptionskip=0pt,
+  framexleftmargin=0pt,
+  framexrightmargin=0pt,
+  framextopmargin=0pt,
+  framexbottommargin=0pt
+}
+
+% FORMATTING
+\setstretch{0.9} % Reduce line spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+% Reduce section spacing and change color
+\sectionfont{\fontsize{8}{9}\selectfont\bfseries\color{black}} % Main section font: 8pt
+% Reduce subsection spacing and make subsections blue
+\makeatletter
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
+    {0.1ex}% space before subsection
+    {0.1ex}% space after subsection
+    {\fontsize{8}{9}\bfseries\color{blue}}} % Subsection font: 8pt
+\makeatother
+
+% Custom command for red-highlighted code/commands (for in-line use)
+\newcommand{\code}[1]{\textcolor{myred}{\texttt{#1}}}
+
+% Custom small text wrapper - ensuring 8pt for body text
+\newcommand{\smalltext}[1]{%
+  {\fontsize{8}{9}\selectfont\sloppy #1\par}%
+}
+
+% DOCUMENT START
+\begin{document}
+\fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
+\pagestyle{empty}
+\begin{multicols}{3}
+\subsection{ML Workflow}
+\begin{itemize}
+    \item Data collection
+    \item Data cleaning, splitting
+    \item Data exploration (EDA)
+    \item Preprocessing, Feature engineering
+    \item Feature selection, Model building
+    \item Evaluation, model selection
+    \item Test data predictions, visualizations, possible deployment
+\end{itemize}
+
+\subsection{Confusion matrix}
+\smalltext{
+  Instead of just reporting the accuracy, which tells us what proportion of the model predictions are correct, we can look into how the model predictions are correct and incorrect. A common way of doing this is to create a confusion matrix which shows how each class' actual and predicted label.
+}
+\begin{lstlisting}[language=Python]
+cm = ConfusionMatrixDisplay.from_estimator(pipe, X_valid, y_valid, values_format="d")
+confusion_matrix(y_valid, pipe.predict(X_valid))
+confusion_matrix(y_train, cross_val_predict(pipe, X_train, y_train))
+\end{lstlisting}
+\begin{itemize}
+    \item Perfect prediction has all values down the diagonal
+    \item Off diagonal entries can often tell us about what is being mis-predicted
+    \item Probably the missed fradulent transactions since they would be very costly! There is still some cost associated with investigating the non-fradulent transactions so we need to consider that as well, but to a lesser extent.
+\end{itemize}
+\smalltext{
+\textbf{Dummy Confusion Matrix / Confusion Matrix}
+}
+\includegraphics[width=0.50\linewidth, height=2.5cm]{confusion.png}
+\smalltext{
+\textbf{Disease test:} It's worse to miss someone who actually has the disease (false negative) because they won't get the treatment they need. If we wrongly think someone has the disease (false positive), a doctor will check before treating them, so it's less harmful.\\
+\textbf{Spam filter:} It's worse to mark a real email as spam (false positive) because the person might never see an important message. If a spam email gets through (false negative), you can just delete it yourself.
+} 
+\subsection{Confusion matrix with cross-validation}
+\smalltext{
+  This adds up all the values of the TP, TN, FP, FN from the different CV folds, so that each part of the data is evaluated once (since we do crossvalidation with non-overlapping folds).
+}
+\begin{lstlisting}[language=Python]
+confusion_matrix(y_train, cross_val_predict(pipe, X_train, y_train))
+ConfusionMatrixDisplay.from_predictions #used from CV same as above
+\end{lstlisting}
+
+\subsection{Precision}
+\smalltext{
+Precision is the ability of the classifier to putting a positive label on a positive observation. You can remember this as “How precise are the model's predictions?”. \\
+$Precision = TP/(TP+FP)$
+}
+
+\subsection{Recall}
+\smalltext{
+Recall is the ability of the classifier to find all the positive samples. You can remember it as “What proportion of the real positives the did the model recall. \\
+$Recall = TP/(TP+FN)$
+}
+
+\begin{lstlisting}[language=Python]
+TP, FN, FP, TN = confusion_matrix(y_valid, pipe.predict(X_valid)).flatten()
+precision_score(y_valid, pipe.predict(X_valid), pos_label='Fraud')
+recall_score(y_valid, pipe.predict(X_valid), pos_label='Fraud')
+\end{lstlisting}
+
+\subsection{Drawbacks of precision and recall - F1 Score}
+\smalltext{
+F1-score combines precision and recall to give one score, which could be used in hyperparameter optimization. It is the harmonic mean of precision and recall.
+In the F1 score, both the precision and recall are regarded as equally important.
+}
+\begin{lstlisting}[language=Python]
+f1_score = (2 * precision * recall) / (precision + recall)
+f1_score(y_valid, pipe.predict(X_valid), pos_label='Fraud')  # Recall and precision equally important
+\end{lstlisting}
+\subsection{F$\beta$ Score}
+\smalltext{
+However, in real life applications we might care more about one than the other but still want to hav a single number. 
+For this we often use the general \textbf{F$\beta$ Score}, where beta is the weight of recall vs precision.
+}
+\begin{lstlisting}[language=Python]
+fbeta_score(y_valid, pipe.predict(X_valid), pos_label='Fraud', beta=1)  # Same as F1
+fbeta_score(y_valid, pipe.predict(X_valid), pos_label='Fraud', beta=2)  # Recall twice as important
+\end{lstlisting}
+
+\subsection{Classification report}
+\smalltext{
+There is a convenient function called classification\_report in sklearn which prints out the three metrics we have discussed all at once.
+}
+\begin{lstlisting}[language=Python]
+classification_report(y_valid, pipe.predict(X_valid))
+\end{lstlisting}
+
+\subsection{Cross validation with different metrics}
+\smalltext{
+We can pass different evaluation metrics with scoring argument of cross\_validate.
+}
+
+\subsection{Precision/Recall tradeoff}
+\smalltext{
+By default, predictions use the threshold of 0.5. If predict\_proba > 0.5, predict “fraud” else predict “non-fraud”. We can see this by manually typing in the 0.5 threshold and getting the same results as above. \\
+Suppose for your business it is more costly to miss fraudulent transactions and suppose you want to achieve a recall of at least 75\% for the “fraud” class. (Also called \textbf{Operating point}) \\
+If you identify more things as “fraud”, recall is going to increase but there are likely to be more false positives.
+}
+\textbf{Decreasing the threshold}
+\begin{itemize}
+    \item Using a lower bar to predict fraud.
+    \item You accept more false positives in exchange for gaining more true positives.
+    \item Recall will either stay the same or increase.
+    \item Precision will likely decrease, though it can sometimes increase if all newly added predictions are true positives.
+\end{itemize}
+\textbf{Increasing the threshold}
+\begin{itemize}
+    \item Using a higher bar to predict fraud.
+    \item Recall will decrease or stay the same.
+    \item Precision will likely increase, though it may decrease if true positives drop without reducing false positives.
+\end{itemize}
+
+\subsection{Precision-recall curve}
+\smalltext{
+Often, when developing a model, it's not always clear what the operating point will be and to understand the the model better, it's informative to look at all possible thresholds and corresponding trade-offs of precision and recall in a plot. This type of plot is often called a PR curve, and the top-right would be a perfect classifier (precision = recall = 1).
+}
+% \includegraphics[width=0.50\linewidth, height=2.5cm]{pr.png}
+\begin{itemize}
+    \item Usually the goal is to keep recall high as precision goes up.
+\end{itemize}
+
+\subsection{AP score}
+\begin{itemize}
+    \item one number summarizing the PR plot
+    \item One way to do this is by computing the area under the PR curve.
+    \item Called average precision 
+    \item AP score has a value between 0 (worst) and 1 (best).
+\end{itemize}
+
+\subsection{AP vs. F1-score}
+\begin{itemize}
+    \item F1 score is for a given threshold and measures the quality of predict.
+    \item AP score is a summary across thresholds and measures the quality of predict\_proba
+    \item Optimizing towards a high F1 score means that you find the model that performs the best at the default decision threshold while considering both recall and precision
+    \item Optimizing towards a high AP score means that you get the model that performs the best over all possible decision thresholds, which could give you more flexibility in your tradeoffs between precision and recall when deciding on a decision threshold.
+\end{itemize}
+
+\subsection{Receiver Operating Characteristic (ROC) curve}
+\begin{itemize}
+    \item Another commonly used tool to analyze the behavior of classifiers at different thresholds.
+    \item Similar to PR curve, it considers all possible thresholds for a given classifier given by predict\_proba but instead of precision and recall it plots false positive rate (FPR) and true positive rate (TPR or recall).
+    \item FPR = FP/(FP+TN)
+    \item The ideal curve is close to the top left. Classifier with high recall while keeping low false positive rate.
+\end{itemize}
+% \includegraphics[width=0.50\linewidth, height=2.5cm]{ROC.png}
+
+\subsection{Which type of error is important in imbalanced}
+\begin{itemize}
+    \item False positives (FPs) and false negatives (FNs) have quite different real-world consequences.
+    \item In PR curve and ROC curve, we saw how changing the prediction threshold can change FPs and FNs.
+    \item We can then pick the threshold that's appropriate for our problem.
+    \item if we want high recall, we may use a lower threshold (e.g., a threshold of 0.1). We'll then catch more fraudulent transactions. Let's first see the report with the standard 0.5 threshold.
+\end{itemize}
+
+\subsection{Handling imbalanced}
+\smalltext{
+  Undersampling, Oversampling, Random oversampling, SMOTE: Synthetic Minority Over-sampling Technique, Changing the training procedure - class\_weight.
+  All sklearn classifiers have a parameter called class\_weight, For example, maybe a false negative is 10x more problematic than a false positive.
+}
+\begin{itemize}
+    \item Recall is much better but precision has dropped a lot; we have many false positives.
+    \item We can optimize class\_weight using hyperparameter optimization for your specific problem.
+    \item Changing the class weight will generally reduce accuracy.
+    \item if we want high recall, we may use a lower threshold (e.g., a threshold of 0.1). We'll then catch more fraudulent transactions. Let's first see the report with the standard 0.5 threshold.
+\end{itemize}
+
+\subsection{Stratified Splits}
+\begin{itemize}
+    \item Well, it's no longer a random sample, which is probably theoretically bad, but not that big of a deal.
+    \item It can be especially useful in multi-class, say if you have one class with very few cases.
+\end{itemize}
+
+\end{multicols}
+\end{document}
