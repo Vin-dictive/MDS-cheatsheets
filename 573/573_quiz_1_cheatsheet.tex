@@ -58,7 +58,13 @@
 \setlength{\parskip}{0pt}
 
 % Reduce section spacing and change color
-\sectionfont{\fontsize{8}{9}\selectfont\bfseries\color{black}} % Main section font: 8pt
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{2}{0pt}%
+    {0.1ex}% space before section
+    {0.1ex}% space after section
+    {\fontsize{8}{9}\bfseries\color{red}}} % section font: 8pt
+\makeatother
+
 % Reduce subsection spacing and make subsections blue
 \makeatletter
 \renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
@@ -80,21 +86,12 @@
 \fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
 \pagestyle{empty}
 \begin{multicols}{3}
-\subsection{ML Workflow}
-\begin{itemize}
-    \item Data collection
-    \item Data cleaning, splitting
-    \item Data exploration (EDA)
-    \item Preprocessing, Feature engineering
-    \item Feature selection, Model building
-    \item Evaluation, model selection
-    \item Test data predictions, visualizations, possible deployment
-\end{itemize}
-
-\subsection{Confusion matrix}
+\section{ML Workflow}
 \smalltext{
-  Instead of just reporting the accuracy, which tells us what proportion of the model predictions are correct, we can look into how the model predictions are correct and incorrect. A common way of doing this is to create a confusion matrix which shows how each class' actual and predicted label.
+Data collection - Data cleaning, splitting - EDA - Preprocessing, Feature engineering - Feature selection, Model building - Evaluation, model selection - Test data predictions, visualizations, possible deployment
 }
+
+\section{Confusion matrix}
 \begin{lstlisting}[language=Python]
 cm = ConfusionMatrixDisplay.from_estimator(pipe, X_valid, y_valid, values_format="d")
 confusion_matrix(y_valid, pipe.predict(X_valid))
@@ -103,12 +100,9 @@ confusion_matrix(y_train, cross_val_predict(pipe, X_train, y_train))
 \begin{itemize}
     \item Perfect prediction has all values down the diagonal
     \item Off diagonal entries can often tell us about what is being mis-predicted
-    \item Probably the missed fradulent transactions since they would be very costly! There is still some cost associated with investigating the non-fradulent transactions so we need to consider that as well, but to a lesser extent.
 \end{itemize}
-\smalltext{
-\textbf{Dummy Confusion Matrix / Confusion Matrix}
-}
-\includegraphics[width=0.50\linewidth, height=2.5cm]{confusion.png}
+\includegraphics[width=0.50\linewidth]{confusion.png}
+
 \smalltext{
 \textbf{Disease test:} It's worse to miss someone who actually has the disease (false negative) because they won't get the treatment they need. If we wrongly think someone has the disease (false positive), a doctor will check before treating them, so it's less harmful.\\
 \textbf{Spam filter:} It's worse to mark a real email as spam (false positive) because the person might never see an important message. If a spam email gets through (false negative), you can just delete it yourself.
@@ -167,7 +161,7 @@ There is a convenient function called classification\_report in sklearn which pr
 classification_report(y_valid, pipe.predict(X_valid))
 \end{lstlisting}
 
-\subsection{Cross validation with different metrics}
+\section{Cross validation with different metrics}
 \smalltext{
 We can pass different evaluation metrics with scoring argument of cross\_validate.
 }
@@ -192,15 +186,22 @@ If you identify more things as “fraud”, recall is going to increase but ther
     \item Precision will likely increase, though it may decrease if true positives drop without reducing false positives.
 \end{itemize}
 
-\subsection{Precision-recall curve}
+\subsection{Precision-recall curve - Fig1}
 \smalltext{
 Often, when developing a model, it's not always clear what the operating point will be and to understand the the model better, it's informative to look at all possible thresholds and corresponding trade-offs of precision and recall in a plot. This type of plot is often called a PR curve, and the top-right would be a perfect classifier (precision = recall = 1).
 }
-% \includegraphics[width=0.50\linewidth, height=2.5cm]{pr.png}
 \begin{itemize}
     \item Usually the goal is to keep recall high as precision goes up.
 \end{itemize}
-
+\subsection{Receiver Operating Characteristic (ROC) curve - Fig2}
+\begin{itemize}
+    \item Another commonly used tool to analyze the behavior of classifiers at different thresholds.
+    \item Similar to PR curve, it considers all possible thresholds for a given classifier given by predict\_proba but instead of precision and recall it plots false positive rate (FPR) and true positive rate (TPR or recall).
+    \item FPR = FP/(FP+TN)
+    \item The ideal curve is close to the top left. Classifier with high recall while keeping low false positive rate.
+\end{itemize}
+\includegraphics[width=0.50\linewidth, height=2.5cm]{pr.png}
+\includegraphics[width=0.50\linewidth, height=2.5cm]{ROC.png}
 \subsection{AP score}
 \begin{itemize}
     \item one number summarizing the PR plot
@@ -217,33 +218,25 @@ Often, when developing a model, it's not always clear what the operating point w
     \item Optimizing towards a high AP score means that you get the model that performs the best over all possible decision thresholds, which could give you more flexibility in your tradeoffs between precision and recall when deciding on a decision threshold.
 \end{itemize}
 
-\subsection{Receiver Operating Characteristic (ROC) curve}
-\begin{itemize}
-    \item Another commonly used tool to analyze the behavior of classifiers at different thresholds.
-    \item Similar to PR curve, it considers all possible thresholds for a given classifier given by predict\_proba but instead of precision and recall it plots false positive rate (FPR) and true positive rate (TPR or recall).
-    \item FPR = FP/(FP+TN)
-    \item The ideal curve is close to the top left. Classifier with high recall while keeping low false positive rate.
-\end{itemize}
-% \includegraphics[width=0.50\linewidth, height=2.5cm]{ROC.png}
 
-\subsection{Which type of error is important in imbalanced}
+
+\section{Which type of error is important in imbalanced}
 \begin{itemize}
     \item False positives (FPs) and false negatives (FNs) have quite different real-world consequences.
     \item In PR curve and ROC curve, we saw how changing the prediction threshold can change FPs and FNs.
     \item We can then pick the threshold that's appropriate for our problem.
-    \item if we want high recall, we may use a lower threshold (e.g., a threshold of 0.1). We'll then catch more fraudulent transactions. Let's first see the report with the standard 0.5 threshold.
+    \item if we want high recall, we may use a lower threshold (e.g., a threshold of 0.1). We'll then catch more fraudulent transactions. 
 \end{itemize}
 
 \subsection{Handling imbalanced}
 \smalltext{
   Undersampling, Oversampling, Random oversampling, SMOTE: Synthetic Minority Over-sampling Technique, Changing the training procedure - class\_weight.
-  All sklearn classifiers have a parameter called class\_weight, For example, maybe a false negative is 10x more problematic than a false positive.
+  All sklearn classifiers have a parameter called \textbf{class\_weight}, For example, maybe a false negative is 10x more problematic than a false positive.
 }
 \begin{itemize}
     \item Recall is much better but precision has dropped a lot; we have many false positives.
     \item We can optimize class\_weight using hyperparameter optimization for your specific problem.
     \item Changing the class weight will generally reduce accuracy.
-    \item if we want high recall, we may use a lower threshold (e.g., a threshold of 0.1). We'll then catch more fraudulent transactions. Let's first see the report with the standard 0.5 threshold.
 \end{itemize}
 
 \subsection{Stratified Splits}
@@ -251,6 +244,79 @@ Often, when developing a model, it's not always clear what the operating point w
     \item Well, it's no longer a random sample, which is probably theoretically bad, but not that big of a deal.
     \item It can be especially useful in multi-class, say if you have one class with very few cases.
 \end{itemize}
+
+\subsection{Tuning alpha hyperparameter of Ridge}
+\begin{itemize}
+    \item This is like C in LogisticRegression but, annoyingly, alpha is the inverse of C.
+    \item Smaller alpha: lower training error (overfitting)
+    \item Higher values of alpha means a more restricted model.
+    \item The values of coefficients are likely to be smaller for higher values of alpha compared to lower values of alpha.
+    \item RidgeCV, which automatically tunes alpha based on cross-validation
+\end{itemize}
+\section{Regression scoring functions}
+\smalltext{In sklearn for regression problems, using r2\_score() and .score() (with default values) will produce the same results}
+\subsection{Mean squared error (MSE) }
+\smalltext{
+$
+\text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
+$ - Affected by outliers - always non-negative - lesser better - hence we take negative value for CV
+}
+
+\subsection{Root mean squared error (RMSE)}
+\smalltext{
+$
+\text{RMSE} = \sqrt{MSE}  =  \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+$ - always non-negative - lesser better - hence we take negative value for CV
+}
+
+\subsection{Mean absolute error (MAE) - Less sensitive to outliers}
+\smalltext{
+$
+\text{MAE} = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|
+$
+}
+
+\subsection{Mean absolute percentage error (MAPE) - frames the error in terms of a proportion/percentage instead of an absolute number.}
+\smalltext{
+$
+\text{MAPE} = \frac{100}{n} \sum_{i=1}^{n} \left| \frac{y_i - \hat{y}_i}{y_i} \right|
+$
+}
+
+\subsection{R\textsuperscript{2} - compare our model's errors to the errors in a baseline model which always predicts the mean.}
+\smalltext{
+$R^2 = 1 - \frac{\sum_{i=1}^n (y_i - \hat{y}_i)^2}{\sum_{i=1}^n (y_i - \bar{y})^2}$
+}
+
+\subsection{Different scoring functions with cross\_validate}
+\smalltext{
+The default in sklearn's CV is to try to make the scoring metric as big as possible, which makes sense for classification metrics such as accuracy, precision, recall, etc (and R2). However, for many our regression metrics, smaller is better. Because of this, the version used for CV needs to be inverted to be negative, which is reflected in the name of these CV scoring methods, such as neg\_mean\_squared\_error, and neg\_root\_mean\_squared\_error.
+}
+
+\subsection{Transforming the targets}
+\smalltext{
+When you have prices or count data, the target values can often be skewed. A common trick in such cases is applying a log transform on the target column to make it more normal and less skewed.
+Linear regression will usually have better performance on data that is more normal.
+}
+
+\section{Feature Engineering}
+\smalltext{
+Good features would ideally:
+Capture most important aspects of the problem
+Allow learning with fewer examples
+Generalize to new scenarios.
+There is a trade-off between simple and expressive features:
+With simple features overfitting risk is low, but scores might be low.
+With complicated features scores can be high, but so is overfitting risk.
+}
+\subsection{Examples}
+\smalltext{
+counting-based methods like decision trees - discretization \\
+For distance-based methods like KNN - standardization \\
+For regression-based methods like linear regression - polynomial
+}
+
+
 
 \end{multicols}
 \end{document}
