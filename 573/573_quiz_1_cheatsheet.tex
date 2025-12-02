@@ -167,9 +167,8 @@ If you identify more things as “fraud”, recall is going to increase but ther
 \end{itemize}
 
 \subsection{Precision-recall curve - Fig1}
-\begin{itemize}
-    \item Usually the goal is to keep recall high as precision goes up.
-\end{itemize}
+\smalltext{ 
+Usually the goal is to keep recall high as precision goes up.}
 \subsection{Receiver Operating Characteristic (ROC) curve - Fig2}
 \begin{itemize}
     \item Another commonly used tool to analyze the behavior of classifiers at different thresholds.
@@ -227,7 +226,7 @@ $ - Affected by outliers - always non-negative - lesser better - hence we take n
 \subsection{Root mean squared error (RMSE)}
 \smalltext{
 $
-\text{RMSE} = \sqrt{MSE}  =  \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+\text{RMSE} = \sqrt{MSE}
 $ - always non-negative - lesser better - hence we take negative value for CV
 }
 
@@ -238,11 +237,11 @@ $
 $
 }
 
-\subsection{Mean absolute percentage error (MAPE) - frames the error in terms of a proportion/percentage instead of an absolute number.}
+\subsection{Mean absolute percentage error (MAPE) }
 \smalltext{
 $
 \text{MAPE} = \frac{100}{n} \sum_{i=1}^{n} \left| \frac{y_i - \hat{y}_i}{y_i} \right|
-$
+$- frames the error in terms of a proportion/percentage instead of an absolute number.
 }
 
 \subsection{R\textsuperscript{2} - compare our model's errors to the errors in a baseline model which always predicts the mean.}
