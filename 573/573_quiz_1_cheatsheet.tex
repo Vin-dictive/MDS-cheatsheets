@@ -93,8 +93,6 @@ Data collection - Data cleaning, splitting - EDA - Preprocessing, Feature engine
 
 \section{Confusion matrix}
 \begin{lstlisting}[language=Python]
-cm = ConfusionMatrixDisplay.from_estimator(pipe, X_valid, y_valid, values_format="d")
-confusion_matrix(y_valid, pipe.predict(X_valid))
 confusion_matrix(y_train, cross_val_predict(pipe, X_train, y_train))
 \end{lstlisting}
 \begin{itemize}
@@ -108,9 +106,7 @@ confusion_matrix(y_train, cross_val_predict(pipe, X_train, y_train))
 \textbf{Spam filter:} It's worse to mark a real email as spam (false positive) because the person might never see an important message. If a spam email gets through (false negative), you can just delete it yourself.
 } 
 \subsection{Confusion matrix with cross-validation}
-\smalltext{
-  This adds up all the values of the TP, TN, FP, FN from the different CV folds, so that each part of the data is evaluated once (since we do crossvalidation with non-overlapping folds).
-}
+
 \begin{lstlisting}[language=Python]
 confusion_matrix(y_train, cross_val_predict(pipe, X_train, y_train))
 ConfusionMatrixDisplay.from_predictions #used from CV same as above
@@ -118,13 +114,13 @@ ConfusionMatrixDisplay.from_predictions #used from CV same as above
 
 \subsection{Precision}
 \smalltext{
-Precision is the ability of the classifier to putting a positive label on a positive observation. You can remember this as “How precise are the model's predictions?”. \\
+Precision is the ability of the classifier to putting a positive label on a positive observation. \\
 $Precision = TP/(TP+FP)$
 }
 
 \subsection{Recall}
 \smalltext{
-Recall is the ability of the classifier to find all the positive samples. You can remember it as “What proportion of the real positives the did the model recall. \\
+Recall is the ability of the classifier to find all the positive samples. \\
 $Recall = TP/(TP+FN)$
 }
 
@@ -136,40 +132,24 @@ recall_score(y_valid, pipe.predict(X_valid), pos_label='Fraud')
 
 \subsection{Drawbacks of precision and recall - F1 Score}
 \smalltext{
-F1-score combines precision and recall to give one score, which could be used in hyperparameter optimization. It is the harmonic mean of precision and recall.
-In the F1 score, both the precision and recall are regarded as equally important.
+F1-score combines precision and recall to give one score, which works for hyperparameter opt.
+F1 score, both the precision and recall are regarded as equally important.
 }
 \begin{lstlisting}[language=Python]
 f1_score = (2 * precision * recall) / (precision + recall)
 f1_score(y_valid, pipe.predict(X_valid), pos_label='Fraud')  # Recall and precision equally important
+classification_report(y_valid, pipe.predict(X_valid)) # get all values like recall precision
 \end{lstlisting}
 \subsection{F$\beta$ Score}
 \smalltext{
-However, in real life applications we might care more about one than the other but still want to hav a single number. 
-For this we often use the general \textbf{F$\beta$ Score}, where beta is the weight of recall vs precision.
+When we care about recall more than percision and vice versa, use the general \textbf{F$\beta$ Score}, where beta is the weight of recall vs precision. beta = 1 is f1 score.
 }
 \begin{lstlisting}[language=Python]
-fbeta_score(y_valid, pipe.predict(X_valid), pos_label='Fraud', beta=1)  # Same as F1
-fbeta_score(y_valid, pipe.predict(X_valid), pos_label='Fraud', beta=2)  # Recall twice as important
 \end{lstlisting}
-
-\subsection{Classification report}
-\smalltext{
-There is a convenient function called classification\_report in sklearn which prints out the three metrics we have discussed all at once.
-}
-\begin{lstlisting}[language=Python]
-classification_report(y_valid, pipe.predict(X_valid))
-\end{lstlisting}
-
-\section{Cross validation with different metrics}
-\smalltext{
-We can pass different evaluation metrics with scoring argument of cross\_validate.
-}
 
 \subsection{Precision/Recall tradeoff}
 \smalltext{
-By default, predictions use the threshold of 0.5. If predict\_proba > 0.5, predict “fraud” else predict “non-fraud”. We can see this by manually typing in the 0.5 threshold and getting the same results as above. \\
-Suppose for your business it is more costly to miss fraudulent transactions and suppose you want to achieve a recall of at least 75\% for the “fraud” class. (Also called \textbf{Operating point}) \\
+By default, predictions use the threshold of 0.5. If predict\_proba $\geq$ 0.5, predict “fraud” else predict “non-fraud”. We can see this by manually typing in the 0.5 threshold and getting the same results as above. \\
 If you identify more things as “fraud”, recall is going to increase but there are likely to be more false positives.
 }
 \textbf{Decreasing the threshold}
@@ -187,9 +167,6 @@ If you identify more things as “fraud”, recall is going to increase but ther
 \end{itemize}
 
 \subsection{Precision-recall curve - Fig1}
-\smalltext{
-Often, when developing a model, it's not always clear what the operating point will be and to understand the the model better, it's informative to look at all possible thresholds and corresponding trade-offs of precision and recall in a plot. This type of plot is often called a PR curve, and the top-right would be a perfect classifier (precision = recall = 1).
-}
 \begin{itemize}
     \item Usually the goal is to keep recall high as precision goes up.
 \end{itemize}
@@ -238,21 +215,6 @@ Often, when developing a model, it's not always clear what the operating point w
     \item We can optimize class\_weight using hyperparameter optimization for your specific problem.
     \item Changing the class weight will generally reduce accuracy.
 \end{itemize}
-
-\subsection{Stratified Splits}
-\begin{itemize}
-    \item Well, it's no longer a random sample, which is probably theoretically bad, but not that big of a deal.
-    \item It can be especially useful in multi-class, say if you have one class with very few cases.
-\end{itemize}
-
-\subsection{Tuning alpha hyperparameter of Ridge}
-\begin{itemize}
-    \item This is like C in LogisticRegression but, annoyingly, alpha is the inverse of C.
-    \item Smaller alpha: lower training error (overfitting)
-    \item Higher values of alpha means a more restricted model.
-    \item The values of coefficients are likely to be smaller for higher values of alpha compared to lower values of alpha.
-    \item RidgeCV, which automatically tunes alpha based on cross-validation
-\end{itemize}
 \section{Regression scoring functions}
 \smalltext{In sklearn for regression problems, using r2\_score() and .score() (with default values) will produce the same results}
 \subsection{Mean squared error (MSE) }
@@ -287,12 +249,6 @@ $
 \smalltext{
 $R^2 = 1 - \frac{\sum_{i=1}^n (y_i - \hat{y}_i)^2}{\sum_{i=1}^n (y_i - \bar{y})^2}$
 }
-
-\subsection{Different scoring functions with cross\_validate}
-\smalltext{
-The default in sklearn's CV is to try to make the scoring metric as big as possible, which makes sense for classification metrics such as accuracy, precision, recall, etc (and R2). However, for many our regression metrics, smaller is better. Because of this, the version used for CV needs to be inverted to be negative, which is reflected in the name of these CV scoring methods, such as neg\_mean\_squared\_error, and neg\_root\_mean\_squared\_error.
-}
-
 \subsection{Transforming the targets}
 \smalltext{
 When you have prices or count data, the target values can often be skewed. A common trick in such cases is applying a log transform on the target column to make it more normal and less skewed.
@@ -309,14 +265,64 @@ There is a trade-off between simple and expressive features:
 With simple features overfitting risk is low, but scores might be low.
 With complicated features scores can be high, but so is overfitting risk.
 }
-\subsection{Examples}
+
+\subsection{Polynomial}
 \smalltext{
-counting-based methods like decision trees - discretization \\
-For distance-based methods like KNN - standardization \\
-For regression-based methods like linear regression - polynomial
+  Linear models learn lines, planes, or hyperplanes. Poly can learn, hyperbolas, quadratic function.
+  Increasing deg makes the model more complex, overfitting, pick the degree of polynomial using hyperparameter optimization.
+  Suitable for regression problems, they can also help in classification.
+  2-features - Planes | 
+  Circles - Poly with 2 degree |
+  Polynomial feature engineering first then Standard scaler to avoid the polynomial features from having much larger absolute magnitude than the original features, which would be an issue for any distance based calculations and for interpretation of coefficients.
+}
+\subsection{Feature discretization / binning}
+\smalltext{
+    Transforming numeric features into categorical features is called bucketing or binning.
+}
+\subsection{Bag-of-words model - Text - N-grams}
+\smalltext{
+    Transforming numeric features into categorical features is called bucketing or binning.
 }
 
+\section{Feature Selection}
+\begin{itemize}
+    \item Correlation among features might make coefficients completely uninterpretable.
+    \item Fairly straightforward to interpret coefficients of ordinal features.
+    \item In categorical features, helpful to consider one category as a reference point and think about relative importance.
+    \item For numeric features, relative importance is meaningful after scaling.
+    \item You have to be careful about the scale of the feature when interpreting the coefficients. (polynomial)
+    \item Explaining the model is not same as explaining the data
+    \item Coefficients tell us only about the model and they might not accurately reflect the data
+\end{itemize}
 
+\subsection{Model-based feature selection}
+\smalltext{Keep only the most important features. We can put the feature selection transformer in a pipeline. preprocessor - select\_lr - randomForestRegressor = select\_lr selects important features before running model}
+
+\begin{lstlisting}[language=Python]
+pipe_rf_model_based['randomforestregressor'].n_features_in_ #gives features count
+\end{lstlisting}
+
+\subsection{Recursive feature elimination (RFE)}
+\smalltext{
+    But it's different in the sense that it iteratively eliminates unimportant features. It builds a series of models. At each iteration, discards the least important feature according to the model. Computationally expensive.
+}
+
+\subsection{RFE with cross-validation (RFECV)}
+\smalltext{
+We arbitrarily picked 120 features before. Use RFECV which uses cross-validation to select number of features. Slow because there is cross validation within cross validation
+}
+
+\subsection{Forward or backward selection}
+
+\smalltext{
+Shrink or grow feature set by removing or adding one feature at a time. Makes the decision based on whether adding/removing the feature improves the CV score or not. Very slow. selects d/2 features
+}
+
+\subsection{Warnings about feature selection}
+
+\smalltext{
+A feature's relevance is only defined in the context of other features. If features can be predicted from other features, you cannot know which one to pick. Relevance for features does not have a causal relationship.
+}
 
 \end{multicols}
 \end{document}
