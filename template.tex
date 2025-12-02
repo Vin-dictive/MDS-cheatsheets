@@ -58,7 +58,13 @@
 \setlength{\parskip}{0pt}
 
 % Reduce section spacing and change color
-\sectionfont{\fontsize{8}{9}\selectfont\bfseries\color{black}} % Main section font: 8pt
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{2}{0pt}%
+    {0.1ex}% space before section
+    {0.1ex}% space after section
+    {\fontsize{8}{9}\bfseries\color{red}}} % section font: 8pt
+\makeatother
+
 % Reduce subsection spacing and make subsections blue
 \makeatletter
 \renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
@@ -80,224 +86,239 @@
 \fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
 \pagestyle{empty}
 \begin{multicols}{3}
-
-\subsection{Binary search}
-\begin{lstlisting}[language=Python]
-def binary_search(data, key):
-    if len(data) == 1:
-        return data[0] == key
-    mid = len(data)//2
-    if key < data[mid]:
-        return binary_search(data[:mid], key)
-    else:
-        return binary_search(data[mid:], key)
-\end{lstlisting}
+\section{ML Workflow}
 \smalltext{
-\textcolor{red}{\textbf{Linked-list}}:is a linear collection of data elements whose order is not given by their physical placement in memory. Instead, each element points to the next.\\
-\textcolor{red}{\textbf{Tree}} Trees are recursive data structures, like the linked lists.
+Data collection - Data cleaning, splitting - EDA - Preprocessing, Feature engineering - Feature selection, Model building - Evaluation, model selection - Test data predictions, visualizations, possible deployment
 }
+
+\section{Confusion matrix}
 \begin{lstlisting}[language=Python]
-class BinaryTree:
-    def __init__(self, item):
-        self.item = item
-        self.left = None  # type = BinaryTree
-        self.right = None # type = BinaryTree
-    def insert(self, item):
-        left = np.random.rand() < 0.5# pick a random side to insert on
-        if item == left:
-            return
-        if left:
-            if self.left is None:
-                self.left = BinaryTree(item)
-            else:
-                self.left.insert(item)
-        else:
-            if self.right is None:
-                self.right = BinaryTree(item)
-            else:
-                self.right.insert(item)
-    def contains(self, item):
-        if self.item == item:
-            return True
-        if self.left is not None:
-            if self.left.contains(item):
-                return True
-        if self.right is not None:
-            if self.right.contains(item):
-                return True
-        return False
-    def print_tree(self, level=0, prefix="Root: "):
-        print("    " * level + prefix + str(self.item))
-        if self.left:
-            self.left.print_tree(level + 1, prefix="L--- ")
-        if self.right:
-            self.right.print_tree(level + 1, prefix="R--- ")    
+confusion_matrix(y_train, cross_val_predict(pipe, X_train, y_train))
 \end{lstlisting}
-\subsection{K-D Trees}
+\begin{itemize}
+    \item Perfect prediction has all values down the diagonal
+    \item Off diagonal entries can often tell us about what is being mis-predicted
+\end{itemize}
+
 \smalltext{
-One of the classic ways to speed up nearest neighbours is a data structure call the k-d tree.
-Basic idea: \\
-In each recursive step, there is a certain number of datapoints. If there's only one, we're done.\\
-Otherwise, for one of the two dimensions (we alternate back and forth), find the median value along the dimension.\\
-Split the data into two subsets based on being above or below that median, and build a (sub)tree for each of those subsets.\\
-Starting from the full dataset, you will create a tree where each leaf is a datapoint.\\
-You can find an approximate nearest neighbour by traversing the down the tree using the same decision points as were used to original split the data; the final leaf is the desired neighbour.\\
-Other nearest neighbour approaches \\
-Note: there are other nearest neighbour approaches besides k-d trees, including some very fast approximate algorithms.\\
+\textbf{Disease test:} It's worse to miss someone who actually has the disease (false negative) because they won't get the treatment they need. If we wrongly think someone has the disease (false positive), a doctor will check before treating them, so it's less harmful.\\
+\textbf{Spam filter:} It's worse to mark a real email as spam (false positive) because the person might never see an important message. If a spam email gets through (false negative), you can just delete it yourself.
+} 
+\subsection{Confusion matrix with cross-validation}
+
+\begin{lstlisting}[language=Python]
+confusion_matrix(y_train, cross_val_predict(pipe, X_train, y_train))
+ConfusionMatrixDisplay.from_predictions #used from CV same as above
+\end{lstlisting}
+
+\subsection{Precision}
+\smalltext{
+Precision is the ability of the classifier to putting a positive label on a positive observation. \\
+$Precision = TP/(TP+FP)$
+}
+
+\subsection{Recall}
+\smalltext{
+Recall is the ability of the classifier to find all the positive samples. \\
+$Recall = TP/(TP+FN)$
 }
 
 \begin{lstlisting}[language=Python]
-def nearest_neighbour(data, query): #Time O(nk)
-    if query.ndim == 1:
-        query = query[None]
-    return np.argmin(np.sum((data - query)**2, axis=1))
+TP, FN, FP, TN = confusion_matrix(y_valid, pipe.predict(X_valid)).flatten()
+precision_score(y_valid, pipe.predict(X_valid), pos_label='Fraud')
+recall_score(y_valid, pipe.predict(X_valid), pos_label='Fraud')
 \end{lstlisting}
-\subsection{Amortization of hash table growth}
+
+\subsection{Drawbacks of precision and recall - F1 Score}
 \smalltext{
-We say the up-front effort is amortized (or spread out) over the many queries.
-Hash table operations are amortized constant time, meaning that although occasional slower operations occur, their cost is spread out so the average cost per operation remains O(1).
+F1-score combines precision and recall to give one score, which works for hyperparameter opt.
+F1 score, both the precision and recall are regarded as equally important.
 }
-\subsection{Dynamic Programming}
+\begin{lstlisting}[language=Python]
+f1_score = (2 * precision * recall) / (precision + recall)
+f1_score(y_valid, pipe.predict(X_valid), pos_label='Fraud')  # Recall and precision equally important
+classification_report(y_valid, pipe.predict(X_valid)) # get all values like recall precision
+\end{lstlisting}
+\subsection{F$\beta$ Score}
 \smalltext{
-\textbf{Optimal substructure} — the optimal solution to the problem can be composed of optimal solutions to its subproblems.\\
-\textbf{Overlapping subproblems} — the space of subproblems is small and the same subproblems are solved repeatedly.\\
-Global sequence alignment in genetics, knapsack problem, matrix chain multiplication, shortest-path algorithms such as Floyd–Warshall. \\
-\textcolor{red}{\textbf{Caching}}:is a general term that refers to the practice of storing data for later use. To solve the problem of redundant computation.
-\textcolor{red}{\textbf{Memoization}}:is a specific form of caching that involves storing the results of function calls so that when the same inputs are encountered again, the previously computed result can be reused. This avoids the need to recompute values that have already been calculated.
-\textcolor{red}{\textbf{Top-down}}: starting from (n) and recursively computing smaller subproblems while caching results.\\
-\textcolor{red}{\textbf{bottom-up/tabulation}}: Instead of recursion, we start from the simplest subproblems, such as ways(0) and ways(1) , and iteratively build up to ways(n). Eliminates recursion overhead and can sometimes reduce memory usage.
+When we care about recall more than percision and vice versa, use the general \textbf{F$\beta$ Score}, where beta is the weight of recall vs precision. beta = 1 is f1 score.
 }
-\subsection{Climbing Stairs (Counting Paths)}
 \begin{lstlisting}[language=Python]
-def climb_stairs_recursive(n): #Brute Force solution O(2^n)
-    if n == 0 or n == 1:
-        return 1
-    return climb_stairs_recursive(n-1) + climb_stairs_recursive(n-2)
-def climb_stairs_memoized(n: int) -> int: #DP solution Time O(n) Space O(n)
-    if n < 0:
-        return 0 # or we can: raise ValueError("n must be >= 0")
-    memo = [-1] * (n + 1)  # -1 marks "not computed yet"
-    def _rec(k: int) -> int:
-        if k <= 1:                # W(0)=1, W(1)=1
-            return 1
-        if memo[k] != -1:
-            return memo[k]
-        memo[k] = _rec(k - 1) + _rec(k - 2)
-        return memo[k]
-    return _rec(n)
-def climb_stairs_tab(n: int): #Bottom-up Time: O(n) Space: O(n)
-    if n < 0:
-        raise ValueError("n must be >= 0")
-    if n <= 1:
-        return 1
-    dp: List[int] = [0] * (n + 1)
-    dp[0] = 1
-    dp[1] = 1
-    for i in range(2, n + 1):
-        dp[i] = dp[i - 1] + dp[i - 2]
-    return dp[n]
-def climb_stairs_tab(n: int):#Bottom-up Time:O(n) Space:O(1)
-    if n < 0:
-        raise ValueError("n must be >= 0")
-    if n <= 1:
-        return 1
-    a, b = 1, 1   # dp[0], dp[1]
-    for _ in range(2, n + 1):
-        a, b = b, a + b
-    return b
 \end{lstlisting}
-\subsection{Fibonacci}
-\begin{lstlisting}[language=Python]
-  def f(n):#Recursive solution Time: O(2^n) Space : O(n)
-    if n == 1 or n == 2:
-        return 1
-    else: 
-        return f(n-1) + f(n-2)
-def fib(n):#iterative Solution
-    f = np.zeros(n+1, dtype=int)
-    f[1] = 1
-    for i in range(2,n+1):
-        f[i] = f[i-1] + f[i-2]
-    return f[-1]
-#Memozisation method functools.lru\_cache stores the cached results in memory like in temp file (function results of fib (5)) 
-memory = joblib.Memory("/tmp", verbose=0)
-@memory.cache
-def fib_recursive_cache2(n):
-    if n == 0 or n == 1:
-        return n
-    return fib_recursive_cache2(n-1) + fib_recursive_cache2(n-2)
-# Memoized Fibonacci DP top down Time: O(n) Space: O(n)
-def fib(n, memo={}):
-    if n in memo:
-        return memo[n]
-    if n <= 1:
-        return n
-    memo[n] = fib(n - 1, memo) + fib(n - 2, memo)
-    return memo[n]
-# Bottom-Up Fibonacci Time: O(n) Space: O(n)
-def fib(n):
-    if n <= 1:
-        return n
-    dp = [0] * (n + 1)
-    dp[1] = 1
-    for i in range(2, n + 1):
-        dp[i] = dp[i - 1] + dp[i - 2]
-    return dp[n]
-\end{lstlisting}
-\subsection*{Seam Carving}
-\begin{lstlisting}[language=Python]
-#O(W * 3^H) in Recursive
-def min_cost(grid): #O(W*H) in DP
-    nrows, ncols = grid.shape
-    opt = np.zeros((nrows, ncols + 2), dtype=float)
-    opt[:, 0] = np.inf
-    opt[:, -1] = np.inf
-    opt[:, 1:-1] = grid
-    for i in range(1, nrows):
-        for j in range(1, ncols + 1):
-            opt[i, j] += min(opt[i - 1, j - 1], opt[i - 1, j], opt[i - 1, j + 1])
-    return np.min(opt[-1, 1:-1])
-def find_vertical_seam(self, energy): # Vectorized DP
-    nrows, ncols = energy.shape
-    column_of_inf = np.full((nrows,1), np.inf)
-    CME = np.hstack((column_of_inf, energy, column_of_inf))
-    for i in range(1, nrows):
-        prev = CME[i - 1]
-        # Stack the three possible previous-row shifts
-        candidates = np.vstack([prev[:-2], prev[1:-1], prev[2:]])
-        CME[i, 1:-1] += np.min(candidates, axis=0)
-    seam = np.zeros(nrows, dtype=int)
-    seam[-1] = np.argmin(CME[-1, :])
-    for i in range(nrows - 2, -1, -1):
-        delta = np.argmin(CME[i, seam[i + 1] - 1 : seam[i + 1] + 2]) - 1
-        seam[i] = seam[i + 1] + delta
-    return seam - 1
-#miscellaneous functions for recursion and dp
-def recursive_reverse_list(lst):
-    if not lst or len(lst) <= 1:
-        return lst
-    return lst[-1:] + recursive_reverse_list(lst[:-1])
-def recursive_reverse_list(lst):
-    if not lst or len(lst) <= 1:
-        return lst
-    return lst[-1:] + recursive_reverse_list(lst[:-1])
-def remove_char(s, ch):
-    if len(s) == 0:
-        return ""
-    if s[0] == ch:
-        return remove_char(s[1:], ch)
-    return s[0] + remove_char(s[1:], ch)
-\end{lstlisting}
-\subsection*{Dynamic Programming (DP) Problem-Solving Template}
+
+\subsection{Precision/Recall tradeoff}
 \smalltext{
-  \textbf{Identify subproblems:} Break the problem into smaller instances (e.g., prefixes, suffixes, or states like the last move). \\
-  \textbf{Set base cases:} Define simplest inputs and outputs to initialise the DP table. \\
-  \textbf{Form recurrence:} Express each subproblem in terms of smaller ones, ensuring no cyclic dependencies. \\
-  \textbf{Choose strategy:} Use \textit{top-down} (recursion + memoization) or \textit{bottom-up} (iterative tabulation). \\
-  \textbf{Implement \& test:} Code the recurrence, verify on small examples, and confirm expected complexity.\\
-  \textbf{Optimise:} Reduce space/time if possible (e.g., keep only necessary previous states).\\
+By default, predictions use the threshold of 0.5. If predict\_proba $\geq$ 0.5, predict “fraud” else predict “non-fraud”. We can see this by manually typing in the 0.5 threshold and getting the same results as above. \\
+If you identify more things as “fraud”, recall is going to increase but there are likely to be more false positives.
 }
+\textbf{Decreasing the threshold}
+\begin{itemize}
+    \item Using a lower bar to predict fraud.
+    \item You accept more false positives in exchange for gaining more true positives.
+    \item Recall will either stay the same or increase.
+    \item Precision will likely decrease, though it can sometimes increase if all newly added predictions are true positives.
+\end{itemize}
+\textbf{Increasing the threshold}
+\begin{itemize}
+    \item Using a higher bar to predict fraud.
+    \item Recall will decrease or stay the same.
+    \item Precision will likely increase, though it may decrease if true positives drop without reducing false positives.
+\end{itemize}
+
+\subsection{Precision-recall curve - Fig1}
+\smalltext{ 
+Usually the goal is to keep recall high as precision goes up.}
+\subsection{Receiver Operating Characteristic (ROC) curve - Fig2}
+\begin{itemize}
+    \item Another commonly used tool to analyze the behavior of classifiers at different thresholds.
+    \item Similar to PR curve, it considers all possible thresholds for a given classifier given by predict\_proba but instead of precision and recall it plots false positive rate (FPR) and true positive rate (TPR or recall).
+    \item FPR = FP/(FP+TN)
+    \item The ideal curve is close to the top left. Classifier with high recall while keeping low false positive rate.
+\end{itemize}
+\subsection{AP score}
+\begin{itemize}
+    \item one number summarizing the PR plot
+    \item One way to do this is by computing the area under the PR curve.
+    \item Called average precision 
+    \item AP score has a value between 0 (worst) and 1 (best).
+\end{itemize}
+
+\subsection{AP vs. F1-score}
+\begin{itemize}
+    \item F1 score is for a given threshold and measures the quality of predict.
+    \item AP score is a summary across thresholds and measures the quality of predict\_proba
+    \item Optimizing towards a high F1 score means that you find the model that performs the best at the default decision threshold while considering both recall and precision
+    \item Optimizing towards a high AP score means that you get the model that performs the best over all possible decision thresholds, which could give you more flexibility in your tradeoffs between precision and recall when deciding on a decision threshold.
+\end{itemize}
+
+
+
+\section{Which type of error is important in imbalanced}
+\begin{itemize}
+    \item False positives (FPs) and false negatives (FNs) have quite different real-world consequences.
+    \item In PR curve and ROC curve, we saw how changing the prediction threshold can change FPs and FNs.
+    \item We can then pick the threshold that's appropriate for our problem.
+    \item if we want high recall, we may use a lower threshold (e.g., a threshold of 0.1). We'll then catch more fraudulent transactions. 
+\end{itemize}
+
+\subsection{Handling imbalanced}
+\smalltext{
+  Undersampling, Oversampling, Random oversampling, SMOTE: Synthetic Minority Over-sampling Technique, Changing the training procedure - class\_weight.
+  All sklearn classifiers have a parameter called \textbf{class\_weight}, For example, maybe a false negative is 10x more problematic than a false positive.
+}
+\begin{itemize}
+    \item Recall is much better but precision has dropped a lot; we have many false positives.
+    \item We can optimize class\_weight using hyperparameter optimization for your specific problem.
+    \item Changing the class weight will generally reduce accuracy.
+\end{itemize}
+\section{Regression scoring functions}
+\smalltext{In sklearn for regression problems, using r2\_score() and .score() (with default values) will produce the same results}
+\subsection{Mean squared error (MSE) }
+\smalltext{
+$
+\text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
+$ - Affected by outliers - always non-negative - lesser better - hence we take negative value for CV
+}
+
+\subsection{Root mean squared error (RMSE)}
+\smalltext{
+$
+\text{RMSE} = \sqrt{MSE}
+$ - always non-negative - lesser better - hence we take negative value for CV
+}
+
+\subsection{Mean absolute error (MAE) - Less sensitive to outliers}
+\smalltext{
+$
+\text{MAE} = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|
+$
+}
+
+\subsection{Mean absolute percentage error (MAPE) }
+\smalltext{
+$
+\text{MAPE} = \frac{100}{n} \sum_{i=1}^{n} \left| \frac{y_i - \hat{y}_i}{y_i} \right|
+$- frames the error in terms of a proportion/percentage instead of an absolute number.
+}
+
+\subsection{R\textsuperscript{2} - compare our model's errors to the errors in a baseline model which always predicts the mean.}
+\smalltext{
+$R^2 = 1 - \frac{\sum_{i=1}^n (y_i - \hat{y}_i)^2}{\sum_{i=1}^n (y_i - \bar{y})^2}$
+}
+\subsection{Transforming the targets}
+\smalltext{
+When you have prices or count data, the target values can often be skewed. A common trick in such cases is applying a log transform on the target column to make it more normal and less skewed.
+Linear regression will usually have better performance on data that is more normal.
+}
+
+\section{Feature Engineering}
+\smalltext{
+Good features would ideally:
+Capture most important aspects of the problem
+Allow learning with fewer examples
+Generalize to new scenarios.
+There is a trade-off between simple and expressive features:
+With simple features overfitting risk is low, but scores might be low.
+With complicated features scores can be high, but so is overfitting risk.
+}
+
+\subsection{Polynomial}
+\smalltext{
+  Linear models learn lines, planes, or hyperplanes. Poly can learn, hyperbolas, quadratic function.
+  Increasing deg makes the model more complex, overfitting, pick the degree of polynomial using hyperparameter optimization.
+  Suitable for regression problems, they can also help in classification.
+  2-features - Planes | 
+  Circles - Poly with 2 degree |
+  Polynomial feature engineering first then Standard scaler to avoid the polynomial features from having much larger absolute magnitude than the original features, which would be an issue for any distance based calculations and for interpretation of coefficients.
+}
+\subsection{Feature discretization / binning}
+\smalltext{
+    Transforming numeric features into categorical features is called bucketing or binning.
+}
+\subsection{Bag-of-words model - Text - N-grams}
+\smalltext{
+    Transforming numeric features into categorical features is called bucketing or binning.
+}
+
+\section{Feature Selection}
+\begin{itemize}
+    \item Correlation among features might make coefficients completely uninterpretable.
+    \item Fairly straightforward to interpret coefficients of ordinal features.
+    \item In categorical features, helpful to consider one category as a reference point and think about relative importance.
+    \item For numeric features, relative importance is meaningful after scaling.
+    \item You have to be careful about the scale of the feature when interpreting the coefficients. (polynomial)
+    \item Explaining the model is not same as explaining the data
+    \item Coefficients tell us only about the model and they might not accurately reflect the data
+\end{itemize}
+
+\subsection{Model-based feature selection}
+\smalltext{Keep only the most important features. We can put the feature selection transformer in a pipeline. preprocessor - select\_lr - randomForestRegressor = select\_lr selects important features before running model}
+
+\begin{lstlisting}[language=Python]
+pipe_rf_model_based['randomforestregressor'].n_features_in_ #gives features count
+\end{lstlisting}
+
+\subsection{Recursive feature elimination (RFE)}
+\smalltext{
+    But it's different in the sense that it iteratively eliminates unimportant features. It builds a series of models. At each iteration, discards the least important feature according to the model. Computationally expensive.
+}
+
+\subsection{RFE with cross-validation (RFECV)}
+\smalltext{
+We arbitrarily picked 120 features before. Use RFECV which uses cross-validation to select number of features. Slow because there is cross validation within cross validation
+}
+
+\subsection{Forward or backward selection}
+
+\smalltext{
+Shrink or grow feature set by removing or adding one feature at a time. Makes the decision based on whether adding/removing the feature improves the CV score or not. Very slow. selects d/2 features
+}
+
+\subsection{Warnings about feature selection}
+
+\smalltext{
+A feature's relevance is only defined in the context of other features. If features can be predicted from other features, you cannot know which one to pick. Relevance for features does not have a causal relationship.
+}
+
 \end{multicols}
 \end{document}
-
-

@@ -57,8 +57,15 @@
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0pt}
 
+
 % Reduce section spacing and change color
-\sectionfont{\fontsize{8}{9}\selectfont\bfseries\color{black}} % Main section font: 8pt
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{2}{0pt}%
+    {0.1ex}% space before section
+    {0.1ex}% space after section
+    {\fontsize{8}{9}\bfseries\color{red}}} % section font: 8pt
+\makeatother
+
 % Reduce subsection spacing and make subsections blue
 \makeatletter
 \renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
@@ -81,30 +88,189 @@
 \pagestyle{empty}
 \begin{multicols}{3}
 
-\subsection{Simple Linear Regresion - Lecture 3}
+\section{Linear Regresion - Lecture 1}
+\subsection{EDA tells us}
 \smalltext{
-$\text{col\_1}_i = \beta_0 + \beta_1\,\text{col\_2}_i + \varepsilon_i$ \\
-$\beta_0$ is the population intercept, and $\beta_1$ is the population slope parameter measuring how $\text{col\_1}$ changes with an associated change in $\text{col\_2}$. \\
-For each observation $i$, $\varepsilon_i$ represents the random error term. \\
-\textbf{Slope:} a one-unit increase in $X$ ($\text{col\_2}$) is associated with an expected increase of $\beta_1$ units in $Y$ ($\text{col\_1}$). \\
-\textbf{Intercept:} The average value of $Y$ when $X=0$ is $\beta_0$
+knowing the size of the data || examining distributions of all variables using graphical and numerical summaries || identifying missing values and potential outliers || beginning to discover relationships between variables
 }
+\subsection{Population vs. sample}
+
+\begin{lstlisting}[language=R]
+set.seed(561)
+dat_s <- sample_n(dat, 1000, replace = FALSE) #Sample
+#Get summary statistics
+dat_tax_SLR = dat_s |> select(assess_val, BLDG_METRE) |> 
+    gather() |>
+    group_by(key) |>
+    summarise(mean = mean(value, na.rm = TRUE), 
+              max = max(value), 
+              min = min(value), 
+              median = median(value, na.rm = TRUE), 
+              sd = sd(value, na.rm = TRUE))
+\end{lstlisting}
+
+\section{Simple Linear Regression (SLR)}
+\subsection{The conditional expectation}
+\smalltext{
+  The conditional expected value is the best predictor given additional relevant information.
+ SLR answers the question, given the size of property what can be the expected value?
+}
+\subsection{Assumptions}
+\smalltext{
+  Conditional expectation of the response is linearly related to the input variable and the line is the linear regression 
+  || The random errors are independent and identically distributed: iid assumption
+|| The random errors have all the same variance: $Var(\epsilon_i) = \sigma^2$
+}
+
+\smalltext{
+$\text{Y}_i = \beta_0 + \beta_1\,\text{X}_i + \varepsilon_i$ \\
+$\beta_0$ is the population intercept, and $\beta_1$ is the population slope parameter measuring how $\text{Y}$ changes with an associated change in $\text{X}$. \\
+For each observation $i$, $\varepsilon_i$ represents the random error term. \\
+\textbf{Intercept ($\beta_0$):} The average value of $Y$ when $X=0$ is $\beta_0$ \\
+\textbf{Slope ($\beta_1$):} a one-unit increase in $X$ ($\text{X}$) is associated with an expected increase of $\beta_1$ units in $Y$ ($\text{Y}$). \\
+\textbf{Error Term ($\epsilon_i$):} Any distributional assumption made about the error term also affect the random variable Y (if normal, Y also normal)
+}
+
+\section{Estimation of RL}
+\subsection{Least squares estimation}
+\smalltext{
+Least Squares method minimizes the sum of the squares of the residuals. The residuals are the difference between the observed value of the response (${y}_i$) and the predicted value of the response  ($\hat{y}_i$)
+as $r_i = y_i - \hat{y}_i$
+}
+
+\section{SLR with continuous variables}
 \begin{lstlisting}[language=R]
 SL_reg <- lm(col1 ~ col2, data = data_frame)
-tidy_SL_reg <- tidy(SL_reg) #Get estimate, std.error, statistic, p.value
-# Extract coefficients
-beta_0_hat = SL_reg$coef[1]
+tidy_SL_reg <- tidy(SL_reg) #Get estimate, std.error, p value
+lm(response ~ .,data= df) # uses all variables in the df, except the response, as predictors
+lm(response ~ input - 1,data= df) #forces the estimated intercept to be 0.
+beta_0_hat = SL_reg$coef[1] # Extract coefficients
 beta_1_hat = SL_reg$coef[2]
 \end{lstlisting}
-\subsection{Conclusions from above}
+
+\subsection{Estimated intercept $\beta_0$}
+\smalltext{Not interested because, the intercept value does not make sense for the model. many statistical properties do not hold for models without an intercept}
+
+\section{SLR with categorical predictors}
 \smalltext{
-Can be asked to check linearity of the model based on the slope of the coefficients \\
-Slope Coefficient Hypothesis are as follows:- \\
+  You have to use t-test, permutation test, or bootstrapping test to answer this kind of question. We use boxplots. X-axis is not numeric. 
+  We can still use this variable in a Linear model. We can reproduce the results of a t-test using lm.
+}
+\begin{lstlisting}[language=R]
+Condition_plot <- dat_s %>% ggplot(aes(Condition, assess_val)) + geom_boxplot()
+t.test(assess_val~Condition,dat_s,var.equal=T)
+lm_F <- lm(assess_val~Condition,dat_s)
+tidy(lm_F)
+\end{lstlisting}
+\includegraphics[width=0.50\linewidth]{boxplot.png}
+
+\subsection{The conditional expectation}
+\begin{itemize}
+    \item the best predictor of X with a Condition: 
+    $E[Y \mid \text{Condition} = \text{Y}] = \mu_1$
+    \item the best predictor of X without Condition: 
+    $E[Y \mid \text{Condition} = \text{N}] = \mu_0$
+    \item and a two-sample $t$-test tests the difference between group means!!
+\end{itemize}
+\smalltext{
+\[
+H_0 : \mu_1 = \mu_0, \quad \text{or equivalently} \quad H_0 : \mu_1 - \mu_0 = 0
+\]
+Since Condition is not numeric, we cant use in math formula, we instead use
+The dummy variable:
+\[
+X_2 =
+\begin{cases}
+1 & \text{if Condition = Y},\\
+0 & \text{if Condition = N}
+\end{cases}
+\]
+\[
+E[Y \mid X_2] = \beta_0 + \beta_2 X_2
+\]
+\begin{itemize}
+    \item if Condition = N: \(\,E[Y \mid X_2 = 0] = \beta_0\)
+    \item if Condition = Y: \(\,E[Y \mid X_2 = 1] = \beta_0 + \beta_2\)
+\end{itemize}
+Then
+\[
+\beta_2 = E[Y \mid X_2 = 1] - E[Y \mid X_2 = 0] = \mu_1 - \mu_0
+\]
+\[
+H_0 : \beta_2 = 0 \text{ is the same as the null hypothesis from the two-sample } t\text{-test!}
+\]
+}
+\subsection{The estimated intercept}
+\smalltext{
+  It is the sample version of the conditional expectation (mean of the reference group)
+}
+
+\subsection{The estimated slope}
+\smalltext{
+  It is the sample version of the difference of the conditional expectations (or group means)
+}
+
+\section{Uncertainty in the estimation - CI}
+\smalltext{
+  We can think that the estimates are a (good) guess about the population parameters based on our data. However, the values of the estimates depend on the random sample used to compute them:
+}
+\subsection{The standard errors}
+\smalltext{
+  The variation of these estimates from sample to sample is measured by their standard deviation, which has a special name: the standard error (SE).
+  In practice, we have different ways to measure the sample-to-sample variation of the estimated coefficients: \\ 
+(i). take multiple samples from the population and compute multiple estimates as we did above, then compute their SE (but this is not a realistic option). \\
+(ii). use a theoretical result (this is what lm does) \\
+(iii). use bootstrapping as you did in DSCI 552 for other quantities! \\
+}
+
+\section{Sampling Distribution}
+
+\subsection{1-Bootstrapping}
+\smalltext{
+Bootstrapping refers to sampling from our original sample with replacement (also called resampling with replacement) to generate a many estimates and measure the sample-to-sample variation.
+}
+\begin{lstlisting}[language=R]
+set.seed(0561)
+lm_boot <- replicate(1000, {
+  sample_n(dat_s, size = nrow(dat_s), replace = TRUE) %>% 
+    lm(X~Y,data=.) %>% 
+    .$coef 
+})
+lm_boot <- data.frame(boot_intercept = lm_boot[1,], boot_slope = lm_boot[2,]) 
+boot_s <- dat_s |> 
+    specify(assess_val~BLDG_METRE) |> 
+    generate(reps = 1000, type = 'bootstrap') |> 
+    calculate(stat = 'slope')
+data.frame(coef_table %>% select(estimate),coef_table %>% select(std.error),
+B_avg = lm_boot %>% summarize(intercept = mean(boot_intercept),
+                               slope = mean(boot_slope)) %>% 
+                     round(3)  %>% unlist(),
+B_se = lm_boot %>% summarize(intercept = sd(boot_intercept),
+                              slope= sd(boot_slope)) %>% 
+                    round(3)  %>% unlist())
+\end{lstlisting}
+
+\subsection{Using theoretical results - CLT}
+\smalltext{assumptions about the distribution of the error terms! || the conditional distribution of the error terms is Normal, and so is the conditional distribution of the response! || sample size is large || 
+lm uses this theoretical result to compute p-values and confidence intervals!}
+
+\subsection{Confidence Intervals}
+\smalltext{}
+\begin{lstlisting}[language=R]
+tidy(lm_s, conf.int = TRUE)
+quantile(slope_B,0.025)  %>% round(2)
+quantile(slope_B,0.975) %>% round(2)
+(slope_s + qnorm(0.025) * sd(slope_B)) %>% round(2)
+(slope_s - qnorm(0.025) * sd(slope_B)) %>% round(2)
+\end{lstlisting}
+
+\subsection{Slope Coefficient Hypothesis}
+\smalltext{
 $H_0: \beta_1 = 0$ \\
 $H_a: \beta_1 \neq 0$ \\
-From the regression output we got the following get: \\
-Slope estimate: <tidy\_SL\_reg -> estimate column>  \\
-p-value: <tidy\_SL\_reg -> p-value column> \\
+From the regression output we get the following: \\
+Slope estimate: tidy\_SL\_reg -- estimate column  \\
+p-value: tidy\_SL\_reg -- p-value column \\
 If the p-value is far smaller than significance value $\alpha$ (0.05 usually): \\
 $\text{p-value} < 0.05 \quad \Rightarrow \quad \text{Reject } H_0$ \\
 Has is extremely strong statistical evidence that the slope coefficient differs from zero. We therefore conclude that col1 is a significant predictor of col2 in the population.
@@ -116,14 +282,16 @@ Sometimes, there's a linear association only in part of the data range.
 The linear model could still be useful when restricted to that specific range;
 We need to exercise caution when using the model outside the range of the data, as the relationship between $X$  and $Y$ may differ significantly.
 }
-\subsection{Multiple Linear Regresion - Lecture 4}
+\section{Multiple Linear Regresion}
 \smalltext{
 $Y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \cdots + \beta_p x_{ip} + \varepsilon_i$ \\
 $\varepsilon_i \sim N(0, \sigma^2) \quad \text{for all } i$ \\
 $\text{Cov}(\varepsilon_i, \varepsilon_j) = 0 \quad \text{for } i \neq j $ \\
 The MLR model is no longer a line, but a hyperplane in a ($p$+1)-dimensional space. In three dimensions (two predictors), it is a plane. \\
 }
+
 \begin{lstlisting}[language=R]
+fit <- lm(assess_val ~ BLDG_METRE*FIREPLACE, data= dat_s)
 ML_reg <- lm(col1 ~ col2 + col3 + col4, data = data_frame)
 library(GGally)
 ggpairs(data = dataFrame[, c("col1","col2","col3","col4",)])
