@@ -1,0 +1,162 @@
+\documentclass[8pt,landscape]{article}
+
+% PACKAGES
+\usepackage[letterpaper, margin=0.1in]{geometry}
+\usepackage{amsmath, amssymb, geometry}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{booktabs} % For better tables if needed
+
+% Define a custom color for code highlighting and environment
+\definecolor{myred}{RGB}{204, 0, 0} % A strong red
+\definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
+\setlist[itemize]{
+    noitemsep,  % Removes vertical space between list items
+    topsep=0pt,  % Removes space before the list
+    partopsep=0pt, % Removes extra space when a list begins mid-paragraph
+    parsep=0pt, % Removes space between paragraphs within an item
+    leftmargin=*, % Sets the left margin to the minimum necessary
+    labelsep=0.5em, % You can slightly adjust the space between the bullet and the text
+}
+% LISTINGS SETUP for R and Python
+\lstset{
+  basicstyle=\ttfamily\scriptsize\color{black},
+  backgroundcolor=\color{mygray},
+  frame=single,
+  frameround=tttt,
+  framesep=0pt,        % no padding between code and frame
+  rulecolor=\color{black!20},
+  rulesep=0pt,         % no space between rules
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  commentstyle=\color{gray},
+  keywordstyle=\color{blue!80!black},
+  stringstyle=\color{myred},
+  breakatwhitespace=true,
+  xleftmargin=0pt,     % no left margin
+  xrightmargin=0pt,    % no right margin
+  aboveskip=0pt,       % no space above listing
+  belowskip=0pt,       % no space below listing
+  abovecaptionskip=0pt,
+  belowcaptionskip=0pt,
+  framexleftmargin=0pt,
+  framexrightmargin=0pt,
+  framextopmargin=0pt,
+  framexbottommargin=0pt
+}
+
+% FORMATTING
+\setstretch{0.9} % Reduce line spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+% Reduce section spacing and change color
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{2}{0pt}%
+    {0.1ex}% space before section
+    {0.1ex}% space after section
+    {\fontsize{8}{9}\bfseries\color{red}}} % section font: 8pt
+\makeatother
+
+% Reduce subsection spacing and make subsections blue
+\makeatletter
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
+    {0.1ex}% space before subsection
+    {0.1ex}% space after subsection
+    {\fontsize{8}{9}\bfseries\color{blue}}} % Subsection font: 8pt
+\makeatother
+
+% Custom command for red-highlighted code/commands (for in-line use)
+\newcommand{\code}[1]{\textcolor{myred}{\texttt{#1}}}
+
+% Custom small text wrapper - ensuring 8pt for body text
+\newcommand{\smalltext}[1]{%
+  {\fontsize{8}{9}\selectfont\sloppy #1\par}%
+}
+
+% DOCUMENT START
+\begin{document}
+\fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
+\pagestyle{empty}
+\begin{multicols}{3}
+\section{Loss functions}
+\smalltext{
+fit works, primarily in the context of linear models. A loss function is a mathematical function that quantifies how well a machine learning model’s predictions align with the actual target values. It measures the “cost” associated with prediction errors. During training the model tries to improve its performance by minimizing this cost or loss function.
+}
+\subsection{ML Training}
+\smalltext{
+1. Choose your model (eg. Linear Regression) \\
+2. Choose your loss function (eg. Ordinary Least Squeares) \\
+3. Choose your optimization algorithm (eg. Gradient Descent) \\
+}
+
+\section{Regularization}
+\smalltext{
+Complex models often overfit the training data. For example, in polynomial regression, the validation score usually increases at first (as complexity helps) but eventually decreases (as the model becomes too flexible). Real-world relationships between $X$ and $Y$ may be complex, but we rarely know which features truly matter, so we need tools to control model complexity.
+}
+
+\subsection{Controlling model complexity}
+\smalltext{
+Common ways to control complexity include:
+\begin{itemize}
+    \item \textbf{Feature selection:} Reduce the number of input features.
+    \item \textbf{Ensemble averaging:} Combine multiple models (e.g., random forests) to reduce variance.
+    \item \textbf{Regularization:} Add a penalty to the loss function that increases with model complexity.
+\end{itemize}
+
+With regularization, we minimize:
+$$
+\text{Loss} + \lambda\,(\text{Model Complexity})
+$$
+The Loss measures fit to data, while the regularization term penalizes complexity. The parameter $\lambda$ controls how strong the penalty is.
+
+\textbf{L0 regularization:} Counts the number of non-zero weights:
+$$
+\| \mathbf{w} \|_{0} = \#\{ w_i : w_i \neq 0 \}
+$$
+
+\textbf{L1 regularization:} Sums absolute values of the weights:
+$$
+\| \mathbf{w} \|_{1} = \sum_i |w_i|
+$$
+
+\textbf{L2 regularization:} Sums squared weights:
+$$
+\| \mathbf{w} \|_{2}^{2} = \sum_i w_i^2
+$$
+
+\textbf{Idea:}  
+L0: penalizes the number of features.  (feature selection RFE)
+L1: encourages sparsity (many zeros). (Lasso Regression)
+L2: encourages small, smooth weights. (Ridge Regression)
+}
+
+\subsection{Why are small weights better?}
+\smalltext{
+Somewhat non-intuitive.
+Suppose $x_1$ and $x_2$ are nearby each other.
+We might expect that they have similar $y$.
+If we change feature1 value by a small amount, leaving everything else the same, we might think that the prediction would be the same.
+But if we have bigger weights, small change has a large effect on the prediction. 
+}
+\smalltext{
+Ridge: Linear Regression with L2 regularization
+Logistic Regression with L2 regularization
+}
+
+
+
+\begin{lstlisting}[language=Python]
+
+\end{lstlisting}
+
+
+\end{multicols}
+\end{document}
