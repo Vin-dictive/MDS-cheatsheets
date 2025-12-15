@@ -126,11 +126,13 @@ $$
 $$
 \| \mathbf{w} \|_{1} = \sum_i |w_i|
 $$
+Makes one of the weights to zero for multi-colinear features
 
 \textbf{L2 regularization:} Sums squared weights:
 $$
 \| \mathbf{w} \|_{2}^{2} = \sum_i w_i^2
 $$
+Gives equal but reduce weightage to multi-colinear features
 
 \textbf{Idea:}  
 L0: penalizes the number of features.  (feature selection RFE)
@@ -151,7 +153,31 @@ Ridge: Linear Regression with L2 regularization
 Logistic Regression with L2 regularization
 }
 
+\section{Ensemble Learning}
+\smalltext{
+Group of models or predictors. Often get better and reliable predictions than with a single best model. 
+\textbf{High Variance:} high error during testing and validation. Overfitting.
+\textbf{High bias:} high error during training. Underfitting.
+}
+\section{Ensemble techniques}
+\smalltext{
+Greater the diversity among the individual models, the better the ensemble will perform compared to its individual model. This is because different models capture different patterns in the data, and by combining their predictions, the ensemble can leverage the strengths of each model while mitigating their weaknesses.
+}
 
+\subsection{Bagging (Bootstrap Aggregating):Random Forests}
+\smalltext{
+Several models are trained independently (can be done in parallel) on different random subsets of the data and their predictions are averaged (for regression) or voted upon (for classification).
+}
+
+\subsection{Boosting:Gradient Boosted Trees (e.g., XGBoost, LightGBM, CatBoost)}
+\smalltext{
+Weak learner are trained sequentially where each new model focuses on correcting the errors made by the previous models. The final prediction is a weighted combination of all models.
+}
+
+\subsection{Stacking (stacked generalization):SuperLeraner (R package)}
+\smalltext{
+Base learner models of different types (different algorithm) are trained on the same dataset and a meta-model is trained to combine their predictions. Stacking is a heterogenous parallel method.
+}
 
 \begin{lstlisting}[language=Python]
 

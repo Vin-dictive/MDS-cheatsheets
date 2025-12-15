@@ -1,0 +1,356 @@
+\documentclass[8pt,landscape]{article}
+
+% PACKAGES
+\usepackage[letterpaper, margin=0.1in]{geometry}
+\usepackage{amsmath, amssymb, geometry}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{booktabs} % For better tables if needed
+
+% Define a custom color for code highlighting and environment
+\definecolor{myred}{RGB}{204, 0, 0} % A strong red
+\definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
+\setlist[itemize]{
+    noitemsep,  % Removes vertical space between list items
+    topsep=0pt,  % Removes space before the list
+    partopsep=0pt, % Removes extra space when a list begins mid-paragraph
+    parsep=0pt, % Removes space between paragraphs within an item
+    leftmargin=*, % Sets the left margin to the minimum necessary
+    labelsep=0.5em, % You can slightly adjust the space between the bullet and the text
+}
+% LISTINGS SETUP for R and Python
+\lstset{
+  basicstyle=\ttfamily\scriptsize\color{black},
+  backgroundcolor=\color{mygray},
+  frame=single,
+  frameround=tttt,
+  framesep=0pt,        % no padding between code and frame
+  rulecolor=\color{black!20},
+  rulesep=0pt,         % no space between rules
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  commentstyle=\color{gray},
+  keywordstyle=\color{blue!80!black},
+  stringstyle=\color{myred},
+  breakatwhitespace=true,
+  xleftmargin=0pt,     % no left margin
+  xrightmargin=0pt,    % no right margin
+  aboveskip=0pt,       % no space above listing
+  belowskip=0pt,       % no space below listing
+  abovecaptionskip=0pt,
+  belowcaptionskip=0pt,
+  framexleftmargin=0pt,
+  framexrightmargin=0pt,
+  framextopmargin=0pt,
+  framexbottommargin=0pt
+}
+
+% FORMATTING
+\setstretch{0.9} % Reduce line spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+
+% Reduce section spacing and change color
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{2}{0pt}%
+    {0.1ex}% space before section
+    {0.1ex}% space after section
+    {\fontsize{8}{9}\bfseries\color{red}}} % section font: 8pt
+\makeatother
+
+% Reduce subsection spacing and make subsections blue
+\makeatletter
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
+    {0.1ex}% space before subsection
+    {0.1ex}% space after subsection
+    {\fontsize{8}{9}\bfseries\color{blue}}} % Subsection font: 8pt
+\makeatother
+
+% Custom command for red-highlighted code/commands (for in-line use)
+\newcommand{\code}[1]{\textcolor{myred}{\texttt{#1}}}
+
+% Custom small text wrapper - ensuring 8pt for body text
+\newcommand{\smalltext}[1]{%
+  {\fontsize{8}{9}\selectfont\sloppy #1\par}%
+}
+
+% DOCUMENT START
+\begin{document}
+\fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
+\pagestyle{empty}
+\begin{multicols}{3}
+
+\section{Goodness of fit and nested models}
+\subsection{Sum of Squares Decomposition-MSE-TSS-ESS-RSS}
+\textbf{Mean Squared Error:}
+$
+MSE = \frac{1}{n}\sum_{i=1}^{n} (y_i - \hat{y}_i)^2 = \frac{1}{n}RSS
+$
+
+
+\textbf{Total Sum of Squares:}
+$
+TSS = \sum_{i=1}^{n} (y_i - \bar{y})^2
+$
+
+\begin{itemize}
+  \item The sum of the squares of the observations from the null (intercept-only, no explanatory variables) model.
+  \item When properly scaled, it is the sample variance of $Y$, which estimates the population variance of $Y$.
+  \item Add a new variable, TSS stays the same.
+\end{itemize}
+
+\textbf{Explained Sum of Squares:}
+$
+ESS = \sum_{i=1}^{n} (\hat{y}_i - \bar{y})^2
+$
+
+\begin{itemize}
+  \item $\hat{y}_i$ predicts $y_i$ using the LR, while $\bar{y}$ predicts $y_i$ without a model. If our model is better than nothing, this should be large. Measures how much is explained by the additional information given by the LR.
+\end{itemize}
+
+\textbf{Residual Sum of Squares:}
+$
+RSS = \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
+$
+
+\begin{itemize}
+  \item This is the sum of the squares of the residuals from the fitted model.
+  \item Our estimated parameters minimize these errors.
+  \item Add a new variable,RSS does not increase, because it makes the model fit better.
+\end{itemize}
+
+If parameters are estimated using least squares and the LR has an intercept:
+$
+TSS = ESS + RSS
+$
+
+\textbf{The coefficient of determination}
+$
+R^2 = 1 - \frac{RSS}{TSS}
+$
+
+\textbf{Adjusted $R^2$}
+$\text{Adj } R^2 = 1 - \frac{RSS/(n-p)}{TSS/(n-1)}$
+
+LR with an intercept and estimated by least squares, it is equivalent to:
+$
+R^2 = \frac{ESS}{TSS}
+$ \\
+\textbf{Interpretations: }LR with an intercept and estimated by least squares, the coefficient of determination:
+\begin{itemize}
+  \item Proportion of variance of the response ($TSS$) explained by the model ($ESS$).
+  \item Lies between $0$ and $1$, both $ESS$ and $RSS$ are nonnegative.
+  \item Measures the gain in predicting the response using the linear model instead of the sample mean, relative to the total variation in the response.
+\end{itemize}
+\subsection{R-squared $R^2$}
+R2=0.051 means that 5.1\% of the variability in the response variable (teaching scores) is explained by the LR model.
+\begin{lstlisting}[language=R]
+glance(fit2)
+y <- dat$score #Manual R-sqr
+y.hat <- fitted(fit2)
+TSS <- sum((y-mean(y))^2)
+RSS <- sum((y-y.hat)^2)
+my_Rsq <- 1-RSS/TSS
+\end{lstlisting}
+\begin{itemize}
+  \item Computed using \textbf{in-sample observations}.
+  \item Does \textbf{not} indicate how well the model predicts \textbf{out-of-sample (test set)} cases.
+  \item Ranges between \textbf{0 and 1} if the LRmodel. Includes an intercept, and Is estimated using least squares (LS).
+  \item \textbf{negative $R^2$} indicates that the \textbf{sample mean} is a better predictor than the estimated linear regression model.
+  \item Used to \textbf{compare the size of residuals} from the fitted model with those from the \textbf{null model}.
+  \item \textbf{Cannot be used to test hypotheses}, since its sampling distribution is not known.
+  \item Adding more variables to a linear regression model \textbf{cannot decrease $R^2$}.
+  \item Cannot compare models of different sizes (Adj $R^2$ can for dif size) but can for same sizes
+\end{itemize}
+\includegraphics[width=0.50\linewidth, height=2.0cm]{r2.png}
+\includegraphics[width=0.50\linewidth, height=2.0cm]{r2-2.png}
+\subsection{Nested Models - F-test/statistics}
+\smalltext{
+  To check if reduced model and full model significantly different while simulataneously testing if many parameters are zero!
+  Example: is LR better?
+  Reduced model:(Additive) $Y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \epsilon_i$ \\ 
+  Full Model:(Interaction)  $Y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \beta_3 x_{i1} \times x_{i2} + \varepsilon_i$ \\
+  Hypothesis:$H_0: \beta_3 = 0$ \\
+  With the F-test, we could test the significance of many parameters. For 1 parameter, T and F test same.
+}
+\begin{lstlisting}[language=R]
+lm_red <- lm(score ~ age + sex, data=dat)
+lm_full <- lm(score ~ age*sex, data=dat)
+anova(lm_red,lm_full)
+#Note that glance also includes this statistic and p-value
+glance(lm_full) 
+\end{lstlisting}
+\smalltext{
+  If p.value  $ \le \alpha$, we have evidence that a model with an interaction term fits the data better than a model without. \\
+  sigma in glance is Standard deviation of the error term. tidy gives T-test statistic, Anova gives F-test. $(statistic)^2$ = F
+}
+
+\section{Evaluation Metrics}
+\smalltext{
+MSE, the $R^2$ can be computed for new responses in a test set compared to the predicted values obtained using the trained LR. However, note that it is no longer the coefficient of determination. It measures the correlation between the true and the predicted responses in a test set.
+The F-statistic and the $R^2$ both depend on the RSS and the TSS.
+}
+
+\subsection{Inference}
+\begin{itemize}
+  \item \textbf{F-Test} to compare and test nested models - anova.
+   \item \textbf{T-Test} to test the contribution of individual variables to explain the response. Thus, we can use these tests to evaluate variables one at a time. - lm or tidy
+   \item \textbf{R\^2 or RSS} The RSS decreases as more variables are included in the model!
+   \item \textbf{Adjusted R\^2} R\^2 is penalized by the number of variables in the model
+\end{itemize}
+
+\subsection{Prediction}
+\begin{itemize}
+  \item \textbf{F-Test} can not be used to compare out-of-sample predictions from different models!
+   \item \textbf{Estimates of the test MSE} The Mallow's Cp, Akaike information criterion (AIC) and Bayesian information criterion(BIC) add different penalties to the training RSS to adjust for the fact that the training error tends to underestimate the test error
+\end{itemize}
+
+\subsection{Step wise model selection RFE}
+\smalltext{
+  these approaches have many potential issues such as multiple comparison problems resulting in p.values that are too low. 
+}
+\begin{lstlisting}[language=R]
+dat_train <- sample_n(dat_s, size=nrow(dat_s)*0.75, replace=FALSE)
+dat_test <- anti_join(dat_s, dat_train, by="the_geom")
+null <- lm(assess_val ~ 1, data = dat_train)
+full <- lm(assess_val ~ age+BLDG_METRE+FIREPLACE, dat_train)
+forward <- step(null, direction = "forward", scope = formula(full))
+fwd_summary <- forward$anova #Note: best model has smallest AIC
+coef(forward_model)
+\end{lstlisting}
+
+\section{Predictions are Random Variables}
+Estimated Prediction and LR change from sample-to-sample.
+Confidence intervals take into account the sample-to-sample variation of the predictions and regression params.
+\subsection{Confidence intervals for prediction (CIP)}
+\smalltext{
+  A 95\% confidence interval for prediction is a range that with 95\% probability contains the average value of a house of this size.
+  If we take a different sample, we get: different estimates, different fitted lines, and different predictions!
+}
+\begin{lstlisting}[language=R]
+df_lm <- lm(col1 ~ col2 * col3, df)
+CI_col3 <- tidy(df_lm, conf.int = TRUE, conf.level = 0.95) |>
+  subset(term == "col2", select = c(conf.low, conf.high))
+predict(df_lm, newdata = data.frame(col2 = 45, col3 = "Florida"),
+  interval = "confidence", level = 0.95)
+dat_cip <- dat_s|>select(col1,col2)|>
+  cbind(predict(lm_s,interval="confidence",se.fit=TRUE)$fit)
+\end{lstlisting}
+\smalltext{
+\textbf{
+  We are 95\% confident that the mean value of the population parameter (like mean etc) lies between the lower and upper confidence limits.
+}
+A 90\% confidence interval is narrower than a 95\% confidence interval.
+}
+\includegraphics[width=0.50\linewidth, height=2.0cm]{CIP.png}
+\includegraphics[width=0.50\linewidth, height=2.0cm]{pi.png}
+\subsection{Prediction Intervals (PI) - predicted values CI}
+\smalltext{
+  A prediction interval is a range that with probability 95\% contains the actual value of a house of this size
+  The predicted value $\hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 X_i$ also approximates, with uncertainty, an actual observation
+$Y_i = \beta_0 + \beta_1 X_i + \varepsilon_i$.
+The uncertainty comes from the estimation and from the error term that generates the data.
+}
+\begin{lstlisting}[language=R]
+predict(df_lm, newdata = data.frame(col2 = 45,col3 = "Florida"),
+  interval = "prediction",level = 0.95)
+dat_pi <- dat_s|> select(col1,col2)|> 
+  cbind(predict(df_lm,interval="prediction"))
+\end{lstlisting}
+\smalltext{
+\textbf{
+  \textbf{With 95\% confidence, the value of the response variable for a new observation at $X = x_0$ lies between $L$ and $U$.}
+}
+}
+\subsection{Conclusion}
+\smalltext{
+ Confidence intervals for prediction account for the uncertainty given by the estimated LR to predict the conditional expectation of the response. \\
+Prediction intervals account for the uncertainty given by the estimated LR to predict the conditional expectation of the response, plus the error that generates the data. \\
+PI are wider than CIP, both are centered at the fitted value.
+}
+
+\section{Potential problems in LR}
+\textbf{Linearity}
+\smalltext{
+  By linear in a LR, we mean that variables (or functions of them) are multiplied by a coefficient and then sum together. fitting a quadratic function using LR.
+  If not linear, conclusions are flawed, accuracy compromised.
+}
+\textbf{Normality of the error term}
+\smalltext{
+Least squares (LS) estimation does not depend on any normality assumption. However, many of the inference results given by lm do. \\
+\textbf{Quantile-Quantile (Q-Q) plots} compare the quantiles of Normal Dist with the empirical quantiles of the standardized residuals.
+If error term is Normal, we expect most of the quantiles of both distributions to be over the 45 degree line in the plots.
+}
+\begin{lstlisting}[language=R]
+dat_s <- sample_n(dat, 1000, replace = FALSE)
+lm_large <- lm(assess_val ~ BLDG_METRE, dat_s)
+plot(lm_large,2)
+\end{lstlisting}
+
+\textbf{Equal variance}
+\smalltext{
+AKA homogeneity, homoscedasticity, or constant variance assumption.
+In residual plot:you don't want to see a funnel effect: more variation for larger fitted values. \\
+Usually variable transformations can be used to address this issue.
+}
+
+\textbf{Mulitcollinearity}
+\smalltext{
+some (or all) of the explanatory variables are linearly related!
+LS estimators are very “unstable” and the contribution of one variable gets mixed with that of another variable correlated with it.
+\textbf{Diagnosing:}
+checked using pairwise plots or measured through the variance inflation factors (VIF)
+}
+
+\textbf{Post-Selection Inference}
+\smalltext{
+arises when using LASSO for variable selection with the goal of later conducting inference on the selected model. To mitigate these issues, you can perform model selection on the training data, and use the testing data to conduct statistical inference.
+}
+\textbf{Confounding factors}
+\smalltext{
+refers to a situation in which a variable, not included in the model, is related with both the response and at least one covariate in the model. Not known factors not present
+}
+
+\section{Logistic Regression Parameters}
+\smalltext{
+Estimated parameter $\hat{\beta}$ in LR by minizing MSE.
+Normality of errors is not required to estimate coefficients using ordinary least squares (OLS).
+Each $Y_i$ follows a Bernoulli distribution with success probability $p_i$
+Assumptions of homoscedasticity and normality are violated in this case.
+Solution is to use MLE which leads to logistic regression. 
+We can use the function glm() with the argument family = binomial to get the estimates.
+}
+% \includegraphics[width=0.50\linewidth, height=2.0cm]{logistic.png}
+\begin{lstlisting}[language=R]
+log_model <- glm(as.factor(binary_col)~col2,dat,family = binomial)
+tidy(log_model, exponentiate = TRUE) #Log -> original scale
+odds <- round(exp(predict(log_model,tibble(col1 = 5000), type = "link")),3) #gives prediction exponentiate
+probability <- odds / (1 + odds)
+\end{lstlisting}
+\smalltext{
+AKA \textbf{odds ratio}.
+\textbf{Interpretation:} For a one-unit increase in $X_i$, the odds that $Y_i = 1$ increase by a factor of $e^{\hat{\beta}_1}$.
+}
+\subsection{Inference}
+\smalltext{
+  We can determine whether a regressor is statistically associated with the logarithm of the response's odds through hypothesis testing.
+$
+\text{Wald statistic} z_j = \frac{\hat{\beta}_j}{\operatorname{se}(\hat{\beta}_j)}, 
+\quad
+H_0:\beta_j=0,\ 
+H_a:\beta_j\neq 0.
+$
+}
+Based on our sample, we reject $H_0$ (p-value $\approx 0$), indicating that \texttt{fast\_food\_spend} is statistically associated with the log-odds of \texttt{heart\_disease}.
+
+\end{multicols}
+\end{document}
+
