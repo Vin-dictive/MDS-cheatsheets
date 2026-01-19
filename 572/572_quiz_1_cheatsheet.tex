@@ -17,6 +17,15 @@
 \definecolor{myred}{RGB}{204, 0, 0} % A strong red
 \definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
 
+\setlist[itemize,enumerate]{
+    noitemsep,
+    topsep=0pt,
+    partopsep=0pt,
+    parsep=0pt,
+    leftmargin=*,
+    labelsep=0.5em,
+}
+
 % LISTINGS SETUP for R and Python
 \lstset{
   basicstyle=\ttfamily\scriptsize\color{black}, % Tiny font for code
@@ -34,22 +43,28 @@
   breakatwhitespace=true,
   xleftmargin=0pt,
   xrightmargin=0pt,
-  aboveskip=0.5ex,
-  belowskip=0.5ex
+  aboveskip=0pt,
+  belowskip=0pt
 }
 
 % FORMATTING
-\setstretch{0.9} % Reduce line spacing
+\setstretch{0.8} % Reduce line spacing
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0pt}
 
 % Reduce section spacing and change color
-\sectionfont{\fontsize{8}{9}\selectfont\bfseries\color{black}} % Main section font: 8pt
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{0pt}%
+    {-1ex plus -0.5ex minus -0.2ex}% space before
+    {0.5ex plus 0.2ex}% space after
+    {\fontsize{8}{9}\bfseries\color{black}}}
+\makeatother
+
 % Reduce subsection spacing and make subsections blue
 \makeatletter
 \renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
-    {0.1ex}% space before subsection
-    {0.1ex}% space after subsection
+    {-1ex plus -0.5ex minus -0.2ex}% space before subsection
+    {0.5ex plus 0.2ex}% space after subsection
     {\fontsize{8}{9}\bfseries\color{blue}}} % Subsection font: 8pt
 \makeatother
 
@@ -67,37 +82,233 @@
 \pagestyle{empty}
 \begin{multicols}{3}
 
-\section{Floating points}
-\subsection{Floating points}
+\section{Integer Representation}
+\begin{lstlisting}[language=Python]
+np.float32(6.5)/np.float64(6.5) # Cast to different precisions
+np.spacing(1e25)
+np.float64(2147483648.0) 
+np.nextafter(1e25, 1e26) - 1e25 
+bin(x) #Python function to get the binary 
+np.finfo(np.float64).minexp  # minimum exponent value
+np.finfo(np.float64).tiny  # smallest possible positive value
+(2.0**np.arange(-4, 4, 1)).sum() # Sums 2^-4, 2^-3, ..., 2^3
+\end{lstlisting}
 \smalltext{
-$2^n-1$ number of digits represented in binary
-$2^{n-1}-1$ for signed digits represented in binary
+    \textbf{Unsigned Range (N bits)}: $0$ to $2^N - 1$. \\
+    \textbf{Signed Range (N bits)}: $-2^{N-1}$ to $2^{N-1} - 1$ (using two's complement).
+}
+\section{Floating-Point Numbers (IEEE 754)}
+\subsection{Representation}
+\smalltext{
+\begin{itemize}
+    \item \textbf{Sign (S)}: 1 bit (0 for positive, 1 for negative).
+    \item \textbf{Exponent (E)}: A biased exponent.
+    \item \textbf{Mantissa (M)}: The fractional part of the number.
+\end{itemize}
+The value is: $(-1)^S \times (1 + M) \times 2^{E - \text{bias}}$ \\
+Single (32-bit): 1 sign, 8 exponent, 23 mantissa bits (bias 127). \\
+Double (64-bit): 1 sign, 11 exponent, 52 mantissa bits (bias 1023).
 }
 
-\subsection{Fractional Numbers in Binary}
+\subsection{Floating-Point Spacing (ULP)}
 \smalltext{
-    binary fractions use negative powers of 2
-    $2^{-1} = 0.5$
+The distance between two consecutive floating-point numbers is not constant (ULP - Unit in the Last Place). Staircase like.
+Gap between two representable floats. It's the value of the LSB of the mantissa. \\
+\textbf{Spacing}: Increases with the magnitude of the number. For a number $x = M \times 2^E$, the spacing is $2^E \times \epsilon$. \\
+\code{np.spacing(x)}: NumPy function that returns the distance between x and the next representable float. \\
+As magnitude ($\uparrow$), exponent ($\uparrow$), spacing ($\uparrow$), and relative precision ($\downarrow$).
+}
+\subsection{Numerical Stability and Order of Operations}
+\smalltext{
+Floating-point arithmetic is not associative. The order of operations matters and can lead to different results due to rounding errors.
+.e.g., \code{(0.1 + 0.2) + 0.3} is not always equal to \code{0.1 + (0.2 + 0.3)}.
+ .This can affect the stability of complex calculations in ML algorithms.
+   .If the added value is much smaller than the current number's ULP, it rounds back to the original number (e.g., \code{1e50 + 1e5 == 1e50} is True).
+    .Order of operations matters: \code{0.7 + 0.7 + 1e16 == 1e16} is False, but \code{1e16 + 0.7 + 0.7 == 1e16} is True, because \code{1e16 + 0.7} rounds to \code{1e16} if \code{0.7} is less than half the ULP.
 }
 
-\subsection{Fixed-point Numbers in Binary}
+\subsection{Example: Decimal to Float (Single Precision)-Remove}
 \smalltext{
+Let's convert \textbf{-0.75} to single precision.
+\begin{enumerate}
+    \item \textbf{Sign (S)}: The number is negative, so $S=1$.
+    \item \textbf{Binary Conversion}: $0.75 = 0.5 + 0.25 = 2^{-1} + 2^{-2} = 0.11_2$.
+    \item \textbf{Normalization}: Move the decimal point to get a number of the form $1.M$. $0.11_2 = 1.1_2 \times 2^{-1}$.
+    \item \textbf{Exponent (E)}: The exponent is -1. The bias is 127. So, the biased exponent is $E = -1 + 127 = 126$. In binary, $126 = 01111110_2$.
+    \item \textbf{Mantissa (M)}: The fractional part from normalization is $1$. For single precision, we need 23 bits, so we pad with zeros: $10000000000000000000000$.
+\end{enumerate}
+}
+\subsection{Example: Float to Decimal (Single Precision)-Remove}
+\smalltext{
+Let's convert the float: \code{0 10000001 10100000000000000000000}
+\begin{enumerate}
+    \item \textbf{Sign (S)}: $S=0$, so the number is positive.
+    \item \textbf{Exponent (E)}: $E = 10000001_2 = 129$. The unbiased exponent is $129 - 127 = 2$.
+    \item \textbf{Mantissa (M)}: $M = 1010...$. The implicit leading bit is 1, so the significand is $1.M = 1.101_2$.
+    \item \textbf{Calculation}: The value is $(1.101)_2 \times 2^2$.
+    Shift the decimal point by 2 places: $110.1_2$.
+    Convert to decimal: $1 \cdot 2^2 + 1 \cdot 2^1 + 0 \cdot 2^0 + 1 \cdot 2^{-1} = 4 + 2 + 0 + 0.5 = 6.5$.
+\end{enumerate}
+So, the number is \textbf{6.5}.
 }
 
-\subsection{Floating-point Numbers/scientific notations}
+% \subsection{Special Values}
+% \smalltext{
+% IEEE 754 includes representations for special values:
+% \begin{itemize}
+%     \item \textbf{Infinity}: Exponent is all 1s, mantissa is all 0s. Sign bit determines if it is $+\infty$ or $-\infty$. Used for overflows or division by zero.
+%     \item \textbf{NaN (Not a Number)}: Exponent is all 1s, mantissa is non-zero. Represents results of invalid operations like $0/0$ or $\sqrt{-1}$.
+%     \item \textbf{Denormalized Numbers}: Exponent is all 0s. Represent very small numbers close to zero. The value is $(-1)^S \times M \times 2^{1 - \text{bias}}$.
+% \end{itemize}
+% }
+
+
+\subsection{Relevance in ML/DL}
 \smalltext{
-    $1234 \times 10^4$
-    $M \times 2^E$
-    Mantissa (significant)
-    Exponent(biased)
-    IEEE-754  standard for float 64 representation
-    1 bit overall sign 52 bits for Mantissa, 8 for exponent
-    float 64 => $2^{1024}$
+The choice of floating-point precision is critical in Machine and Deep Learning.
+\begin{itemize}
+    \item \textbf{Large-Scale Computation}: Deep learning models involve millions of parameters and vast amounts of numerical computations.
+    \item \textbf{Error Accumulation}: Small rounding errors in floating-point math can accumulate through many layers, potentially leading to suboptimal model convergence.
+    \item \textbf{Efficiency \& Stability}: Lower precision (e.g., 16-bit floats) can speed up training and reduce memory usage, but may affect numerical stability. Higher precision is more accurate but slower. This trade-off is crucial in optimization.
+    \item 32-bit floats (single precision) are faster and use less memory (Advantage), but have lower precision/accuracy (Disadvantage) compared to 64-bit (double precision).
+    \item More exponent bits (e.g., 52-11 scheme) result in a larger range of representable numbers (closer to 0 and infinity) than more mantissa bits (e.g., 57-6 scheme).
+\end{itemize}
 }
+
+
+\section{Gradient Descent}
+% \smalltext{
+% For linear regression, where the hypothesis is $h_{\theta}(x) = x^T\theta$, the Mean Squared Error (MSE) cost function can be expressed in matrix and vector form.
+% }
+% $\text{MSE} = \mathcal{L}(\mathbf{w}) = \frac{1}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i)^2 = \frac{1}{n} \sum_{i=1}^{n} (\mathbf{x}_i^T \mathbf{w} - y_i)^2 = \frac{1}{n} (\mathbf{Xw} - \mathbf{y})^T (\mathbf{Xw} - \mathbf{y})$
+
+\subsection{Stopping Criteria for Gradient Descent}
+\smalltext{
+Gradient descent typically stops when one of the following criteria is met:
+.The step size (i.e., the change in parameters) falls below a predefined threshold.
+. A maximum number of iterations (steps) is completed.
+}
+
+\subsection{Gradient Descent Pseudocode}
+\smalltext{
+\begin{itemize}
+    \item Gradients are essential for minimizing loss functions; they indicate direction and magnitude for parameter updates to decrease loss.
+    \item The number of iterations for convergence depends on initial parameter values; closer to the minimum means fewer iterations.
+    \item SGD loss can increase if the learning rate is too large or if the batch gradient does not accurately represent the true gradient.
+    \item Doubling the learning rate can lead to longer/shorter optimization or divergence (inf/nan). The loss landscape itself does not vary.
+    \item Different batch sizes result in different gradients and trajectories, so 1 epoch doesn't lead to the same point in the loss landscape.
+    \item SGD's path is noisy because mini-batch gradients are approximations, causing random deviations from the true gradient.
+    \item To avoid local minima, try initializing parameters with different values or using SGD with different batch sizes.
+    \item Real-life loss functions of neural networks are rarely smooth-looking
+    \item Recommended to scale features when using gradient descent.
+    \item Feature scaling makes the loss function's contours more spherical rather than elongated ellipses. This disproportionate contribution of different features to the loss can result in slower convergence for gradient descent.
+    \item Gradient Descent is only guaranteed to find the global minimum for convex functions. For non-convex functions (like those in deep learning), it can easily get stuck in a local minimum or a saddle point.
+\end{itemize}
+}
+
+\subsection{Stochastic Gradient Descent Pseudocode}
+\smalltext{
+\begin{itemize}
+\item Initialize parameters $w$ with some arbitrary values.
+\item While stopping criteria not met:
+\begin{itemize}
+\item Shuffle the training dataset to ensure random order.
+\item For each training example $(\mathbf{x}_i, y_i)$ in the dataset:
+\begin{itemize}
+\item Calculate the gradient of the loss for that specific example.
+\item Update $w$ immediately using the rule: $w = w - \alpha \nabla \mathcal{L}_i(w)$.
+\end{itemize}
+\end{itemize}
+\item Repeat until stopping criteria is met.
+\end{itemize}
+}
+\includegraphics[width=0.3\linewidth, height=2cm]{histo.png}
+\includegraphics[width=0.7\linewidth, height=2cm]{gd.png}
+\smalltext{
+The histogram is left-skewed, indicating that more often than not, our gradient is negative. This means that we need to increase W 
+to decrease our loss.
+Notice we bounce around a bit. We get this “noise” because we are only basing our adjustment on one data point.f we were to traverse the overall loss landscape (the contour plot above), we should have smoothly progressed towards the minimum because the direction of the steepest descent does not change in the above case. However, the SGD method actually traverses a different loss landscape at each iteration, which is why the path towards the minimum looks noisy.
+}
+
+\subsection{minibatch stochastic gradient descent}
+\smalltext{
+\begin{itemize}
+    \item Its between GD and SGD. Rather than calculating the gradient from just one random data point, calculate it based on a batch of data points.
+    \item The larger the batch, the closer we are to the gradient calculated using the whole dataset
+    \item But also the bigger the batch, the more computations will be needed
+    \item \textbf{Approach 1:} Shuffle the dataset and pre-divide it into batches, like cross-validation. This is “without replacement”, every example is used once.
+    \item \textbf{Approach 2:} Pick a batch of certain size randomly from the dataset without replacement. In this case, you won’t have the same example occurring more that once in a batch, but you might have the same example in both batch 1 and batch 2. Every example may not be used in this approach.
+    \item \textbf{Approach 3:} Similar to Approach 2, pick a batch of certain size randomly from the dataset with replacement. In this case, even each batch is collected with replacement, so you might have the same example twice in batch 1. Every example may not be used in this approach.
+    \item We typically use approach 1 or 2 (the default in PyTorch is approach 1). Empirically, sampling without replacement tends to lead to more optimal solutions/faster convergence and this has been proved mathematically in some cases
+\end{itemize}
+}
+\subsection{Batch, Epoch and Learning Rates}
+\smalltext{
+Assume a dataset of $N$ observations (rows, samples, examples, data points, or points).
+\begin{itemize}
+    \item \textbf{Iteration}: Each time you update model weights.
+    \item \textbf{Batch}: A subset of data used in an iteration.
+    \item \textbf{Epoch}: One full pass through the dataset to look at all $N$ examples.
+    \item \textbf{In GD}: 1 Iteration = 1 epoch, \textbf{In SGD}: n Iteration = 1 epoch, \textbf{In MGD}: (n/batch\_size) Iteration = 1 epoch
+    \item Use an “adaptive” learning rate - take big steps when far from the minimum of loss function, and smaller steps when we close to it;
+    \item Use “momentum” learning rate - using how our weights have changed in past iterations to influence how it changes in future iterations
+    \item The gradient is a vector of partial derivatives of the loss function with respect to the model parameters.
+    If you do not provide a gradient function (jac=), the algorithm uses a "finite-difference scheme" numerically approximate the gradient by checking how the loss function changes when it makes tiny adjustments to the parameters.
+\end{itemize}
+}
+% #Remove if occupies too much space
+% def mse(w, X, y):
+%     """Mean squared error."""
+%     return np.mean((X @ w - y) ** 2)
+% def mse_grad(w, X, y):
+%     """Gradient of mean squared error."""
+%     n = len(y)
+%     return (2/n) * X.T @ (X @ w - y)
+% def sigmoid(X, w, output="soft", threshold=0.5):
+%     p = 1 / (1 + np.exp(-X @ w))
+%     if output == "soft":
+%         return p
+%     elif output == "hard":
+%         return np.where(p > threshold, 1, 0)
+% def accuracy(y, y_hat):
+%     return (y_hat == y).sum() / len(y)
+% def logistic_loss(w, X, y):
+%     return -(y * np.log(sigmoid(X, w)) + (1 - y) * np.log(1 - sigmoid(X, w))).mean()
+% def logistic_loss_grad(w, X, y):
+%     return (X.T @ (sigmoid(X, w) - y)) / len(X)
+% out = minimize(mse, w, jac=mse_grad, args=(X_scaled_ones, toy_y), method="CG")
+\begin{lstlisting}[language=Python]
+class multiClassifier(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super().__init__()
+        self.main = torch.nn.Sequential(
+            torch.nn.Linear(input_size, hidden_size),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_size, output_size)
+        )
+    def forward(self, x):
+        out = self.main(x)
+        return out
+from torchsummary import summary
+model = multiClassifier(2, 5, 4)
+summary(model)
+criterion = torch.nn.CrossEntropyLoss() # loss function
+optimizer = torch.optim.Adam(model.parameters(), lr=0.2)  # optimization algorithm
+\end{lstlisting}
 
 \section{Neural Networks}
-
-
-
+\smalltext{
+    \begin{itemize}
+        \item \textbf{Activation Functions Purpose:} Introduce non-linearity to model complex relationships in data.
+        \item Activation functions should be non-linear and tend to be monotonic and continuously differentiable (smooth)
+        \item \textbf{Output Layer (Regression):} Typically no activation is applied, as they limit the range of values and prevent continuous outputs.
+        \item Number of weights in the first hidden layer depends on the input feature dimension, not batch size.
+        \item \textbf{Parameter (weights and biases) calculation:} $(Input Features \times Hidden Neurons) + Hidden Biases + (Hidden Neurons \times Output Features) + Output Biases$.
+        \item Example: 6 input, 2 output, 1 hidden layer with 5 neurons: $(6 \times 5) + 5 + (5 \times 2) + 2 = 47$ parameters.
+        \item The `forward()` method defines how input data flows through the network's layers (defined in `\_\_init\_\_`) to produce an output.
+        \item \textbf{Automatic Differentiation :} Can be used for both deep and shallow neural networks.
+        \item PyTorch provides a .backward() method on every tensor that takes part in gradient computation. This enables us to do gradient descent without worrying about the structure of our model, since we no longer need to compute the derivative ourselves. Computes gradients only for tensors with `requires\_grad=True`.
+    \end{itemize}
+}
 \end{multicols}
 \end{document}

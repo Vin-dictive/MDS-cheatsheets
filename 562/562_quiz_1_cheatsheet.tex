@@ -16,26 +16,40 @@
 % Define a custom color for code highlighting and environment
 \definecolor{myred}{RGB}{204, 0, 0} % A strong red
 \definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
-
+\setlist[itemize]{
+    noitemsep,  % Removes vertical space between list items
+    topsep=0pt,  % Removes space before the list
+    partopsep=0pt, % Removes extra space when a list begins mid-paragraph
+    parsep=0pt, % Removes space between paragraphs within an item
+    leftmargin=*, % Sets the left margin to the minimum necessary
+    labelsep=0.5em, % You can slightly adjust the space between the bullet and the text
+}
 % LISTINGS SETUP for R and Python
 \lstset{
-  basicstyle=\ttfamily\scriptsize\color{black}, % Tiny font for code
+  basicstyle=\ttfamily\scriptsize\color{black},
   backgroundcolor=\color{mygray},
   frame=single,
   frameround=tttt,
-  framesep=3pt,
-  rulesepcolor=\color{black!20},
+  framesep=0pt,        % no padding between code and frame
+  rulecolor=\color{black!20},
+  rulesep=0pt,         % no space between rules
   breaklines=true,
   columns=fullflexible,
   showstringspaces=false,
   commentstyle=\color{gray},
   keywordstyle=\color{blue!80!black},
-  stringstyle=\color{myred}, % Use red for strings to match the custom \code{} style
+  stringstyle=\color{myred},
   breakatwhitespace=true,
-  xleftmargin=0pt,
-  xrightmargin=0pt,
-  aboveskip=0.5ex,
-  belowskip=0.5ex
+  xleftmargin=0pt,     % no left margin
+  xrightmargin=0pt,    % no right margin
+  aboveskip=0pt,       % no space above listing
+  belowskip=0pt,       % no space below listing
+  abovecaptionskip=0pt,
+  belowcaptionskip=0pt,
+  framexleftmargin=0pt,
+  framexrightmargin=0pt,
+  framextopmargin=0pt,
+  framexbottommargin=0pt
 }
 
 % FORMATTING
@@ -44,7 +58,13 @@
 \setlength{\parskip}{0pt}
 
 % Reduce section spacing and change color
-\sectionfont{\fontsize{8}{9}\selectfont\bfseries\color{black}} % Main section font: 8pt
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{2}{0pt}%
+    {0.1ex}% space before section
+    {0.1ex}% space after section
+    {\fontsize{8}{9}\bfseries\color{red}}} % section font: 8pt
+\makeatother
+
 % Reduce subsection spacing and make subsections blue
 \makeatletter
 \renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
@@ -57,8 +77,8 @@
 \newcommand{\code}[1]{\textcolor{myred}{\texttt{#1}}}
 
 % Custom small text wrapper - ensuring 8pt for body text
-\newcommand{\smalltext}[1]{%
-  {\fontsize{8}{9}\selectfont\sloppy #1\par}%
+\newcommand{\smalltext}[1]{
+  {\fontsize{8}{9}\selectfont\sloppy #1\par}
 }
 
 % DOCUMENT START
@@ -67,12 +87,148 @@
 \pagestyle{empty}
 \begin{multicols}{3}
 
-\section{Code}
-\subsection{Factors}
-\begin{lstlisting}[language=R]
-df$col1 <- relevel(as.factor(df$col1), ref = "value_in_col1")
-\end{lstlisting}
+\section{Binary Logistic Regression}
+\subsection{Data Modelling Framework}
+\smalltext{
+Models a binary response variable $Y_i$.
+\[
+    Y_i =
+    \begin{cases}
+        1 & \text{if the } i^{th} \text{ observation is a success} \\
+        0 & \text{otherwise.}
+    \end{cases}
+\]
+The key parameter is the probability of success, $p_i = P(Y_i=1)$. The response is assumed to follow a Bernoulli distribution, $Y_i \sim \text{Bernoulli}(p_i)$.
+}
+\subsection{Link Function (Logit)}
+\smalltext{
+The logit function links the probability $p_i$ to a linear combination of predictors. It transforms a probability [0, 1] to an unrestricted scale (-$\infty$, $\infty$).
+\[
+    h(p_i) = \text{logit}(p_i) = \log\left(\frac{p_i}{1-p_i}\right)
+\]
+\[
+    \text{logit}(p_i) = \beta_0 + \beta_1 X_{i,1} + \dots + \beta_k X_{i,k}
+\]
+This is the log-odds of success. The inverse is:
+\[ p_i = \frac{\exp(\text{logit}(p_i))}{1 + \exp(\text{logit}(p_i))} \]
+}
+\subsection{Estimation}
+\smalltext{
+Parameters $\beta_0, \dots, \beta_k$ are estimated using maximum likelihood estimation (MLE). In R, use \code{glm()} with \code{family = binomial}.
+}
+\subsection{Inference}
+\smalltext{
+To test the significance of a coefficient $\beta_j$, we use the Wald statistic:
+\[ z_j = \frac{\hat{\beta}_j}{\text{se}(\hat{\beta}_j)} \]
+For large n, $z_j$ follows a Standard Normal distribution under $H_0: \beta_j=0$. Confidence intervals are calculated as:
+\[ \hat{\beta}_j \pm z_{\alpha/2} \text{se}(\hat{\beta}_j) \]
+}
+\subsection{Model Selection}
+\smalltext{
+\textbf{Deviance ($D_k$):} Compares the fit of a model with $k$ predictors to a saturated (full) model which perfectly fits the data. Smaller is better.
+\[ D_k = -2 [\log(L_k) - \log(L_f)] \]
+\textbf{Likelihood-ratio test:} For nested models, compare deviances: $\Delta D = D_1 - D_2 \sim \chi^2_d$, where $d$ is the difference in the number of parameters.
+\textbf{AIC/BIC:} For non-nested models.
+\[ \text{AIC}_k = D_k + 2k \]
+\[ \text{BIC}_k = D_k + k\log(n) \]
+Lower AIC/BIC indicates a better model. BIC penalizes complexity more heavily.
+}
 
+\section{Cox Proportional Hazards Model}
+\subsection{Data Modelling Framework}
+\smalltext{
+A semi-parametric survival model. It models the hazard function $\lambda_i(t)$ directly for a censored response.
+\[
+    \lambda_i(t|\mathbf{X}_i) = \lambda_0(t) \exp\left(\sum_{j=1}^k \beta_j X_{i,j}\right)
+\]
+\begin{itemize}
+    \item $\lambda_0(t)$: baseline hazard function (non-parametric part).
+    \item $\exp(\dots)$: parametric part.
+    \item No intercept $\beta_0$.
+\end{itemize}
+The proportional hazards assumption assumes that the hazard for any subject is proportional to the hazard of any other subject via the exponentiated regression coefficients. The ratio of hazards is constant over time.
+\[ \frac{\lambda_2(t)}{\lambda_1(t)} = \exp(\beta_1(X_{2,1} - X_{1,1})) \]
+}
+\subsection{Estimation}
+\smalltext{
+Parameters are estimated using partial likelihood, which does not require specifying the baseline hazard $\lambda_0(t)$.
+}
+\subsection{Inference And Prediction}
+\smalltext{
+Similar to logistic regression, Wald statistics are used to test coefficient significance ($H_0: \beta_j = 0$).
+\[ z_j = \frac{\hat{\beta}_j}{\text{se}(\hat{\beta}_j)} \]
+Prediction involves estimating the survival function:
+\[ S(t|\mathbf{X}) = S_0(t)^{\exp(\sum \beta_j X_j)} \]
+where $S_0(t) = \exp(-\int_0^t \lambda_0(u)du)$ is the baseline survival function.
+}
+
+\section{Multinomial Logistic Regression}
+\subsection{Data Modelling Framework}
+\smalltext{
+For a nominal response $Y_i$ with $m$ categories. It models the log-odds of a category relative to a baseline category (e.g., category "1").
+This results in $m-1$ link functions:
+\[
+    \log\left(\frac{P(Y_i=j)}{P(Y_i=1)}\right) = \beta_0^{(j,1)} + \sum_{k=1}^{K} \beta_k^{(j,1)}X_{i,k}
+\]
+for $j=2, \dots, m$. Each equation has its own set of coefficients.
+}
+\subsection{Estimation And Inference}
+\smalltext{
+Parameters are estimated via MLE. In R, use \code{multinom()} from the \code{nnet} package. Inference is done using Wald statistics for each coefficient.
+}
+
+\section{Poisson Regression}
+\subsection{Data Modelling Framework}
+\smalltext{
+For count data response variables, $Y_i \sim \text{Poisson}(\lambda_i)$.
+A key assumption is that the mean equals the variance: $E[Y_i] = \text{Var}(Y_i) = \lambda_i$.
+The link function is the log:
+\[ \log(\lambda_i) = \beta_0 + \sum_{j=1}^k \beta_j X_{i,j} \]
+Coefficients $\beta_j$ represent the change in the log of the mean count for a one-unit change in $X_j$.
+}
+
+\section{Negative Binomial Regression}
+\subsection{Data Modelling Framework}
+\smalltext{
+An extension of Poisson regression for overdispersed count data (when variance $>$ mean).
+It introduces a dispersion parameter $\theta$ such that:
+\[ \text{Var}(Y_i) = \lambda_i + \theta \lambda_i^2 \]
+As $\theta \to 0$, it converges to Poisson regression. The link function is also the log. In R, use \code{glm.nb()} from the \code{MASS} package.
+}
+
+\section{Ordinal Logistic Regression}
+\subsection{Data Modelling Framework}
+\smalltext{
+For an ordinal response $Y_i$ with $m$ ordered categories. This models the cumulative log-odds.
+The Proportional Odds Model assumes that the effect of predictors is constant across all cumulative splits.
+\[
+    \text{logit}(P(Y_i \le j)) = \beta_j^{(0)} - \sum_{k=1}^{K} \beta_k X_{i,k}
+\]
+for $j = 1, \dots, m-1$. Note there is a different intercept $\beta_j^{(0)}$ for each split, but the regression coefficients $\beta_k$ are the same.
+}
+\subsection{Brant-Wald Test}
+\smalltext{
+Used to check the proportional odds assumption. If the test is significant, it suggests the assumption is violated, and a more complex model (like non-proportional odds model) might be needed.
+}
+
+\section{OLS Regression}
+\subsection{Modelling Assumptions}
+\smalltext{
+For response $Y_i$ and random error $\epsilon_i$:
+\begin{itemize}
+    \item Linearity: $Y_i = \beta_0 + \sum \beta_j X_{ij} + \epsilon_i$
+    \item Zero Mean Error: $E[\epsilon_i]=0$
+    \item Constant Variance (Homoscedasticity): $\text{Var}(\epsilon_i) = \sigma^2$
+    \item Normality: $\epsilon_i \sim N(0, \sigma^2)$
+    \item Independence: Errors are uncorrelated.
+\end{itemize}
+}
+\subsection{Inference}
+\smalltext{
+To test $H_0: \beta_j = 0$, the t-statistic is used:
+\[ t_j = \frac{\hat{\beta}_j}{\text{se}(\hat{\beta}_j)} \]
+which follows a t-distribution with $n-k-1$ degrees of freedom.
+}
 
 \end{multicols}
 \end{document}
