@@ -238,8 +238,8 @@ Notice we bounce around a bit. We get this “noise” because we are only basin
     \item But also the bigger the batch, the more computations will be needed
     \item \textbf{Approach 1:} Shuffle the dataset and pre-divide it into batches, like cross-validation. This is “without replacement”, every example is used once.
     \item \textbf{Approach 2:} Pick a batch of certain size randomly from the dataset without replacement. In this case, you won’t have the same example occurring more that once in a batch, but you might have the same example in both batch 1 and batch 2. Every example may not be used in this approach.
-    \item \textbf{Approach 3:} Similar to Approach 2, pick a batch of certain size randomly from the dataset with replacement. In this case, even each batch is collected with replacement, so you might have the same example twice in batch 1. Every example may not be used in this approach.
-    \item We typically use approach 1 or 2 (the default in PyTorch is approach 1). Empirically, sampling without replacement tends to lead to more optimal solutions/faster convergence and this has been proved mathematically in some cases
+    % \item \textbf{Approach 3:} Similar to Approach 2, pick a batch of certain size randomly from the dataset with replacement. In this case, even each batch is collected with replacement, so you might have the same example twice in batch 1. Every example may not be used in this approach.
+    % \item We typically use approach 1 or 2 (the default in PyTorch is approach 1). Empirically, sampling without replacement tends to lead to more optimal solutions/faster convergence and this has been proved mathematically in some cases
 \end{itemize}
 }
 \subsection{Batch, Epoch and Learning Rates}
@@ -250,51 +250,30 @@ Assume a dataset of $N$ observations (rows, samples, examples, data points, or p
     \item \textbf{Batch}: A subset of data used in an iteration.
     \item \textbf{Epoch}: One full pass through the dataset to look at all $N$ examples.
     \item \textbf{In GD}: 1 Iteration = 1 epoch, \textbf{In SGD}: n Iteration = 1 epoch, \textbf{In MGD}: (n/batch\_size) Iteration = 1 epoch
-    \item Use an “adaptive” learning rate - take big steps when far from the minimum of loss function, and smaller steps when we close to it;
+    \item Use an “adaptive” learning rate ADAM optimizer- take big steps when far from the minimum of loss function, and smaller steps when we close to it;
     \item Use “momentum” learning rate - using how our weights have changed in past iterations to influence how it changes in future iterations
-    \item The gradient is a vector of partial derivatives of the loss function with respect to the model parameters.
-    If you do not provide a gradient function (jac=), the algorithm uses a "finite-difference scheme" numerically approximate the gradient by checking how the loss function changes when it makes tiny adjustments to the parameters.
+    % \item The gradient is a vector of partial derivatives of the loss function with respect to the model parameters.
+    % If you do not provide a gradient function (jac=), the algorithm uses a "finite-difference scheme" numerically approximate the gradient by checking how the loss function changes when it makes tiny adjustments to the parameters.
 \end{itemize}
 }
-% #Remove if occupies too much space
-% def mse(w, X, y):
-%     """Mean squared error."""
-%     return np.mean((X @ w - y) ** 2)
-% def mse_grad(w, X, y):
-%     """Gradient of mean squared error."""
-%     n = len(y)
-%     return (2/n) * X.T @ (X @ w - y)
-% def sigmoid(X, w, output="soft", threshold=0.5):
-%     p = 1 / (1 + np.exp(-X @ w))
-%     if output == "soft":
-%         return p
-%     elif output == "hard":
-%         return np.where(p > threshold, 1, 0)
-% def accuracy(y, y_hat):
-%     return (y_hat == y).sum() / len(y)
-% def logistic_loss(w, X, y):
-%     return -(y * np.log(sigmoid(X, w)) + (1 - y) * np.log(1 - sigmoid(X, w))).mean()
-% def logistic_loss_grad(w, X, y):
-%     return (X.T @ (sigmoid(X, w) - y)) / len(X)
-% out = minimize(mse, w, jac=mse_grad, args=(X_scaled_ones, toy_y), method="CG")
 \begin{lstlisting}[language=Python]
-class multiClassifier(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
-        super().__init__()
-        self.main = torch.nn.Sequential(
-            torch.nn.Linear(input_size, hidden_size),
-            torch.nn.ReLU(),
-            torch.nn.Linear(hidden_size, output_size)
-        )
-    def forward(self, x):
-        out = self.main(x)
-        return out
-from torchsummary import summary
-model = multiClassifier(2, 5, 4)
-summary(model)
-criterion = torch.nn.CrossEntropyLoss() #loss function
-optimizer = torch.optim.Adam(model.parameters(), lr=0.2)#optimization-algo
+#for X_batch, y_batch in dataloader:
+#    optimizer.zero_grad()
+#    logits = model(X_batch)
+#    loss = criterion(logits, y_batch)
+#    loss.backward()
+#    optimizer.step()
 \end{lstlisting}
+
+\smalltext{
+1.Pytorch Training structure.
+2.Get a mini-batch from the DataLoader
+3.Clear old gradients
+4.Forward pass: compute logits (raw scores)
+5.Compute the loss
+6.Backward pass: compute gradients
+7.Update parameters
+}
 
 \section{Neural Networks}
 \smalltext{
@@ -308,6 +287,21 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.2)#optimization-algo
         \item The `forward()` method defines how input data flows through the network's layers (defined in `\_\_init\_\_`) to produce an output.
         \item \textbf{Automatic Differentiation :} Can be used for both deep and shallow neural networks. PyTorch provides a .backward() method on every tensor that takes part in gradient computation. This enables us to do gradient descent without worrying about the structure of our model, since we no longer need to compute the derivative ourselves. Computes gradients only for tensors with `requires\_grad=True`.
     \end{itemize}
+}
+
+\subsection{Loss Functions}
+\smalltext{
+Now to train this, we would need to have a loss function, and try to minimize it, right? Rules of thumb regarding the training:
+\begin{itemize}
+    \item \textbf{Predict a real number}: 1 output (usually the case, but not necessarily) and we use MSE for loss.
+    \item \textbf{Binary classification}: 1 logit and we use BCEWithLogitsLoss for loss.
+    \item \textbf{Multi-class (k classes)}: k logits + CrossEntropyLoss (PyTorch expects raw logits).
+\end{itemize}
+\textbf{Other Common Loss Functions:}
+\begin{itemize}
+    \item \textbf{Mean Absolute Error (L1 Loss)}: $|y - \hat{y}|$. Less sensitive to outliers than MSE.
+    \item \textbf{Huber Loss}: A combination of MSE and MAE. It's quadratic for small errors and linear for large errors.
+\end{itemize}
 }
 \end{multicols}
 \end{document}
