@@ -292,8 +292,8 @@ class multiClassifier(nn.Module):
 from torchsummary import summary
 model = multiClassifier(2, 5, 4)
 summary(model)
-criterion = torch.nn.CrossEntropyLoss() # loss function
-optimizer = torch.optim.Adam(model.parameters(), lr=0.2)  # optimization algorithm
+criterion = torch.nn.CrossEntropyLoss() #loss function
+optimizer = torch.optim.Adam(model.parameters(), lr=0.2)#optimization-algo
 \end{lstlisting}
 
 \section{Neural Networks}
@@ -306,8 +306,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.2)  # optimization algorit
         \item \textbf{Parameter (weights and biases) calculation:} $(Input Features \times Hidden Neurons) + Hidden Biases + (Hidden Neurons \times Output Features) + Output Biases$.
         \item Example: 6 input, 2 output, 1 hidden layer with 5 neurons: $(6 \times 5) + 5 + (5 \times 2) + 2 = 47$ parameters.
         \item The `forward()` method defines how input data flows through the network's layers (defined in `\_\_init\_\_`) to produce an output.
-        \item \textbf{Automatic Differentiation :} Can be used for both deep and shallow neural networks.
-        \item PyTorch provides a .backward() method on every tensor that takes part in gradient computation. This enables us to do gradient descent without worrying about the structure of our model, since we no longer need to compute the derivative ourselves. Computes gradients only for tensors with `requires\_grad=True`.
+        \item \textbf{Automatic Differentiation :} Can be used for both deep and shallow neural networks. PyTorch provides a .backward() method on every tensor that takes part in gradient computation. This enables us to do gradient descent without worrying about the structure of our model, since we no longer need to compute the derivative ourselves. Computes gradients only for tensors with `requires\_grad=True`.
     \end{itemize}
 }
 \end{multicols}
