@@ -87,148 +87,365 @@
 \pagestyle{empty}
 \begin{multicols}{3}
 
-\section{Binary Logistic Regression}
-\subsection{Data Modelling Framework}
+\section{Ordinary Least-squares Regression}
+\subsection{Assumptions}
 \smalltext{
-Models a binary response variable $Y_i$.
-\[
-    Y_i =
-    \begin{cases}
-        1 & \text{if the } i^{th} \text{ observation is a success} \\
-        0 & \text{otherwise.}
-    \end{cases}
-\]
-The key parameter is the probability of success, $p_i = P(Y_i=1)$. The response is assumed to follow a Bernoulli distribution, $Y_i \sim \text{Bernoulli}(p_i)$.
+    Response=Systematic Component+Random Component.
+    .$\epsilon$  is the Random Component under the following assumptions:
+    .each Yi is also assumed to be independent and normally distributed
+    .qq plot lying on the 45° degree dotted line. Standard Normal distribution
+    .Histogram of residuals bell-shaped form as in the Normal distribution.
+    .Homoscedasticity can be assessed via the diagnostic plot of residuals vs. fitted values. Funnel shapes indicates non-constant variance, i.e., heteroscedasticity.
+    .This assumption commonly gets violated in multiple linear regression and is called heteroscedasticity: the variance of the $\epsilon_i$s is not constant.
+    .OLS not suffice - Non-negative values.  and Binary outcomes (Success or Failure). and Count data. 
 }
-\subsection{Link Function (Logit)}
+\subsection{GLM - Nature of the Model Function}
 \smalltext{
-The logit function links the probability $p_i$ to a linear combination of predictors. It transforms a probability [0, 1] to an unrestricted scale (-$\infty$, $\infty$).
-\[
-    h(p_i) = \text{logit}(p_i) = \log\left(\frac{p_i}{1-p_i}\right)
-\]
-\[
-    \text{logit}(p_i) = \beta_0 + \beta_1 X_{i,1} + \dots + \beta_k X_{i,k}
-\]
-This is the log-odds of success. The inverse is:
-\[ p_i = \frac{\exp(\text{logit}(p_i))}{1 + \exp(\text{logit}(p_i))} \]
-}
-\subsection{Estimation}
-\smalltext{
-Parameters $\beta_0, \dots, \beta_k$ are estimated using maximum likelihood estimation (MLE). In R, use \code{glm()} with \code{family = binomial}.
-}
-\subsection{Inference}
-\smalltext{
-To test the significance of a coefficient $\beta_j$, we use the Wald statistic:
-\[ z_j = \frac{\hat{\beta}_j}{\text{se}(\hat{\beta}_j)} \]
-For large n, $z_j$ follows a Standard Normal distribution under $H_0: \beta_j=0$. Confidence intervals are calculated as:
-\[ \hat{\beta}_j \pm z_{\alpha/2} \text{se}(\hat{\beta}_j) \]
-}
-\subsection{Model Selection}
-\smalltext{
-\textbf{Deviance ($D_k$):} Compares the fit of a model with $k$ predictors to a saturated (full) model which perfectly fits the data. Smaller is better.
-\[ D_k = -2 [\log(L_k) - \log(L_f)] \]
-\textbf{Likelihood-ratio test:} For nested models, compare deviances: $\Delta D = D_1 - D_2 \sim \chi^2_d$, where $d$ is the difference in the number of parameters.
-\textbf{AIC/BIC:} For non-nested models.
-\[ \text{AIC}_k = D_k + 2k \]
-\[ \text{BIC}_k = D_k + k\log(n) \]
-Lower AIC/BIC indicates a better model. BIC penalizes complexity more heavily.
-}
-
-\section{Cox Proportional Hazards Model}
-\subsection{Data Modelling Framework}
-\smalltext{
-A semi-parametric survival model. It models the hazard function $\lambda_i(t)$ directly for a censored response.
-\[
-    \lambda_i(t|\mathbf{X}_i) = \lambda_0(t) \exp\left(\sum_{j=1}^k \beta_j X_{i,j}\right)
-\]
-\begin{itemize}
-    \item $\lambda_0(t)$: baseline hazard function (non-parametric part).
-    \item $\exp(\dots)$: parametric part.
-    \item No intercept $\beta_0$.
-\end{itemize}
-The proportional hazards assumption assumes that the hazard for any subject is proportional to the hazard of any other subject via the exponentiated regression coefficients. The ratio of hazards is constant over time.
-\[ \frac{\lambda_2(t)}{\lambda_1(t)} = \exp(\beta_1(X_{2,1} - X_{1,1})) \]
-}
-\subsection{Estimation}
-\smalltext{
-Parameters are estimated using partial likelihood, which does not require specifying the baseline hazard $\lambda_0(t)$.
-}
-\subsection{Inference And Prediction}
-\smalltext{
-Similar to logistic regression, Wald statistics are used to test coefficient significance ($H_0: \beta_j = 0$).
-\[ z_j = \frac{\hat{\beta}_j}{\text{se}(\hat{\beta}_j)} \]
-Prediction involves estimating the survival function:
-\[ S(t|\mathbf{X}) = S_0(t)^{\exp(\sum \beta_j X_j)} \]
-where $S_0(t) = \exp(-\int_0^t \lambda_0(u)du)$ is the baseline survival function.
-}
-
-\section{Multinomial Logistic Regression}
-\subsection{Data Modelling Framework}
-\smalltext{
-For a nominal response $Y_i$ with $m$ categories. It models the log-odds of a category relative to a baseline category (e.g., category "1").
-This results in $m-1$ link functions:
-\[
-    \log\left(\frac{P(Y_i=j)}{P(Y_i=1)}\right) = \beta_0^{(j,1)} + \sum_{k=1}^{K} \beta_k^{(j,1)}X_{i,k}
-\]
-for $j=2, \dots, m$. Each equation has its own set of coefficients.
-}
-\subsection{Estimation And Inference}
-\smalltext{
-Parameters are estimated via MLE. In R, use \code{multinom()} from the \code{nnet} package. Inference is done using Wald statistics for each coefficient.
+    \textbf{Deterministic:}For each one of the values of the regressor X, there is a single value of Y.
+    \textbf{Stochastic:} Each value of X has a probability distribution associated to Y.
+    \textbf{Black-box Models:}is focused on optimizing predictions subject to a set of regressors with less attention on the internal model's process. 
+    \textbf{Link function:}OLS regression models a continuous response $Y_i$  (a random variable) via its conditioned mean (or expected value) $\mu_i$ subject to $k$  regressors $X_{i,j}$. modelling the mean $\mu_i$ of a discrete-type response (such as binary or a count) is not straightforward. 
+    Hence, we rely on a monotonic and differentiable function called the link function.
 }
 
 \section{Poisson Regression}
-\subsection{Data Modelling Framework}
 \smalltext{
-For count data response variables, $Y_i \sim \text{Poisson}(\lambda_i)$.
-A key assumption is that the mean equals the variance: $E[Y_i] = \text{Var}(Y_i) = \lambda_i$.
-The link function is the log:
-\[ \log(\lambda_i) = \beta_0 + \sum_{j=1}^k \beta_j X_{i,j} \]
-Coefficients $\beta_j$ represent the change in the log of the mean count for a one-unit change in $X_j$.
+        GLM to model count-type responses.
+        Bar chart count is right skewed then poisson.
+        The equality of the expected value and variance in a random variable is called equidispersion.
+}
+\subsection{Estimation}
+\smalltext{The estimates are obtained through maximum likelihood where we assume a Poisson joint probability mass function of the n responses Yi.}
+\begin{lstlisting}[language=R]
+library(glmbb)
+data(crabs)
+crabs <- crabs |>  rename(n_males = satell) |>  dplyr::select(-y)
+group_avg_width <- crabs |> mutate(intervals = cut(crabs$width, breaks = 10)) |> group_by(intervals) |> summarise(mean = mean(n_males), n = n()) 
+poi_model <- glm(n_males ~ width, family = poisson, data = crabs)
+\end{lstlisting}
+
+\subsection{Inference}
+\smalltext{The fitted regression model will be used to identify the relationship between the logarithm of the response’s mean and regressors. To determine the statistical significance of 
+ in this model, we also use the Wald statistic.}
+\begin{lstlisting}[language=R]
+tidy(poi_model, conf.int = TRUE) |> mutate_if(is.numeric, round, 3)
+\end{lstlisting}
+\smalltext{
+    Our sample gives us evidence to reject $H\_0$ ($p-value < 0.001$). 
+    So carapace width is statistically associated to the logarithm of the mean of n\_males.
+    }
+
+\subsection{Coefficient Interpretation}
+\smalltext{
+Moreover, it has a baseline: dark. We can check the baseline level, via levels().
+}
+\begin{lstlisting}[language=R]
+poi_model_2 <- glm(n_males~width+color, family = poisson, data =)
+tidy(poi_model_2, exponentiate = TRUE, conf.int = TRUE)
+\end{lstlisting}
+\smalltext{
+1.55 indicates that the mean count of male crabs (n\_males) around a female breeding nest increases by 55\%
+ when the female color of the prosoma changes from dark to light, while keeping the carapace female width constant.
+}
+\subsection{Predictions}
+\begin{lstlisting}[language=R]
+round(predict(poisson_model_2, newdata = tibble(width = 27.5, color = "light"), type = "response"), 2)
+\end{lstlisting}
+
+\section{Overdispersion}
+\smalltext{
+When the variance is larger than the mean in a random variable, we have overdispersion. This matter will impact the standard error of our parameter estimates in a basic Poisson regression, as we will see further.
+}
+with the hypotheses
+$
+H_{0} : 1 + \gamma = 1 |   H_{a} : 1 + \gamma > 1.
+$
+When there is evidence of overdispersion in our data, \textbf{we will reject $H_{0}$}.
+\begin{lstlisting}[language=R]
+dispersiontest(poisson_model_2) {AER}
+\end{lstlisting}
+\smalltext{
+    With $\alpha = 0.05$, we reject $H\_{0}$ since the $p\text{-value} < .001$. Hence, the \texttt{poisson\_model\_2} has overdispersion.
+    Consequence of using these underestimated standard errors compared to the ones from negative\_binomial\_model are that more prone to committing Type I errors in our hypothesis testing, which are false positives (we would incorrectly conclude that there is a statistically significant association/causation between the response and regressors: rejecting $H\_0$ when in fact it is true).
 }
 
 \section{Negative Binomial Regression}
-\subsection{Data Modelling Framework}
 \smalltext{
-An extension of Poisson regression for overdispersed count data (when variance $>$ mean).
-It introduces a dispersion parameter $\theta$ such that:
-\[ \text{Var}(Y_i) = \lambda_i + \theta \lambda_i^2 \]
-As $\theta \to 0$, it converges to Poisson regression. The link function is also the log. In R, use \code{glm.nb()} from the \code{MASS} package.
+    A Negative Binomial random variable depicts the number of $y_i$
+ failed independent Bernoulli trials before experiencing $m$
+ successes with a probability of success $p_i$
 }
+\subsection{Estimation}
+\smalltext{The estimates are obtained through maximum likelihood where we assume a Poisson joint probability mass function of the n responses Yi.}
+\begin{lstlisting}[language=R]
+library(MASS)
+negative_bin_model <- glm.nb(n_males ~ width + color, data = crabs)
+summary(negative_bin_model)
+\end{lstlisting}
+
+
+\section{Model Selection}
+\begin{lstlisting}[language=R]
+poi_model<-glm(n_males~ width,family = poisson,data = crabs)
+poi_model_2<-glm(n_males~width+color,family = poisson,data = crabs)
+library(broom)
+summary_poisson_model_2 <- glance(poisson_model_2)
+\end{lstlisting}
+\smalltext{
+    We want to determine which Poisson regression model fits the data better: Model 1 or Model 2.
+    We can compare the fits provided by these two models by the deviance. $D_k = kmodel/fullModel$ is formally called residual deviance, which is the test statistic.
+    Large $D_k$ values our given model fits the data poorly compared to the baseline model.
+    Small $D_k$ values our given model provides a good fit to the data compared to the baseline model.
+    We cannot use anova() to perform this hypothesis testing. We will have to do it manually via glance().
+}
+\begin{lstlisting}[language=R]
+pchisq(summary_poisson_model_2$deviance, #p-value for this test
+  df = summary_poisson_model_2$df.residual,  lower.tail = FALSE) 
+\end{lstlisting}
+\smalltext{
+    We obtain a p-value $\le$ .001, which gives statistical evidence to state that our poisson\_model\_2 is not correctly specified when compared to the saturated model.
+}
+
+\subsection{Analysis of Deviance for Nested Models}
+\begin{lstlisting}[language=R]
+round(anova(poisson_model, poisson_model_2, test = "Chi"), 4)
+\end{lstlisting}
+
+\smalltext{
+    $
+        H\_{0} :$ Model 1 fits the data better than Model 2 \\
+     $   H\_{A} :$ Model 2 fits the data better than Model 1.
+We obtain a p\-value $\le$ .05, column Pr(Chi), which gives us evidence to reject $H\_0$ with $\alpha=0.05$. Hence, we do have evidence to conclude that poisson\_model\_2 fits the data better than poisson\_model. Therefore, in the context of model selection, we would choose poisson\_model\_2, that also includes the color of the prosoma.
+}
+
+\subsection{Akaike Information Criterion}
+\smalltext{
+One of the drawbacks of the analysis of deviance is that it only allows to test nested regression models.
+Fortunately, we have alternatives for model selection. The AIC makes possible to compare models that are either nested or not
+$AIC_k$ favours models with small values of $D_k$. Models with smaller values of $AIC_k$ are preferred because 
+$AIC_k = D_k+2k$. It also penalizes for including more regressors in the model. Hence, it discourages overfitting. 
+}
+\begin{lstlisting}[language=R]
+glance(poisson_model) |>  mutate_if(is.numeric, round, 3)
+glance(poisson_model_2) |>  mutate_if(is.numeric, round, 3)
+\end{lstlisting}
+
+\subsection{Bayesian Information Criterion}
+\smalltext{
+    An alternative to AIC. The BIC also makes possible to compare models that are either nested or not. For a model with $k$ regressors, $n$ observations used for training, and a deviance $D_k$
+; it is defined as: $BIC_k = D_k+k * Log(n)$. Models with smaller values of BIC are preferred.
+}
+\begin{lstlisting}[language=R]
+glance(poisson_model) |>  mutate_if(is.numeric, round, 3)
+glance(poisson_model_2) |>  mutate_if(is.numeric, round, 3)
+\end{lstlisting}
+
+\section{Multinomial Logistic Regression}
+\smalltext{
+    Categorical Type Responses - more than two classes in the categorical response.
+    Recall that Binary Logistic regression's link function (the logarithm of the odds or logit function) restricts the corresponding probability of success to a range between 0 and 1 while relating it to the systematic component.
+}
+
+\begin{lstlisting}[language=R]
+training <- dataset |>  select(genre, danceability, valence) |>  mutate(genre = as.factor(genre))
+levels(spotify_training$genre)
+bin_spotify_training <- spotify_training |> 
+  filter(genre %in% c("edm", "latin")) |>
+  mutate(genre = droplevels(genre))
+spotify_bin_log_model <- glm(formula = genre ~ danceability + valence, data = bin_spotify_training, family = binomial) # with genre labels
+library(broom)
+tidy(spotify_bin_log_model, conf.int = TRUE, exponentiate = TRUE) |> 
+  mutate_if(is.numeric, round, 2)
+\end{lstlisting}
+\smalltext{
+    For each unit increase in the valence score in the Spotify catalogue, the song is 1.05 times more probable to be latin than edm.
+}
+\smalltext{
+    The Multinomial Logistic regression also models the logarithm of the odds. However, only one logarithm of the odds (or logit) will not be enough anymore. Recall we can capture the odds between two categories with a single logit function. What about adding some other ones?
+}
+
+\subsection{Estimation}
+\smalltext{ The estimates are obtained through maximum likelihood, where we assume a Multinomial joint probability mass function of the n responses $Y_i$. Final output is converted those scores into class probabilities using softmax functions}
+\begin{lstlisting}[language=R]
+spotify_mult_log_model <- multinom(formula = genre ~ danceability + valence, data = spotify_training)
+\end{lstlisting}
+\subsection{Inference}
+\smalltext{ Provided the sample size n is large enough, it has an approximately Standard Normal distribution under $H_o$.}
+
+\begin{lstlisting}[language=R]
+model <- multinom(formula = genre ~ danceability + valence, data = spotify_training)
+mult_output <- tidy(model, conf.int = TRUE, exponentiate = TRUE) |>  mutate_if(is.numeric, round, 3) |> dplyr::filter(p.value < 0.05)
+A tibble: 5 x 8
+  y.level term         estimate std.error statistic p.value 
+  <chr>   <chr>           <dbl>     <dbl>     <dbl>   <dbl>  
+1 latin   valence         1.05      0.013      4.01   0     
+2 r&b     (Intercept)    14.5       0.811      3.30   0.001 
+3 r&b     danceability    0.963     0.013     -3.02   0.003 
+4 rock    (Intercept)    27.7       1.04       3.20   0.001 
+5 rock    danceability    0.918     0.019     -4.51   0     
+\end{lstlisting}
+\smalltext{
+Since our baseline response is edm, we can conclude the following with $\alpha=0.05$
+ on the Spotify platform:
+There is a statistical difference in danceability in edm versus r\&b and rock.
+There is a statistical difference in valence in edm versus latin.
+}
+\subsection{Coefficient Interpretation}
+\smalltext{
+Let us interpret those significant regression coefficients from column estimate
+$\beta_1^{(latin,edm)}$:for each unit increase in the valence score in the Spotify catalogue, the song is 1.05 times more probable to be latin than edm.
+$\beta_1^{(r\&b,edm)}$:for each unit increase in the danceability score in the Spotify catalogue, the odds for a song for being r\&b decrease by $(1-0.963)x 100\% = 3.7\%$ compared to edm.
+}\section{}
+
+\subsection{Predictions}
+\begin{lstlisting}[language=R]
+pred_probs <- round(predict(model, tibble(danceability = 27.5, valence = 30), type = "probs"), 2)
+\end{lstlisting}
 
 \section{Ordinal Logistic Regression}
-\subsection{Data Modelling Framework}
+\begin{lstlisting}[language=R]
+college_data$decision <- as.ordered(college_data$decision)
+college_data$decision <- fct_relevel(college_data$decision, c("unlikely", "somewhat likely", "very likely"))
+levels(college_data$decision)
+\end{lstlisting}
 \smalltext{
-For an ordinal response $Y_i$ with $m$ ordered categories. This models the cumulative log-odds.
-The Proportional Odds Model assumes that the effect of predictors is constant across all cumulative splits.
-\[
-    \text{logit}(P(Y_i \le j)) = \beta_j^{(0)} - \sum_{k=1}^{K} \beta_k X_{i,k}
-\]
-for $j = 1, \dots, m-1$. Note there is a different intercept $\beta_j^{(0)}$ for each split, but the regression coefficients $\beta_k$ are the same.
+    The categories 1,2,3,4,5 in the i-th response $Y_i$ implicate an ordinal scale here,1<2<3<4<5.
+Hence, our Ordinal Logistic regression model will indicate how each one of the 4 regressors that affects the cumulative logarithm of the odds in the ordinal response.
+we would need four link functions, four intercepts, and four coefficients.
 }
-\subsection{Brant-Wald Test}
+\subsection{Estimation}
+\begin{lstlisting}[language=R]
+ordinal_model <- polr(decision ~ parent_ed + GPA, data = college_data, Hess = TRUE)
+\end{lstlisting}
 \smalltext{
-Used to check the proportional odds assumption. If the test is significant, it suggests the assumption is violated, and a more complex model (like non-proportional odds model) might be needed.
+    All parameters in the Ordinal Logistic regression model are also unknown. Therefore, model estimates are obtained through maximum likelihood, where we also assume a Multinomial joint probability mass function of the n responses $Y_i$
 }
 
-\section{OLS Regression}
-\subsection{Modelling Assumptions}
-\smalltext{
-For response $Y_i$ and random error $\epsilon_i$:
-\begin{itemize}
-    \item Linearity: $Y_i = \beta_0 + \sum \beta_j X_{ij} + \epsilon_i$
-    \item Zero Mean Error: $E[\epsilon_i]=0$
-    \item Constant Variance (Homoscedasticity): $\text{Var}(\epsilon_i) = \sigma^2$
-    \item Normality: $\epsilon_i \sim N(0, \sigma^2)$
-    \item Independence: Errors are uncorrelated.
-\end{itemize}
-}
+\subsection{Inference}
+\begin{lstlisting}[language=R]
+library(broom)
+summary_ordinal_model <- cbind(tidy(ordinal_model), p.value = pnorm(abs(tidy(ordinal_model)$statistic), lower.tail = FALSE) * 2) |>
+  mutate_if(is.numeric, round, 2)
+round(confint(ordinal_model), 2)
+\end{lstlisting}
 \subsection{Inference}
 \smalltext{
-To test $H_0: \beta_j = 0$, the t-statistic is used:
-\[ t_j = \frac{\hat{\beta}_j}{\text{se}(\hat{\beta}_j)} \]
-which follows a t-distribution with $n-k-1$ degrees of freedom.
+    By using the column exp.estimate, along with the model equations on the original scale of the cumulative odds, we interpret the two regression coefficients above by each odds as follows:
 }
+\begin{lstlisting}[language=R]
+tibble(summary_ordinal_model[1:2, 1:2], exp.estimate = round(exp(summary_ordinal_model[1:2, 2]), 2))
+\end{lstlisting}
+\smalltext{
+   $\beta_1$ : “for each one-unit increase in the GPA, the odds that the student is very likely versus somewhat likely or unlikely to apply to graduate school increase by 
+ times (while holding parent\_ed constant).”
+  $\beta_2$ : “for those respondents whose parents attended to graduate school, the odds that the student is very likely versus somewhat likely or unlikely to apply to graduate school increase by exp($\beta_2$)=2.86 times (when compared to those respondents whose parents did not attend to graduate school and holding GPA constant).
+}
+
+\subsection{Predictions}
+\begin{lstlisting}[language=R]
+round(predict(ordinal_model, tibble(GPA = 3.5, parent_ed = "Yes"), type = "probs"), 2)
+\end{lstlisting}
+
+\subsection{Brant-Wald Test}
+\smalltext{
+    It is essential to remember that the Ordinal Logistic model under the proportional odds assumption is the first step when performing Regression Analysis on an ordinal response.
+    Is it possible to assess whether it fulfils this strong assumption statistically.
+}
+
+\begin{lstlisting}[language=R]
+library(brant)
+brant(ordinal_model)
+\end{lstlisting}
+\smalltext{
+The row Omnibus represents the global model, while the other two rows correspond to our two regressors: parent\_ed and GPA. Note that with $\alpha=0.05$
+, we are completely fulfilling the proportional odds assumption (the column probability delivers the corresponding p-values).
+Suppose that our example case does not fulfil the proportional odds assumption according to the Brant Wald test. It is possible to have a model under a non-proportional odds assumption. This is called a Generalized Ordinal Logistic regression model. This class of models can be fit via the function cumulative() from package VGAM.
+}
+
+\section{Linear Mixed-effects Models}
+\smalltext{
+    A panel refers to a dataset in which each individual (e.g., a firm) is observed within a timeframe. Furthermore, the term balanced indicates that we have the same number of observations per individual.
+}
+\subsection{OLS Regression with Varying Intercept}
+\smalltext{
+We will do this with the lm() function by adding - 1 on the right-hand side of the argument formula. This - 1 will allow the baseline firm to have its intercept (i.e., replacing the usual (Intercept) in column estimate with this specific baseline company’s intercept). In this case, General Motors is the baseline company (as it appears on the left-had side of the levels() output).
+}
+\begin{lstlisting}[language=R]
+model_varying_intercept <- lm(
+  formula = investment ~ market_value + capital + firm - 1,
+  data = Grunfeld)
+tidy(model_varying_intercept) |>
+  mutate_if(is.numeric, round, 4) |> 
+  print(n = Inf)
+glance(model_varying_intercept) |>
+  mutate_if(is.numeric, round, 4) 
+\end{lstlisting}
+\smalltext{
+    By checking the adj.r.squared, we see that model\_varying\_intercept has a larger value (0.959) than ordinary\_model (0.816) (i.e., the first fitted model without firm as a regressor). This indicates that a model with estimated intercepts by firm fits the data better than a model without taking firm into account (at least by looking at the metrics!).
+    Going back to model\_varying\_intercept and ordinary\_model, we can test if there is a gain in considering a varying intercept versus fixed intercept. Hence, we will make a formal F-test to check whether the model\_varying\_intercept fits the data better than the ordinary\_model.
+}
+\smalltext{
+   $$\begin{gathered}
+\text{investment}_{i,j} = \beta_{0,j} + \beta_{1,j}\text{marketValue}_{i,j} + \beta_{2,j}\text{capital}_{i,j} + \varepsilon_{i,j} \\
+\text{for } i = 1, \dots, 20 \text{ and } j = 1, \dots, 11.
+\end{gathered}$$
+}
+\begin{lstlisting}[language=R]
+anova(ordinary_model, model_varying_intercept) |>
+  mutate_if(is.numeric, round, 4) 
+\end{lstlisting}
+\smalltext{
+    We obtain a p-value <0.001. Thus, with $\alpha=0.05$, we have evidence to conclude that model\_varying\_intercept fits the data better than the ordinary\_model.
+    However, this costs us one extra degree of freedom per firm except for the baseline. Therefore, we lose another 10 degrees of freedom (column DF in the anova() output).
+}
+
+\subsection{OLS Regression for Each Category}
+\smalltext{
+    We can make the model more complex with two interactions (market\_value * firm and capital * firm). This will estimate a linear regression by firm with its own slopes.
+}
+\begin{lstlisting}[language=R]
+model_by_firm <- lm(investment ~ market_value * firm + capital * firm, data = Grunfeld)
+tidy(model_by_firm) |>
+  mutate_if(is.numeric, round, 2) |> 
+  print(n = Inf)
+glance(model_by_firm) |>
+  mutate_if(is.numeric, round, 2)
+\end{lstlisting}
+\smalltext{
+    $$\begin{gathered}
+    \text{investment}_{i,j} = \beta_{0,j} + \beta_{1,j}\text{marketValue}_{i,j} + \beta_{2,j}\text{capital}_{i,j} + \varepsilon_{i,j} \\
+    \text{for } i = 1, \dots, 20 \text{ and } j = 1, \dots, 11.
+\end{gathered}$$
+}
+
+\subsection{Interpret Coeffients}
+\smalltext{
+    Each regression coefficient is associated with a \texttt{firm}. For example, \texttt{firmUS Steel:capital} $= 0.02$ means that the variable \texttt{capital} has a slope of $0.02 + 0.37 = 0.39$ for \texttt{US Steel}. We can double-check this by estimating an individual linear regression for \texttt{US Steel}:
+}
+\begin{lstlisting}[language=R]
+tidy(lm(investment ~ market_value + capital,
+  data = Grunfeld |> filter(firm == "US Steel")
+)) |>  mutate_if(is.numeric, round, 2) |> print(n = Inf)
+\end{lstlisting}
+
+\subsection{Full Mixed Models}
+\smalltext{
+    
+}
+\begin{lstlisting}[language=R]
+full_mixed_model <- lmer(
+  investment ~ market_value +
+    capital + (market_value + capital | firm),
+  data = Grunfeld
+)
+library(lmerTest)
+summary(mixed_intercept_model)
+coef(mixed_intercept_model)$firm
+round(predict(full_mixed_model, newdata = tibble(
+  firm = "General Motors",
+  market_value = 2000, capital = 1000
+)), 2)
+\end{lstlisting}
 
 \end{multicols}
 \end{document}
