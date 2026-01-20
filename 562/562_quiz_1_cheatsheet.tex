@@ -233,7 +233,9 @@ $AIC_k = D_k+2k$. It also penalizes for including more regressors in the model. 
 \section{Multinomial Logistic Regression}
 \smalltext{
     Categorical Type Responses - more than two classes in the categorical response.
-    Models the logarithm of odds.}
+    Models the logarithm of odds.
+    $\text{logit}(p_i) = \log \left( \frac{p_i}{1 - p_i} \right) = \beta_0 + \beta_1 X_{i,\text{dance}} + \beta_2 X_{i,\text{val}}$
+    }
 
 \begin{lstlisting}[language=R]
 log_model <- glm(formula = genre ~ danceability + valence, data = data, family = binomial)
@@ -268,13 +270,13 @@ college_data$decision <- fct_relevel(college_data$decision, c("unlikely", "somew
 levels(college_data$decision)
 \end{lstlisting}
 \smalltext{
+$P(Y_i \leq 4 \mid X_{i,1}) = \frac{\exp(\beta_0^{(4)} - \beta_1 X_{i,1})}{1 + \exp(\beta_0^{(4)} - \beta_1 X_{i,1})}$
 The categories 1,2,3,4,5 in the i-th response $Y_i$ implicate an ordinal scale.
 Hence, our Ordinal Logistic regression model will indicate how each one of the 4 regressors that affects the cumulative logarithm of the odds in the ordinal response.
 we would need four link functions, four intercepts, and four coefficients.
 }
 \begin{lstlisting}[language=R]
 ordinal_model <- polr(decision ~ parent_ed + GPA, data = data, Hess = TRUE)
-
 library(broom)
 summary_ordinal_model <- cbind(tidy(ordinal_model), p.value = pnorm(abs(tidy(ordinal_model)$statistic), lower.tail = FALSE) * 2) |>  mutate_if(is.numeric, round, 2)
 round(confint(ordinal_model), 2)
@@ -301,10 +303,12 @@ Suppose that does not fulfil the proportional odds assumption, we can model unde
 \section{Linear Mixed-effects Models}
 \smalltext{
     A panel refers to a dataset in which each individual (e.g., a firm) is observed within a timeframe. Furthermore, the term balanced indicates that we have the same number of observations per individual.
+    n rows in our training set will not be independent anymore.
 }
 \subsection{OLS Regression with Varying Intercept}
 \smalltext{
-We will do this with the lm() function by adding - 1 on the right-hand side of the argument formula. This - 1 will allow the baseline firm to have its intercept (i.e., replacing the usual (Intercept) in column estimate with this specific baseline company’s intercept). In this case, General Motors is the baseline company (as it appears on the left-had side of the levels() output).
+We will do this with the lm() function by adding - 1 on the right-hand side of the argument formula. This - 1 will allow the baseline firm to have its intercept (i.e., replacing the usual (Intercept) in column estimate with this specific baseline company’s intercept). In this case, General Motors is the baseline company (as it appears on the left-had side of the levels() output).Note that (1 | firm) allows the model to have a random intercept by firm.
+Note that (market\_value + capital | firm) allows the model to have a random intercept and slopes by firm.\textbf{Restricted maximum likelihood} is an estimation approach for Mixed-effects regression. 1. Estimate the variance components. 2.Estimate the fixed-effects given those variance estimates
 }
 \begin{lstlisting}[language=R]
 model_varying_intercept <- lm(formula = investment ~ market_value + capital + firm - 1,data = Grunfeld)
@@ -314,22 +318,19 @@ tidy(model_varying_intercept) glance(model_varying_intercept)
     By checking the adj.r.squared, we see that model\_varying\_intercept has a larger value (0.959) than ordinary\_model (0.816) (i.e., the first fitted model without firm as a regressor). 
 }
 \smalltext{
-   $
-\text{investment}_{i,j} = \beta_{0,j} + \beta_{1,j}\text{marketValue}_{i,j} + \beta_{2,j}\text{capital}_{i,j} + \varepsilon_{i,j} \\
-\text{for } i = 1, \dots, 20 \text{ and } j = 1, \dots, 11.
-$
+  $\text{investment}_{i,j} = \beta_{0,j} + \beta_1 \text{marketValue}_{i,j} + \beta_2 \text{capital}_{i,j} + \varepsilon_{i,j}$
 }
 \begin{lstlisting}[language=R]
 anova(ordinary_model, model_varying_intercept)
 \end{lstlisting}
 \smalltext{
     With $pvalue \le \alpha=0.05$, we have evidence to conclude that model\_varying\_intercept fits the data better than the ordinary\_model.
-    However, this costs us one extra degree of freedom per firm except for the baseline. Therefore, we lose another 10 degrees of freedom (column DF in the anova() output).
+    However, this costs us one extra degree of freedom per firm except for the baseline. Lose 10 degrees of freedom (DF in the anova()).
 }
 
 \subsection{OLS Regression for Each Category}
 \smalltext{
-    We can make the model more complex with two interactions (market\_value * firm and capital * firm). This will estimate a linear regression by firm with its own slopes.
+    We can make the model more complex with two interactions. This will estimate a linear regression by firm with its own slopes.
 }
 \begin{lstlisting}[language=R]
 model_by_firm <- lm(investment ~ market_value * firm + capital * firm, data = Grunfeld)
@@ -343,19 +344,19 @@ $
 }
 \smalltext{
   \textbf{Inference:}
-    Each regression coefficient is associated with a \texttt{firm}. For example, \texttt{firmUS Steel:capital} $= 0.02$ means that the variable \texttt{capital} has a slope of $0.02 + 0.37 = 0.39$ for \texttt{US Steel}. We can double-check this by estimating an individual linear regression for \texttt{US Steel}:
+    Each regression coefficient is associated with a \texttt{firm}. For example, \texttt{firmUS Steel:capital} $= 0.02$ means that the variable \texttt{capital} has a slope of $0.02 + 0.37 = 0.39$ for \texttt{US Steel}.
 }
 \begin{lstlisting}[language=R]
 tidy(lm(investment ~ market_value + capital,
   data = Grunfeld |> filter(firm == "US Steel")
 )) |>  mutate_if(is.numeric, round, 2) |> print(n = Inf)
 \end{lstlisting}
-
+\subsection{Generic Covariance Matrix $D$}
+\smalltext{This is a standard form in linear Mixed-effects modelling.}
 \subsection{Full Mixed Models}
 \begin{lstlisting}[language=R]
 full_mixed_model <- lmer(  investment ~ market_value +  capital + (market_value + capital | firm), data = Grunfeld)
-library(lmerTest)
-summary(mixed_intercept_model)
+library(lmerTest) summary(mixed_intercept_model)
 coef(mixed_intercept_model)$firm
 round(predict(full_mixed_model, newdata = tibble(firm = "General Motors",market_value = 2000, capital = 1000)), 2)
 \end{lstlisting}
