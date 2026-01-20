@@ -87,18 +87,18 @@
 \pagestyle{empty}
 \begin{multicols}{3}
 
-\section{Ordinary Least-squares Regression}
-\subsection{Assumptions}
-\smalltext{
-    Response=Systematic Component+Random Component.
-    .$\epsilon$  is the Random Component under the following assumptions:
-    .each Yi is also assumed to be independent and normally distributed
-    .qq plot lying on the 45° degree dotted line. Standard Normal distribution
-    .Histogram of residuals bell-shaped form as in the Normal distribution.
-    .Homoscedasticity can be assessed via the diagnostic plot of residuals vs. fitted values. Funnel shapes indicates non-constant variance, i.e., heteroscedasticity.
-    .This assumption commonly gets violated in multiple linear regression and is called heteroscedasticity: the variance of the $\epsilon_i$s is not constant.
-    .OLS not suffice - Non-negative values.  and Binary outcomes (Success or Failure). and Count data. 
-}
+% \section{Ordinary Least-squares Regression}
+% \subsection{Assumptions}
+% \smalltext{
+%     Response=Systematic Component+Random Component.
+%     .$\epsilon$  is the Random Component under the following assumptions:
+%     .each Yi is also assumed to be independent and normally distributed
+%     .qq plot lying on the 45° degree dotted line. Standard Normal distribution
+%     .Histogram of residuals bell-shaped form as in the Normal distribution.
+%     .Homoscedasticity can be assessed via the diagnostic plot of residuals vs. fitted values. Funnel shapes indicates non-constant variance, i.e., heteroscedasticity.
+%     .This assumption commonly gets violated in multiple linear regression and is called heteroscedasticity: the variance of the $\epsilon_i$s is not constant.
+%     .OLS not suffice - Non-negative values.  and Binary outcomes (Success or Failure). and Count data. 
+% }
 \subsection{GLM - Nature of the Model Function}
 \smalltext{
     \textbf{Deterministic:}For each one of the values of the regressor X, there is a single value of Y.
@@ -114,8 +114,8 @@
         Bar chart count is right skewed then poisson.
         The equality of the expected value and variance in a random variable is called equidispersion.
 }
-\subsection{Estimation}
-\smalltext{The estimates are obtained through maximum likelihood where we assume a Poisson joint probability mass function of the n responses Yi.}
+\smalltext{
+The estimates are obtained through maximum likelihood where we assume a Poisson joint probability mass function of the n responses Yi.}
 \begin{lstlisting}[language=R]
 library(glmbb)
 data(crabs)
@@ -124,8 +124,7 @@ group_avg_width <- crabs |> mutate(intervals = cut(crabs$width, breaks = 10)) |>
 poi_model <- glm(n_males ~ width, family = poisson, data = crabs)
 \end{lstlisting}
 
-\subsection{Inference}
-\smalltext{The fitted regression model will be used to identify the relationship between the logarithm of the response’s mean and regressors. To determine the statistical significance of 
+\smalltext{\textbf{Inference:}The fitted regression model will be used to identify the relationship between the logarithm of the response’s mean and regressors. To determine the statistical significance of 
  in this model, we also use the Wald statistic.}
 \begin{lstlisting}[language=R]
 tidy(poi_model, conf.int = TRUE) |> mutate_if(is.numeric, round, 3)
@@ -166,7 +165,7 @@ dispersiontest(poisson_model_2) {AER}
 \end{lstlisting}
 \smalltext{
     With $\alpha = 0.05$, we reject $H\_{0}$ since the $p\text{-value} < .001$. Hence, the \texttt{poisson\_model\_2} has overdispersion.
-    Consequence of using these underestimated standard errors compared to the ones from negative\_binomial\_model are that more prone to committing Type I errors in our hypothesis testing, which are false positives (we would incorrectly conclude that there is a statistically significant association/causation between the response and regressors: rejecting $H\_0$ when in fact it is true).
+    Using a Negative Binomial model when overdispersion is present helps control your Type I error rate. Hence lower standard error.
 }
 
 \section{Negative Binomial Regression}
@@ -175,14 +174,12 @@ dispersiontest(poisson_model_2) {AER}
  failed independent Bernoulli trials before experiencing $m$
  successes with a probability of success $p_i$
 }
-\subsection{Estimation}
 \smalltext{The estimates are obtained through maximum likelihood where we assume a Poisson joint probability mass function of the n responses Yi.}
 \begin{lstlisting}[language=R]
 library(MASS)
 negative_bin_model <- glm.nb(n_males ~ width + color, data = crabs)
 summary(negative_bin_model)
 \end{lstlisting}
-
 
 \section{Model Selection}
 \begin{lstlisting}[language=R]
@@ -192,10 +189,9 @@ library(broom)
 summary_poisson_model_2 <- glance(poisson_model_2)
 \end{lstlisting}
 \smalltext{
-    We want to determine which Poisson regression model fits the data better: Model 1 or Model 2.
     We can compare the fits provided by these two models by the deviance. $D_k = kmodel/fullModel$ is formally called residual deviance, which is the test statistic.
-    Large $D_k$ values our given model fits the data poorly compared to the baseline model.
-    Small $D_k$ values our given model provides a good fit to the data compared to the baseline model.
+    Large $D_k$ means model fits poorly compared to the baseline model.
+    Small $D_k$ means model fits good  compared to the baseline model.
     We cannot use anova() to perform this hypothesis testing. We will have to do it manually via glance().
 }
 \begin{lstlisting}[language=R]
@@ -203,99 +199,62 @@ pchisq(summary_poisson_model_2$deviance, #p-value for this test
   df = summary_poisson_model_2$df.residual,  lower.tail = FALSE) 
 \end{lstlisting}
 \smalltext{
-    We obtain a p-value $\le$ .001, which gives statistical evidence to state that our poisson\_model\_2 is not correctly specified when compared to the saturated model.
+    In Poisson regression, the pchisq test on your model's deviance is a Goodness-of-Fit (GoF) test.
+    $p$-value $\le .001$:Reject $H_0$: strong evidence that your model does not fit the data.
 }
 
 \subsection{Analysis of Deviance for Nested Models}
 \begin{lstlisting}[language=R]
 round(anova(poisson_model, poisson_model_2, test = "Chi"), 4)
 \end{lstlisting}
-
 \smalltext{
-    $
-        H\_{0} :$ Model 1 fits the data better than Model 2 \\
-     $   H\_{A} :$ Model 2 fits the data better than Model 1.
-We obtain a p\-value $\le$ .05, column Pr(Chi), which gives us evidence to reject $H\_0$ with $\alpha=0.05$. Hence, we do have evidence to conclude that poisson\_model\_2 fits the data better than poisson\_model. Therefore, in the context of model selection, we would choose poisson\_model\_2, that also includes the color of the prosoma.
+$
+H_{0} : \text{The simpler model (Model 1) is sufficient.} \\
+H_{a} : \text{The more complex model (Model 2) fits significantly better.}
+$
+With a $p$-value $\le 0.05$ (Pr(\>Chi)), we reject $H_{0}$. Significant evidence that \texttt{poisson\_model\_2} fits the data better than the simpler \texttt{poisson\_model}. Therefore, we select \texttt{poisson\_model\_2}, which includes the additional predictor for the color of the prosoma.
 }
 
-\subsection{Akaike Information Criterion}
+\subsection{Akaike Information Criterion-glance()}
 \smalltext{
-One of the drawbacks of the analysis of deviance is that it only allows to test nested regression models.
-Fortunately, we have alternatives for model selection. The AIC makes possible to compare models that are either nested or not
+Drawbacks of the analysis of deviance - tests only nested regression models.
+AIC makes possible to compare models that are either nested or not.
 $AIC_k$ favours models with small values of $D_k$. Models with smaller values of $AIC_k$ are preferred because 
 $AIC_k = D_k+2k$. It also penalizes for including more regressors in the model. Hence, it discourages overfitting. 
 }
-\begin{lstlisting}[language=R]
-glance(poisson_model) |>  mutate_if(is.numeric, round, 3)
-glance(poisson_model_2) |>  mutate_if(is.numeric, round, 3)
-\end{lstlisting}
 
-\subsection{Bayesian Information Criterion}
+\subsection{Bayesian Information Criterion-glance()}
 \smalltext{
     An alternative to AIC. The BIC also makes possible to compare models that are either nested or not. For a model with $k$ regressors, $n$ observations used for training, and a deviance $D_k$
 ; it is defined as: $BIC_k = D_k+k * Log(n)$. Models with smaller values of BIC are preferred.
 }
-\begin{lstlisting}[language=R]
-glance(poisson_model) |>  mutate_if(is.numeric, round, 3)
-glance(poisson_model_2) |>  mutate_if(is.numeric, round, 3)
-\end{lstlisting}
+
 
 \section{Multinomial Logistic Regression}
 \smalltext{
     Categorical Type Responses - more than two classes in the categorical response.
-    Recall that Binary Logistic regression's link function (the logarithm of the odds or logit function) restricts the corresponding probability of success to a range between 0 and 1 while relating it to the systematic component.
-}
+    Models the logarithm of odds.}
 
 \begin{lstlisting}[language=R]
-training <- dataset |>  select(genre, danceability, valence) |>  mutate(genre = as.factor(genre))
-levels(spotify_training$genre)
-bin_spotify_training <- spotify_training |> 
-  filter(genre %in% c("edm", "latin")) |>
-  mutate(genre = droplevels(genre))
-spotify_bin_log_model <- glm(formula = genre ~ danceability + valence, data = bin_spotify_training, family = binomial) # with genre labels
-library(broom)
-tidy(spotify_bin_log_model, conf.int = TRUE, exponentiate = TRUE) |> 
-  mutate_if(is.numeric, round, 2)
+log_model <- glm(formula = genre ~ danceability + valence, data = data, family = binomial)
+library(broom) tidy(log_model, conf.int = TRUE, exponentiate = TRUE)
 \end{lstlisting}
-\smalltext{
-    For each unit increase in the valence score in the Spotify catalogue, the song is 1.05 times more probable to be latin than edm.
-}
-\smalltext{
-    The Multinomial Logistic regression also models the logarithm of the odds. However, only one logarithm of the odds (or logit) will not be enough anymore. Recall we can capture the odds between two categories with a single logit function. What about adding some other ones?
-}
 
-\subsection{Estimation}
-\smalltext{ The estimates are obtained through maximum likelihood, where we assume a Multinomial joint probability mass function of the n responses $Y_i$. Final output is converted those scores into class probabilities using softmax functions}
-\begin{lstlisting}[language=R]
-spotify_mult_log_model <- multinom(formula = genre ~ danceability + valence, data = spotify_training)
-\end{lstlisting}
-\subsection{Inference}
-\smalltext{ Provided the sample size n is large enough, it has an approximately Standard Normal distribution under $H_o$.}
+\smalltext{To fit the model with the package nnet, we use the function multinom(), which obtains the corresponding estimates. Final output is converted those scores into class probabilities using softmax functions}
+\smalltext{\textbf{Inference:} Provided the sample size n is large enough, it has an approximately Standard Normal distribution under $H_o$.}
 
 \begin{lstlisting}[language=R]
 model <- multinom(formula = genre ~ danceability + valence, data = spotify_training)
-mult_output <- tidy(model, conf.int = TRUE, exponentiate = TRUE) |>  mutate_if(is.numeric, round, 3) |> dplyr::filter(p.value < 0.05)
-A tibble: 5 x 8
-  y.level term         estimate std.error statistic p.value 
-  <chr>   <chr>           <dbl>     <dbl>     <dbl>   <dbl>  
-1 latin   valence         1.05      0.013      4.01   0     
-2 r&b     (Intercept)    14.5       0.811      3.30   0.001 
-3 r&b     danceability    0.963     0.013     -3.02   0.003 
-4 rock    (Intercept)    27.7       1.04       3.20   0.001 
-5 rock    danceability    0.918     0.019     -4.51   0     
+mult_output <- tidy(model, conf.int = TRUE, exponentiate = TRUE) |>  dplyr::filter(p.value < 0.05)    
 \end{lstlisting}
 \smalltext{
-Since our baseline response is edm, we can conclude the following with $\alpha=0.05$
- on the Spotify platform:
+Baseline response is edm, we can conclude
 There is a statistical difference in danceability in edm versus r\&b and rock.
-There is a statistical difference in valence in edm versus latin.
 }
 \subsection{Coefficient Interpretation}
 \smalltext{
-Let us interpret those significant regression coefficients from column estimate
 $\beta_1^{(latin,edm)}$:for each unit increase in the valence score in the Spotify catalogue, the song is 1.05 times more probable to be latin than edm.
-$\beta_1^{(r\&b,edm)}$:for each unit increase in the danceability score in the Spotify catalogue, the odds for a song for being r\&b decrease by $(1-0.963)x 100\% = 3.7\%$ compared to edm.
-}\section{}
+}
 
 \subsection{Predictions}
 \begin{lstlisting}[language=R]
@@ -309,57 +268,34 @@ college_data$decision <- fct_relevel(college_data$decision, c("unlikely", "somew
 levels(college_data$decision)
 \end{lstlisting}
 \smalltext{
-    The categories 1,2,3,4,5 in the i-th response $Y_i$ implicate an ordinal scale here,1<2<3<4<5.
+The categories 1,2,3,4,5 in the i-th response $Y_i$ implicate an ordinal scale.
 Hence, our Ordinal Logistic regression model will indicate how each one of the 4 regressors that affects the cumulative logarithm of the odds in the ordinal response.
 we would need four link functions, four intercepts, and four coefficients.
 }
-\subsection{Estimation}
 \begin{lstlisting}[language=R]
-ordinal_model <- polr(decision ~ parent_ed + GPA, data = college_data, Hess = TRUE)
-\end{lstlisting}
-\smalltext{
-    All parameters in the Ordinal Logistic regression model are also unknown. Therefore, model estimates are obtained through maximum likelihood, where we also assume a Multinomial joint probability mass function of the n responses $Y_i$
-}
+ordinal_model <- polr(decision ~ parent_ed + GPA, data = data, Hess = TRUE)
 
-\subsection{Inference}
-\begin{lstlisting}[language=R]
 library(broom)
-summary_ordinal_model <- cbind(tidy(ordinal_model), p.value = pnorm(abs(tidy(ordinal_model)$statistic), lower.tail = FALSE) * 2) |>
-  mutate_if(is.numeric, round, 2)
+summary_ordinal_model <- cbind(tidy(ordinal_model), p.value = pnorm(abs(tidy(ordinal_model)$statistic), lower.tail = FALSE) * 2) |>  mutate_if(is.numeric, round, 2)
 round(confint(ordinal_model), 2)
-\end{lstlisting}
-\subsection{Inference}
-\smalltext{
-    By using the column exp.estimate, along with the model equations on the original scale of the cumulative odds, we interpret the two regression coefficients above by each odds as follows:
-}
-\begin{lstlisting}[language=R]
 tibble(summary_ordinal_model[1:2, 1:2], exp.estimate = round(exp(summary_ordinal_model[1:2, 2]), 2))
 \end{lstlisting}
 \smalltext{
-   $\beta_1$ : “for each one-unit increase in the GPA, the odds that the student is very likely versus somewhat likely or unlikely to apply to graduate school increase by 
- times (while holding parent\_ed constant).”
-  $\beta_2$ : “for those respondents whose parents attended to graduate school, the odds that the student is very likely versus somewhat likely or unlikely to apply to graduate school increase by exp($\beta_2$)=2.86 times (when compared to those respondents whose parents did not attend to graduate school and holding GPA constant).
+  \textbf{Inference:}
+  $\beta_1$ : “for each one-unit increase in the GPA, the odds that the student is very likely versus somewhat likely or unlikely to apply to graduate school increase by \_\_ times (while holding parent\_ed constant).”
+  $\beta_2$ : “for those respondents whose parents attended to graduate school, the odds that the student is very likely versus somewhat likely or unlikely to apply to graduate school increase by exp($\beta_2$)=2.86 times.
 }
-
-\subsection{Predictions}
-\begin{lstlisting}[language=R]
-round(predict(ordinal_model, tibble(GPA = 3.5, parent_ed = "Yes"), type = "probs"), 2)
-\end{lstlisting}
-
 \subsection{Brant-Wald Test}
 \smalltext{
-    It is essential to remember that the Ordinal Logistic model under the proportional odds assumption is the first step when performing Regression Analysis on an ordinal response.
+    OLM under the proportional odds assumption is the first step when performing Regression Analysis on an ordinal response.
     Is it possible to assess whether it fulfils this strong assumption statistically.
 }
-
 \begin{lstlisting}[language=R]
-library(brant)
-brant(ordinal_model)
+library(brant) brant(ordinal_model)
 \end{lstlisting}
 \smalltext{
-The row Omnibus represents the global model, while the other two rows correspond to our two regressors: parent\_ed and GPA. Note that with $\alpha=0.05$
-, we are completely fulfilling the proportional odds assumption (the column probability delivers the corresponding p-values).
-Suppose that our example case does not fulfil the proportional odds assumption according to the Brant Wald test. It is possible to have a model under a non-proportional odds assumption. This is called a Generalized Ordinal Logistic regression model. This class of models can be fit via the function cumulative() from package VGAM.
+row Omnibus represents the global model. Note that with $\alpha=0.05$, we are completely fulfilling the proportional odds assumption.
+Suppose that does not fulfil the proportional odds assumption, we can model under a non-proportional odds assumption. This is called a Generalized OLR model. 
 }
 
 \section{Linear Mixed-effects Models}
@@ -371,31 +307,23 @@ Suppose that our example case does not fulfil the proportional odds assumption a
 We will do this with the lm() function by adding - 1 on the right-hand side of the argument formula. This - 1 will allow the baseline firm to have its intercept (i.e., replacing the usual (Intercept) in column estimate with this specific baseline company’s intercept). In this case, General Motors is the baseline company (as it appears on the left-had side of the levels() output).
 }
 \begin{lstlisting}[language=R]
-model_varying_intercept <- lm(
-  formula = investment ~ market_value + capital + firm - 1,
-  data = Grunfeld)
-tidy(model_varying_intercept) |>
-  mutate_if(is.numeric, round, 4) |> 
-  print(n = Inf)
-glance(model_varying_intercept) |>
-  mutate_if(is.numeric, round, 4) 
+model_varying_intercept <- lm(formula = investment ~ market_value + capital + firm - 1,data = Grunfeld)
+tidy(model_varying_intercept) glance(model_varying_intercept)
 \end{lstlisting}
 \smalltext{
-    By checking the adj.r.squared, we see that model\_varying\_intercept has a larger value (0.959) than ordinary\_model (0.816) (i.e., the first fitted model without firm as a regressor). This indicates that a model with estimated intercepts by firm fits the data better than a model without taking firm into account (at least by looking at the metrics!).
-    Going back to model\_varying\_intercept and ordinary\_model, we can test if there is a gain in considering a varying intercept versus fixed intercept. Hence, we will make a formal F-test to check whether the model\_varying\_intercept fits the data better than the ordinary\_model.
+    By checking the adj.r.squared, we see that model\_varying\_intercept has a larger value (0.959) than ordinary\_model (0.816) (i.e., the first fitted model without firm as a regressor). 
 }
 \smalltext{
-   $$\begin{gathered}
+   $
 \text{investment}_{i,j} = \beta_{0,j} + \beta_{1,j}\text{marketValue}_{i,j} + \beta_{2,j}\text{capital}_{i,j} + \varepsilon_{i,j} \\
 \text{for } i = 1, \dots, 20 \text{ and } j = 1, \dots, 11.
-\end{gathered}$$
+$
 }
 \begin{lstlisting}[language=R]
-anova(ordinary_model, model_varying_intercept) |>
-  mutate_if(is.numeric, round, 4) 
+anova(ordinary_model, model_varying_intercept)
 \end{lstlisting}
 \smalltext{
-    We obtain a p-value <0.001. Thus, with $\alpha=0.05$, we have evidence to conclude that model\_varying\_intercept fits the data better than the ordinary\_model.
+    With $pvalue \le \alpha=0.05$, we have evidence to conclude that model\_varying\_intercept fits the data better than the ordinary\_model.
     However, this costs us one extra degree of freedom per firm except for the baseline. Therefore, we lose another 10 degrees of freedom (column DF in the anova() output).
 }
 
@@ -405,21 +333,16 @@ anova(ordinary_model, model_varying_intercept) |>
 }
 \begin{lstlisting}[language=R]
 model_by_firm <- lm(investment ~ market_value * firm + capital * firm, data = Grunfeld)
-tidy(model_by_firm) |>
-  mutate_if(is.numeric, round, 2) |> 
-  print(n = Inf)
-glance(model_by_firm) |>
-  mutate_if(is.numeric, round, 2)
+tidy(model_by_firm) glance(model_by_firm) 
 \end{lstlisting}
 \smalltext{
-    $$\begin{gathered}
+    $
     \text{investment}_{i,j} = \beta_{0,j} + \beta_{1,j}\text{marketValue}_{i,j} + \beta_{2,j}\text{capital}_{i,j} + \varepsilon_{i,j} \\
     \text{for } i = 1, \dots, 20 \text{ and } j = 1, \dots, 11.
-\end{gathered}$$
+$
 }
-
-\subsection{Interpret Coeffients}
 \smalltext{
+  \textbf{Inference:}
     Each regression coefficient is associated with a \texttt{firm}. For example, \texttt{firmUS Steel:capital} $= 0.02$ means that the variable \texttt{capital} has a slope of $0.02 + 0.37 = 0.39$ for \texttt{US Steel}. We can double-check this by estimating an individual linear regression for \texttt{US Steel}:
 }
 \begin{lstlisting}[language=R]
@@ -429,23 +352,12 @@ tidy(lm(investment ~ market_value + capital,
 \end{lstlisting}
 
 \subsection{Full Mixed Models}
-\smalltext{
-    
-}
 \begin{lstlisting}[language=R]
-full_mixed_model <- lmer(
-  investment ~ market_value +
-    capital + (market_value + capital | firm),
-  data = Grunfeld
-)
+full_mixed_model <- lmer(  investment ~ market_value +  capital + (market_value + capital | firm), data = Grunfeld)
 library(lmerTest)
 summary(mixed_intercept_model)
 coef(mixed_intercept_model)$firm
-round(predict(full_mixed_model, newdata = tibble(
-  firm = "General Motors",
-  market_value = 2000, capital = 1000
-)), 2)
+round(predict(full_mixed_model, newdata = tibble(firm = "General Motors",market_value = 2000, capital = 1000)), 2)
 \end{lstlisting}
-
 \end{multicols}
 \end{document}
