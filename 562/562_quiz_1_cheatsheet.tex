@@ -271,9 +271,9 @@ levels(college_data$decision)
 \end{lstlisting}
 \smalltext{
 $P(Y_i \leq 4 \mid X_{i,1}) = \frac{\exp(\beta_0^{(4)} - \beta_1 X_{i,1})}{1 + \exp(\beta_0^{(4)} - \beta_1 X_{i,1})}$
-The categories 1,2,3,4,5 in the i-th response $Y_i$ implicate an ordinal scale.
-Hence, our Ordinal Logistic regression model will indicate how each one of the 4 regressors that affects the cumulative logarithm of the odds in the ordinal response.
-we would need four link functions, four intercepts, and four coefficients.
+The categories 1,2,3 in the i-th response $Y_i$ implicate an ordinal scale.
+Hence, our Ordinal Logistic regression model will indicate how each one of the 2 regressors that affects the cumulative logarithm of the odds in the ordinal response.
+we would need 2 link functions, 2 intercepts, and 2 coefficients.
 }
 \begin{lstlisting}[language=R]
 ordinal_model <- polr(decision ~ parent_ed + GPA, data = data, Hess = TRUE)

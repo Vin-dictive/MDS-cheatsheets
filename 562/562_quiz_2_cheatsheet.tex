@@ -1,0 +1,120 @@
+\documentclass[8pt,landscape]{article}
+
+% PACKAGES
+\usepackage[letterpaper, margin=0.1in]{geometry}
+\usepackage{amsmath, amssymb, geometry}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{booktabs} % For better tables if needed
+
+% Define a custom color for code highlighting and environment
+\definecolor{myred}{RGB}{204, 0, 0} % A strong red
+\definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
+\setlist[itemize]{
+    noitemsep,  % Removes vertical space between list items
+    topsep=0pt,  % Removes space before the list
+    partopsep=0pt, % Removes extra space when a list begins mid-paragraph
+    parsep=0pt, % Removes space between paragraphs within an item
+    leftmargin=*, % Sets the left margin to the minimum necessary
+    labelsep=0.5em, % You can slightly adjust the space between the bullet and the text
+}
+% LISTINGS SETUP for R and Python
+\lstset{
+  basicstyle=\ttfamily\scriptsize\color{black},
+  backgroundcolor=\color{mygray},
+  frame=single,
+  frameround=tttt,
+  framesep=0pt,        % no padding between code and frame
+  rulecolor=\color{black!20},
+  rulesep=0pt,         % no space between rules
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  commentstyle=\color{gray},
+  keywordstyle=\color{blue!80!black},
+  stringstyle=\color{myred},
+  breakatwhitespace=true,
+  xleftmargin=0pt,     % no left margin
+  xrightmargin=0pt,    % no right margin
+  aboveskip=0pt,       % no space above listing
+  belowskip=0pt,       % no space below listing
+  abovecaptionskip=0pt,
+  belowcaptionskip=0pt,
+  framexleftmargin=0pt,
+  framexrightmargin=0pt,
+  framextopmargin=0pt,
+  framexbottommargin=0pt
+}
+
+% FORMATTING
+\setstretch{0.9} % Reduce line spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+% Reduce section spacing and change color
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{2}{0pt}%
+    {0.1ex}% space before section
+    {0.1ex}% space after section
+    {\fontsize{8}{9}\bfseries\color{red}}} % section font: 8pt
+\makeatother
+
+% Reduce subsection spacing and make subsections blue
+\makeatletter
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
+    {0.1ex}% space before subsection
+    {0.1ex}% space after subsection
+    {\fontsize{8}{9}\bfseries\color{blue}}} % Subsection font: 8pt
+\makeatother
+
+% Custom command for red-highlighted code/commands (for in-line use)
+\newcommand{\code}[1]{\textcolor{myred}{\texttt{#1}}}
+
+% Custom small text wrapper - ensuring 8pt for body text
+\newcommand{\smalltext}[1]{
+  {\fontsize{8}{9}\selectfont\sloppy #1\par}
+}
+
+% DOCUMENT START
+\begin{document}
+\fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
+\pagestyle{empty}
+\begin{multicols}{3}
+
+% \section{Ordinary Least-squares Regression}
+% \subsection{Assumptions}
+% \smalltext{
+%     Response=Systematic Component+Random Component.
+%     .$\epsilon$  is the Random Component under the following assumptions:
+%     .each Yi is also assumed to be independent and normally distributed
+%     .qq plot lying on the 45° degree dotted line. Standard Normal distribution
+%     .Histogram of residuals bell-shaped form as in the Normal distribution.
+%     .Homoscedasticity can be assessed via the diagnostic plot of residuals vs. fitted values. Funnel shapes indicates non-constant variance, i.e., heteroscedasticity.
+%     .This assumption commonly gets violated in multiple linear regression and is called heteroscedasticity: the variance of the $\epsilon_i$s is not constant.
+%     .OLS not suffice - Non-negative values.  and Binary outcomes (Success or Failure). and Count data. 
+% }
+\subsection{}
+\smalltext{
+    \textbf{Deterministic:}For each one of the values of the regressor X, there is a single value of Y.
+    \textbf{Stochastic:} Each value of X has a probability distribution associated to Y.
+    \textbf{Black-box Models:}is focused on optimizing predictions subject to a set of regressors with less attention on the internal model's process. 
+    \textbf{Link function:}OLS regression models a continuous response $Y_i$  (a random variable) via its conditioned mean (or expected value) $\mu_i$ subject to $k$  regressors $X_{i,j}$. modelling the mean $\mu_i$ of a discrete-type response (such as binary or a count) is not straightforward. 
+}
+
+
+\begin{lstlisting}[language=R]
+library(glmbb)
+data(crabs)
+crabs <- crabs |>  rename(n_males = satell) |>  dplyr::select(-y)
+group_avg_width <- crabs |> mutate(intervals = cut(crabs$width, breaks = 10)) |> group_by(intervals) |> summarise(mean = mean(n_males), n = n()) 
+poi_model <- glm(n_males ~ width, family = poisson, data = crabs)
+\end{lstlisting}
+
+\end{multicols}
+\end{document}
