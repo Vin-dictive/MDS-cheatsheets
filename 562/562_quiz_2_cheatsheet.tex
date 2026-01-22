@@ -87,34 +87,109 @@
 \pagestyle{empty}
 \begin{multicols}{3}
 
-% \section{Ordinary Least-squares Regression}
-% \subsection{Assumptions}
-% \smalltext{
-%     Response=Systematic Component+Random Component.
-%     .$\epsilon$  is the Random Component under the following assumptions:
-%     .each Yi is also assumed to be independent and normally distributed
-%     .qq plot lying on the 45° degree dotted line. Standard Normal distribution
-%     .Histogram of residuals bell-shaped form as in the Normal distribution.
-%     .Homoscedasticity can be assessed via the diagnostic plot of residuals vs. fitted values. Funnel shapes indicates non-constant variance, i.e., heteroscedasticity.
-%     .This assumption commonly gets violated in multiple linear regression and is called heteroscedasticity: the variance of the $\epsilon_i$s is not constant.
-%     .OLS not suffice - Non-negative values.  and Binary outcomes (Success or Failure). and Count data. 
-% }
-\subsection{}
+
+\section{Time to Event and Censoring}
 \smalltext{
-    \textbf{Deterministic:}For each one of the values of the regressor X, there is a single value of Y.
-    \textbf{Stochastic:} Each value of X has a probability distribution associated to Y.
-    \textbf{Black-box Models:}is focused on optimizing predictions subject to a set of regressors with less attention on the internal model's process. 
-    \textbf{Link function:}OLS regression models a continuous response $Y_i$  (a random variable) via its conditioned mean (or expected value) $\mu_i$ subject to $k$  regressors $X_{i,j}$. modelling the mean $\mu_i$ of a discrete-type response (such as binary or a count) is not straightforward. 
+  We want to analyze the time until an event occurs.
+  Modelling survival times can involve three statistical approaches: parametric, semiparametric, and non-parametric.
+  Removing censored data will result in estimation uncertainty to be larger than it could be if we were to include the censored data. Under a frequentist approach, we would lose data points which will decrease the precision of our estimates. 
+  Removing censored data could also result in biased estimates if data have only been collected for a short time. These biased estimates would be obtained from those observations where the event of interest actually happened.
+  In fact, if you didn't consider censored observations, your survival estimates would be biased and would likely underestimate how long people actually live.
+  }
+\smalltext{
+  \textbf{Random Right-censoring:}
+  if a patient were hit by a bus and died in the accident, the death would be unrelated to cancer. Hence, all we know is that the patient did not die due to cancer until that moment.
+}
+\smalltext{
+  \textbf{Left-censoring:}
+  Left-censoring happens when the event of interest occurred before you started observing someone, so you know the event time is earlier than a certain point, but you do not know exactly when.
+  suppose you are studying when kids learn how to ski and you begin collecting data today. One of the kids in your study already knows how to ski at the first observation.
 }
 
+\subsection{Survival Function}
 
+\smalltext{
+  In short, the survival function $S_Y(t)$ is the probability that an event has not yet occurred by time $t$.Key RelationshipWhile the standard CDF ($F_Y(t)$) measures the probability that an event has happened, the survival function measures the probability of "survival" beyond that time:$S_Y(t) = P(Y > t) = 1 - F_Y(t)$
+  Any survival function (measured as a probability on the x-axis with time on the y-axis) will always be monotonically decreasing as time goes by. This behaviour is expected in any subject since their survival chances would decrease over time.
+  }
+
+  \subsection{Hazard Function}
+
+\smalltext{
+  The hazard function (or hazard rate) describes the "instantaneous" risk of an event happening at a specific moment, provided the subject has survived up to that point.
+  the hazard function zooms in on the current risk of "failing" right now. in survival function.
+ }
+
+ \subsection{Weibull Distribution}
+
+\smalltext{
+  is one of the most popular parametric modelling choices in Survival Analysis to model.
+  We can obtain the survival function for any positive random variable. (because time is positive always)
+  $f(t; \alpha, \beta) = \frac{\alpha}{\beta} \left( \frac{t}{\beta} \right)^{\alpha-1} e^{-(t/\beta)^\alpha}, \quad t \ge 0$ where $\alpha$  is called the shape parameter and $\beta$  is the scale parameter. Note that if $\alpha = 1$
+  we get the exponential distribution with parameter $\beta$ \\
+Hazard function $h(t) = \frac{\alpha}{\beta} \left( \frac{t}{\beta} \right)^{\alpha-1}$
+  To get the survival probability of each time t:-
+  }
 \begin{lstlisting}[language=R]
-library(glmbb)
-data(crabs)
-crabs <- crabs |>  rename(n_males = satell) |>  dplyr::select(-y)
-group_avg_width <- crabs |> mutate(intervals = cut(crabs$width, breaks = 10)) |> group_by(intervals) |> summarise(mean = mean(n_males), n = n()) 
-poi_model <- glm(n_males ~ width, family = poisson, data = crabs)
+  pweibull(q = 2, shape = 1,scale = 1,lower.tail = FALSE)
 \end{lstlisting}
 
+
+\section{Estimating the Survival Function}
+\smalltext{
+  There are two options for estimating quantities by incorporating the partial information contained in censored observations in the form of an estimated survival function of the population of interest:
+  \textbf{Parametric}: If a distributional assumption is made, we can use censored likelihood-based methods to estimate the parameters of the chosen heavy-tailed PDF for the observed survival times (e.g., Weibull). Therefore, any quantity (such as the theoretical mean or specific quantiles) can be extracted from that chosen distribution
+}
+
+\subsection{Non-parametric=Surv func with Kaplan-Meier}
+\smalltext{
+  Training dataset of survival times, but we have no distributional assumption of survival function. This option will implicate the following:
+  \textbf{RESTRICTED mean}: it can be estimated as the area under an estimate of the survival function.
+  \textbf{Quantiles}: they can be estimated by inverting an estimate of the survival function.
+  The tidy() output provides eight metrics as columns from our training data.
+}
+\begin{lstlisting}[language=R]
+  fit_km <- survfit(formula = Surv(col1, col2) ~ 1,data = data)
+  tidy(fit_km) #survival function
+  quantile(fit_km,probs = 0.5,conf.int = FALSE) #median surv time
+\end{lstlisting}
+
+\subsection{Parametric-Surv func with Weibull}
+\smalltext{
+  We need the corresponding parameters of the distribution.
+  estimate the parameters of the Weibull using survreg()
+  \textbf{Weibull}: The hazard is monotonic. It either always increases, always decreases, or stays constant. If you believe your patients' risk of death only gets higher as time goes on (due to aging or disease progression), Weibull is a strong candidate.
+  \textbf{Lognormal}: The hazard is non-monotonic (arc-shaped). It typically rises to a peak and then decreases toward zero for very long-term survivors. This is common in cases where if a patient survives the initial dangerous period (like right after a high-risk surgery), their long-term risk actually drops.
+}
+\begin{lstlisting}[language=R]
+  web_model <- survreg(formula = Surv(col1, col2) ~ 1,dist = "weibull", data = data)
+  intercept <- as.numeric(coef(fit_weibull))
+  log_scale <- as.numeric(log(fit_weibull$scale))
+  weibull_shape <- 1 / fit_weibull$scale
+  weibull_scale <- exp(intercept)
+  median_weibull <- qweibull(p = 0.5, shape = weibull_shape, scale = weibull_scale)
+  mean_weibull <- weibull_scale * gamma(1+(1/weibull_shape))
+\end{lstlisting}
+
+\subsection{Semi-Parametric-Cox Proportional Hazards Model}
+\smalltext{
+  Do not assume any specific distribution for our response of interest. Approach in the form of a widely popular semiparametric regression model.
+  is done through another special maximum likelihood technique using a partial likelihood. A partial likelihood is a specific class of quasi-likelihood, which does not require assuming any specific PDF for the continuous survival times.
+ }
+\begin{lstlisting}[language=R]
+  fit_ph <- coxph(formula = Surv(col1, col2) ~ j_reg, data = data)
+  tidy(fit_ph, exponentiate = TRUE, conf.int = TRUE)
+  profile_data <- data.frame(ph.ecog = factor(2, levels = c(0, 1, 2)), meal.cal = 800)
+fit_specific <- survfit(fit_cox, newdata = profile_data)
+autoplot(fit_specific, conf.int = TRUE, surv.colour = "red") +
+  labs( title = "Label", x = "Time (Days)", y = "Survival Probability")
+\end{lstlisting}
+\smalltext{
+
+a small enough p-value (less than the significance level) indicates that the data provides evidence in favour of association between the hazard function and the jth regressor. 
+\textbf{Interpretation:}
+ Now, the interpretation for the regression coefficient in a categorical regressor is the increase (at any time) by $exp(\beta_j)$
+ times in hazard from the baseline category to another given category.
+}
 \end{multicols}
 \end{document}
