@@ -205,12 +205,12 @@ pchisq(summary_poisson_model_2$deviance, #p-value for this test
 
 \subsection{Analysis of Deviance for Nested Models}
 \begin{lstlisting}[language=R]
-round(anova(poisson_model, poisson_model_2, test = "Chi"), 4)
+round(anova(poisson_model_2, poisson_model, test = "Chi"), 4)
 \end{lstlisting}
 \smalltext{
 $
-H_{0} : \text{The simpler model (Model 1) is sufficient.} \\
-H_{a} : \text{The more complex model (Model 2) fits significantly better.}
+H_{0} : \text{The simpler model (poisson\_model) is sufficient.} \\
+H_{a} : \text{The more complex model (poisson\_model\_2) fits significantly better.}
 $
 With a $p$-value $\le 0.05$ (Pr(\>Chi)), we reject $H_{0}$. Significant evidence that \texttt{poisson\_model\_2} fits the data better than the simpler \texttt{poisson\_model}. Therefore, we select \texttt{poisson\_model\_2}, which includes the additional predictor for the color of the prosoma.
 }
