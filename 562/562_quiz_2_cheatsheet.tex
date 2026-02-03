@@ -191,5 +191,92 @@ a small enough p-value (less than the significance level) indicates that the dat
  Now, the interpretation for the regression coefficient in a categorical regressor is the increase (at any time) by $exp(\beta_j)$
  times in hazard from the baseline category to another given category.
 }
+
+\section{Piecewise Constant Regression}
+\smalltext{
+  Goal is an accurate prediction in many complex frameworks (e.g., non-linear). fitting different \textbf{local OLS regressions}. The \textbf{step function}  
+   breaks the ranges of the regressor into intervals. In each interval, we adjust a constant. We obtain the average response in that interval. The regression model becomes
+   $Y_i = \beta_0 + \beta_1 C_1(X_i) + \beta_2 C_2(X_i) + \cdots + \beta_{q-1} C_{q-1}(X_i) + \beta_q C_q(X_i) + \varepsilon_i$
+}
+\begin{lstlisting}[language=R]
+# Define the number of step functions (q + 1).
+breaks_q <- 5
+fat_content <- fat_content |>  mutate(steps = cut(fat_content$week, breaks = breaks_q, right = FALSE))
+levels(fat_content$steps)
+model_steps <- lm(fat ~ steps, data = fat_content)
+tidy(model_steps) |> mutate_if(is.numeric, round, 3)
+glance(model_steps)
+\end{lstlisting}
+
+\section{Non continuous Piecewise LR}
+\smalltext{
+  So, for each interval beginning c1, we have an additional intercept and an additional slope.
+ }
+\begin{lstlisting}[language=R]
+model_piecewise_linear <- lm(fat ~ week * steps, data = fat_content)
+\end{lstlisting}
+
+\section{Continuous Piecewise Linear Regression}
+\smalltext{
+  To fix the above matter, we can impose restrictions to make sure that the lines are connected to each other. Therefore, we need to introduce the concept of the hinge function.
+}
+
+\begin{lstlisting}[language=R]
+  levels(fat_content$steps)
+  knots <- c(7.8, 14.6, 21.4, 28.2)
+  model_piecewise_cont_linear <- lm(
+    fat ~ week +
+      I((week - knots[1]) * (week >= knots[1])) +
+      I((week - knots[2]) * (week >= knots[2])) +
+      I((week - knots[3]) * (week >= knots[3])) +
+      I((week - knots[4]) * (week >= knots[4])),
+    data = fat_content
+  )
+  glance(model_piecewise_cont_linear)
+\end{lstlisting}
+
+\section{k-nn Regression}
+\smalltext{
+  The idea behind K-NN regression is finding the K observations in our training dataset of size n (with p features $x_j$ per observation) closest to the new point we want to predict.
+}
+
+\begin{lstlisting}[language=R]
+# Use odd numbers here so there is no missmatch on how the ties are handled.
+k <- 7
+my_knn <- knnreg(fat ~ week, data = fat_content, k = k)
+grid <- fat_content |>  data_grid(week) |>  add_predictions(my_knn)
+\end{lstlisting}
+
+\section{(LOWESS) Regression}
+\smalltext{
+  Predict response $y$ for a specific $x$ (e.g., fat content at week 10).Define Neighborhood: Identify the closest data points to the target $x$. The number of points (span) is a user-defined parameter.Assign Weights: Apply weights to these neighbors based on distance. Points closer to the target $x$ receive higher weights ($w_i$), while distant points receive lower weights.Local Regression: Perform a Weighted Least Squares (WLS) fit using a polynomial (often 1st or 2nd degree). For a second-degree polynomial, minimize the weighted sum of squared errors:
+  $\sum_{i} w_i(y_i - \beta_0 - \beta_1x_i - \beta_2x_i^2)^2$
+  }
+
+\begin{lstlisting}[language=R]
+  p <- list()
+  i <- 1
+  for (degree in seq(0, 2, 1)) {
+    for (span in seq(0.25, 1, 0.25)) {
+      model_loess <- loess(fat ~ week,
+        span = span, degree = degree,
+        data = fat_content
+      )
+      i <- i + 1
+    }
+  }
+\end{lstlisting}
+
+\section{Parametric Quantile Regression}
+\smalltext{
+  How does the alcohol price affect the weekly consumption of light drinkers, moderate drinkers, and heavy drinkers at given cut-off values of alcohol consumption?
+  How does the alcohol price ($X$) affect the weekly consumption ($Y$) of light drinkers ($\tau = 0.25$), moderate drinkers ($\tau = 0.5$), and heavy drinkers ($\tau = 0.9$) in given cut-off values in weekly alcohol consumption?
+  This prediction will not be a confidence interval since we are talking about probabilities (i.e., chances). Therefore, we can use “probability” instead of “confidence.” Moreover, we would obtain prediction bands.
+  }
+\begin{lstlisting}[language=R]
+  
+\end{lstlisting}
+
+  
 \end{multicols}
 \end{document}
