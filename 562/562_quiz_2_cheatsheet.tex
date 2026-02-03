@@ -99,54 +99,38 @@ All we know is that the patient did not die due to cancer until that moment.
 }
 \smalltext{
   \textbf{Left-censoring:}
-  Left-censoring happens when the event of interest occurred before you started observing someone, so you know the event time is earlier than a certain point, but you do not know exactly when.
+ Happens when the event of interest occurred before you started observing someone, so you know the event time is earlier than a certain point, but you do not know exactly when.
 }
 
-\textbf{Survival Function}
 \smalltext{
-$S_Y(t)$ is the probability that an event has not yet occurred by time $t$. Standard CDF ($F_Y(t)$) measures the probability that an event has happened, the survival function measures the probability of "survival" beyond that time:$S_Y(t) = P(Y > t) = 1 - F_Y(t)$
-Any survival function will always be monotonically decreasing as time goes by.
+\textbf{Survival Function $S(t)$:} Represents the probability that an individual or subject survives beyond a specific time $t$, or $P(T > t)$. This function is always monotonically decreasing, starting at 1 at $t=0$ and approaching 0 as $t \to \infty$.\\
+\textbf{Cumulative Distribution Function (CDF) $F(t)$:} Measures the probability that an event of interest has occurred at or before time $t$, defined as $F(t) = P(T \le t)$. In survival terms, it is the complement of survival: $F(t) = 1 - S(t)$.\\
+\textbf{Probability Density Function (PDF) $f(t)$:} Describes the unconditional rate at which events occur at a specific moment in time. Mathematically, it is the negative derivative of the survival function: $f(t) = \frac{d}{dt} F(t) = -S'(t)$.\\
+\textbf{Hazard Function $h(t)$:} Describes the "instantaneous" risk or rate of an event happening at time $t$, given that the subject has survived up to that point. It is a conditional probability rate expressed as the ratio of the PDF to the Survival Function: $h(t) = \frac{f(t)}{S(t)}$.
 }
-
-\textbf{Hazard Function}
-\smalltext{
-  describes the "instantaneous" risk of an event happening at a specific moment, provided the subject has survived up to that point.
- }
-
 \subsection{Non-parametric|Surv func with Kaplan-Meier}
 \smalltext{
-  Training dataset of survival times, but we have no distributional assumption of survival function. This option will implicate the following:
-  \textbf{RESTRICTED mean}: it can be estimated as the area under an estimate of the survival function.
-  \textbf{Quantiles}: they can be estimated by inverting an estimate of the survival function. \\
-  The tidy() output provides eight metrics as columns from our training data.
-  In the \textbf{fit\_km} output, if there is no upper bound in the CI since 50\% of the sampled subjects were still alive by the end of the study. See outputs of function.
+We have no distributional assumption of survival function. \\
+\textbf{RESTRICTED mean}: it can be estimated as the area under an estimate of the survival function.
+\textbf{Quantiles}: they can be estimated by inverting an estimate of the survival function.
+In the \textbf{fit\_km} output, if there is no upper bound in the CI, 50\% of subjects were still alive by the end of study. See outputs of function.
 }
 \begin{lstlisting}[language=R]
 fit_km <- survfit(formula = Surv(col1, col2) ~ 1,data = data)
-tidy(fit_km) #survival function
+tidy(fit_km) #gives 8 columns
 quantile(fit_km,probs = 0.5,conf.int = FALSE) #median surv time
-fit_km_plot <- autoplot(fit_km) +ylab("Survival Probability") +xlab("Survival Time (days)") 
-glance(fit_km) |>  mutate_if(is.numeric, round, 3) #rmean here is restricted mean in glance
+fit_km_plot <- autoplot(fit_km)#rmean-restricted mean in glance
+glance(fit_km) |>  mutate_if(is.numeric, round, 3) 
 \end{lstlisting}
 
 \subsection{Parametric|Surv func with Weibull}
 \smalltext{
-  We need the corresponding parameters of the distribution.
-  Estimate the parameters of the Weibull using survreg() \\
-  \textbf{Weibull}: The hazard is monotonic. It either always increases, always decreases, or stays constant. 
+  We need the corresponding parameters of the distribution.\\
+  \textbf{Weibull}: monotonic. It either always increases, always decreases, or stays constant. 
   If you believe your patients' risk of death only gets higher as time goes on (due to aging or disease progression), Weibull is a strong candidate. \\
-  \textbf{Lognormal}: The hazard is non-monotonic (arc-shaped). It typically rises to a peak and then decreases toward zero for very long-term survivors. This is common in cases where if a patient survives the initial dangerous period (like right after a high-risk surgery), their long-term risk actually drops.
+  \textbf{Lognormal}: non-monotonic (arc-shaped). It typically rises to a peak and then decreases toward zero for very long-term survivors. Common for cases where of patient survives the initial dangerous period(surgery), their long-term risk actually drops.
 }
-% \smalltext{
-%  \textbf{Survival function} for any positive random variable. (because time is positive always)
-%   $f(t; \alpha, \beta) = \frac{\alpha}{\beta} \left( \frac{t}{\beta} \right)^{\alpha-1} e^{-(t/\beta)^\alpha}, \quad t \ge 0$ where $\alpha$  is called the shape parameter and $\beta$  is the scale parameter. Note that if $\alpha = 1$
-%   we get the exponential distribution with parameter $\beta$ \\
-%   \textbf{Hazard function} $h(t) = \frac{\alpha}{\beta} \left( \frac{t}{\beta} \right)^{\alpha-1}$ \\
-%   To get the survival probability of each time t.
-%   }
-\begin{lstlisting}[language=R]
-  pweibull(q = 2, shape = 1,scale = 1,lower.tail = FALSE)
-\end{lstlisting}
+
 % \includegraphics[width=0.5\linewidth, height=2cm]{weibull-hazard-func.png}
 % \includegraphics[width=0.5\linewidth, height=2cm]{weibull-sur-func.png}
 % \smalltext{
@@ -164,23 +148,20 @@ mean_weibull <- weibull_scale * gamma(1+(1/weibull_shape))
 
 \subsection{Semi-Parametric-Cox Proportional Hazards Model}
 \smalltext{
-  Do not assume any specific distribution for our response of interest. Approach in the form of a widely popular semiparametric regression model.
-  is done through another special maximum likelihood technique using a partial likelihood. A partial likelihood is a specific class of quasi-likelihood, which does not require assuming any specific PDF for the continuous survival times.
+  Do not assume any specific distribution for our response of interest.
  }
 \begin{lstlisting}[language=R]
-  fit_ph <- coxph(formula = Surv(col1, col2) ~ j_reg, data = data)
-  tidy(fit_ph, exponentiate = TRUE, conf.int = TRUE)
-  profile_data <- data.frame(ph.ecog = factor(2, levels = c(0, 1, 2)), meal.cal = 800)
+fit_ph <- coxph(formula = Surv(col1, col2) ~ j_reg, data = data)
+tidy(fit_ph, exponentiate = TRUE, conf.int = TRUE)
+profile_data <- data.frame(ph.ecog = factor(2, levels = c(0, 1, 2)), meal.cal = 800)
 fit_specific <- survfit(fit_cox, newdata = profile_data)
-autoplot(fit_specific, conf.int = TRUE, surv.colour = "red") +
-  labs( title = "Label", x = "Time (Days)", y = "Survival Probability")
+autoplot(fit_specific, conf.int = TRUE, surv.colour = "red")
 \end{lstlisting}
 \smalltext{
-
-a small enough p-value (less than the significance level) indicates that the data provides evidence in favour of association between the hazard function and the jth regressor. 
-\textbf{Interpretation:}
- Now, the interpretation for the regression coefficient in a categorical regressor is the increase (at any time) by $exp(\beta_j)$
- times in hazard from the baseline category to another given category.
+The treatment effect is significant because the p-value is far below $\alpha= 0.05$, so we reject H0.
+We have strong evidence against (H0), so the treatment effect is statistically significant.
+\textbf{Interpretation:} Here, (exp(1.5721) = 4.8168), meaning that at any given time (t), the hazard of remission under the experimental treatment is 4.8168 times
+the hazard under placebo (assuming proportional hazards)
 }
 
 \section{Piecewise Constant Regression}
@@ -231,7 +212,10 @@ model_piecewise_linear <- lm(fat ~ week * steps, data = fat_content)
 
 \section{k-nn Regression}
 \smalltext{
-  The idea behind K-NN regression is finding the K observations in our training dataset of size n (with p features $x_j$ per observation) closest to the new point we want to predict.
+  K-nn fits better. Even if OLS predicts worse, can still be valuable for inference and decision justification. It
+  provides interpretable effect estimates (with uncertainty) describing how each regressor is associated
+  with the conditional mean monthly charge (holding other variables constant), which helps explain drivers
+  and supports reporting or policy decisions.
 }
 
 \begin{lstlisting}[language=R]
@@ -242,11 +226,13 @@ grid <- fat_content |>  data_grid(week) |>  add_predictions(my_knn)
 
 \section{(LOWESS) Regression}
 \smalltext{
-  Predict response $y$ for a specific $x$ (e.g., fat content at week 10).
-  Define Neighborhood: Identify the closest data points to the target $x$. 
-  The number of points (span) is a user-defined parameter.
-  Assign Weights: Apply weights to these neighbors based on distance. 
-  Points closer to the target $x$ receive higher weights ($w_i$), while distant points receive lower weights.
+  Identify the closest data points to the target $x$. 
+  loess(ETA ~ X, degree = 2, span = ...)
+  You try two settings for ... in span:
+• Model A: span = 0.20
+• Model B: span = 0.80 |
+Model A is more flexible (wigglier) and may overfit noise; Model B is smoother and
+  may miss real patterns
   }
 
 \section{Quantile Regression}
@@ -255,6 +241,7 @@ grid <- fat_content |>  data_grid(week) |>  add_predictions(my_knn)
   How does the alcohol price affect the weekly consumption of light drinkers, moderate drinkers, and heavy drinkers at given cut-off values of alcohol consumption?
   How does the alcohol price ($X$) affect the weekly consumption ($Y$) of light drinkers ($\tau = 0.25$), moderate drinkers ($\tau = 0.5$), and heavy drinkers ($\tau = 0.9$) in given cut-off values in weekly alcohol consumption?
   This prediction will not be a confidence interval since we are talking about probabilities (i.e., chances). Therefore, we can use “probability” instead of “confidence.” Moreover, we would obtain prediction bands.
+  MSE -> conditional mean. Pinball loss with $\tau=0.5$ -> conditional median.
 }
 
 \subsection{Parametric Quantile Regression}
@@ -283,6 +270,8 @@ round(predict(fit_rq_teams, newdata = data.frame(hits = 1000)), 0) #prediction
   \textbf{Inference:} For those teams at the upper 75\% threshold in runs, is this association is significant. So hits is statistically associated to the 75-quantile of runs.
   \textbf{Coef-Interpretation:} For each one hit increase, the 75-quantile of runs will increase by 0.5.
   \textbf{Prediction:} for any given team that scores 1000 hits in a future tournament, it is estimated to have a 50\% (0.75-0.25*100\%) chance to have between 452 and 557 runs.
+  “Among patients arriving around now, about 9 out of 10 will be seen within 30 minutes, and about 1 out
+of 10 will wait longer.”
 }
 
 \subsection{Non-Parametric Quantile Regression}
@@ -297,17 +286,18 @@ Lambda decides variability. smaller lambda estimated functions will not be that 
 \section{Missing Data}
 \smalltext{
   Identifying the type of missingness is critical because it determines the appropriate statistical approach.
-• \textbf{Missing Completely At Random (MCAR):} Missingness is totally by chance and independent of any data. It is the ideal class because there is no pattern; removing these rows does not introduce bias, though it increases standard errors due to a smaller sample size.
-• \textbf{Missing At Random (MAR):} Missingness depends on observed data available in the dataset. For example, a device might fail more often at night, and "time" is a recorded variable. Imputation techniques can use the observed data to fill these gaps.
-• \textbf{Missing Not At Random (MNAR):} The most serious type, where missingness depends on unobservable quantities. If the variable causing the missingness is not recorded, the data is MNAR, and simple deletion will likely skew the analysis and introduce serious bias.
+\textbf{Missing Completely At Random (MCAR):} Missingness is totally by chance and independent of any data. It is the ideal class because there is no pattern; removing these rows does not introduce bias, though it increases standard errors due to a smaller sample size.
+\textbf{Missing At Random (MAR):} Missingness depends on observed data available in the dataset. For example, a device might fail more often at night, and "time" is a recorded variable. Imputation techniques can use the observed data to fill these gaps.
+\textbf{Missing Not At Random (MNAR):} The most serious type, where missingness depends on unobservable quantities. If the variable causing the missingness is not recorded, the data is MNAR, and simple deletion will likely skew the analysis and introduce serious bias.
 \textbf{Simple Handling Techniques \& Their Drawbacks}
-• Listwise Deletion: Removing any row with missing data. While unbiased for MCAR, it leads to loss of power (higher standard errors) and can cause significant bias in MAR or MNAR scenarios.
-• Mean Imputation: Filling NAs with the overall mean of the variable.
+\textbf{Listwise Deletion:} Removing any row with missing data. While unbiased for MCAR, it leads to loss of power (higher standard errors) and can cause significant bias in MAR or MNAR scenarios.
+\textbf{Mean Imputation:} Filling NAs with the overall mean of the variable.
     ◦ Constraint: Only for continuous or count-type variables.
     ◦ Drawback: It artificially reduces the standard deviation/variance of the data and ignores relationships between variables.
-• Regression Imputation: Uses an OLS model from complete observations to predict missing values.
+\textbf{Regression Imputation:} Uses an OLS model from complete observations to predict missing values.
     ◦ Drawback: It reinforces the data's correlation too perfectly, as all imputed points fall exactly on the regression line, which can "inline" the behavior artificially.
-multiple imputation is robust enough to work for both MAR and MNAR data
+\textbf{multiple imputation} is robust enough to work for both MAR and MNAR data. Create several completed datasets by filling in missing values with plausible
+draws.
 }
 \begin{lstlisting}[language=R]
   md.pattern(data): Used for Exploratory Data Analysis (EDA) to visualize missingness patterns.
