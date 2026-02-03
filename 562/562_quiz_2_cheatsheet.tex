@@ -90,85 +90,76 @@
 
 \section{Time to Event and Censoring}
 \smalltext{
-  We want to analyze the time until an event occurs.
-  Modelling survival times can involve three statistical approaches: parametric, semiparametric, and non-parametric.
   Removing censored data will result in estimation uncertainty to be larger than it could be if we were to include the censored data. Under a frequentist approach, we would lose data points which will decrease the precision of our estimates. 
   Removing censored data could also result in biased estimates if data have only been collected for a short time. These biased estimates would be obtained from those observations where the event of interest actually happened.
-  In fact, if you didn't consider censored observations, your survival estimates would be biased and would likely underestimate how long people actually live.
-  }
+}
 \smalltext{
-  \textbf{Random Right-censoring:}
-  if a patient were hit by a bus and died in the accident, the death would be unrelated to cancer. Hence, all we know is that the patient did not die due to cancer until that moment.
+\textbf{Random Right-censoring:}
+All we know is that the patient did not die due to cancer until that moment.
 }
 \smalltext{
   \textbf{Left-censoring:}
   Left-censoring happens when the event of interest occurred before you started observing someone, so you know the event time is earlier than a certain point, but you do not know exactly when.
-  suppose you are studying when kids learn how to ski and you begin collecting data today. One of the kids in your study already knows how to ski at the first observation.
 }
 
-\subsection{Survival Function}
-
+\textbf{Survival Function}
 \smalltext{
-  In short, the survival function $S_Y(t)$ is the probability that an event has not yet occurred by time $t$.Key RelationshipWhile the standard CDF ($F_Y(t)$) measures the probability that an event has happened, the survival function measures the probability of "survival" beyond that time:$S_Y(t) = P(Y > t) = 1 - F_Y(t)$
-  Any survival function (measured as a probability on the x-axis with time on the y-axis) will always be monotonically decreasing as time goes by. This behaviour is expected in any subject since their survival chances would decrease over time.
-  }
+$S_Y(t)$ is the probability that an event has not yet occurred by time $t$. Standard CDF ($F_Y(t)$) measures the probability that an event has happened, the survival function measures the probability of "survival" beyond that time:$S_Y(t) = P(Y > t) = 1 - F_Y(t)$
+Any survival function will always be monotonically decreasing as time goes by.
+}
 
-  \subsection{Hazard Function}
-
+\textbf{Hazard Function}
 \smalltext{
-  The hazard function (or hazard rate) describes the "instantaneous" risk of an event happening at a specific moment, provided the subject has survived up to that point.
-  the hazard function zooms in on the current risk of "failing" right now. in survival function.
+  describes the "instantaneous" risk of an event happening at a specific moment, provided the subject has survived up to that point.
  }
 
- \subsection{Weibull Distribution}
-
-\smalltext{
-  is one of the most popular parametric modelling choices in Survival Analysis to model.
-  We can obtain the survival function for any positive random variable. (because time is positive always)
-  $f(t; \alpha, \beta) = \frac{\alpha}{\beta} \left( \frac{t}{\beta} \right)^{\alpha-1} e^{-(t/\beta)^\alpha}, \quad t \ge 0$ where $\alpha$  is called the shape parameter and $\beta$  is the scale parameter. Note that if $\alpha = 1$
-  we get the exponential distribution with parameter $\beta$ \\
-Hazard function $h(t) = \frac{\alpha}{\beta} \left( \frac{t}{\beta} \right)^{\alpha-1}$
-  To get the survival probability of each time t:-
-  }
-\begin{lstlisting}[language=R]
-  pweibull(q = 2, shape = 1,scale = 1,lower.tail = FALSE)
-\end{lstlisting}
-
-
-\section{Estimating the Survival Function}
-\smalltext{
-  There are two options for estimating quantities by incorporating the partial information contained in censored observations in the form of an estimated survival function of the population of interest:
-  \textbf{Parametric}: If a distributional assumption is made, we can use censored likelihood-based methods to estimate the parameters of the chosen heavy-tailed PDF for the observed survival times (e.g., Weibull). Therefore, any quantity (such as the theoretical mean or specific quantiles) can be extracted from that chosen distribution
-}
-
-\subsection{Non-parametric=Surv func with Kaplan-Meier}
+\subsection{Non-parametric|Surv func with Kaplan-Meier}
 \smalltext{
   Training dataset of survival times, but we have no distributional assumption of survival function. This option will implicate the following:
   \textbf{RESTRICTED mean}: it can be estimated as the area under an estimate of the survival function.
-  \textbf{Quantiles}: they can be estimated by inverting an estimate of the survival function.
+  \textbf{Quantiles}: they can be estimated by inverting an estimate of the survival function. \\
   The tidy() output provides eight metrics as columns from our training data.
+  In the \textbf{fit\_km} output, if there is no upper bound in the CI since 50\% of the sampled subjects were still alive by the end of the study. See outputs of function.
 }
 \begin{lstlisting}[language=R]
-  fit_km <- survfit(formula = Surv(col1, col2) ~ 1,data = data)
-  tidy(fit_km) #survival function
-  quantile(fit_km,probs = 0.5,conf.int = FALSE) #median surv time
+fit_km <- survfit(formula = Surv(col1, col2) ~ 1,data = data)
+tidy(fit_km) #survival function
+quantile(fit_km,probs = 0.5,conf.int = FALSE) #median surv time
+fit_km_plot <- autoplot(fit_km) +ylab("Survival Probability") +xlab("Survival Time (days)") 
+glance(fit_km) |>  mutate_if(is.numeric, round, 3) #rmean here is restricted mean in glance
 \end{lstlisting}
 
-\subsection{Parametric-Surv func with Weibull}
+\subsection{Parametric|Surv func with Weibull}
 \smalltext{
   We need the corresponding parameters of the distribution.
-  estimate the parameters of the Weibull using survreg()
-  \textbf{Weibull}: The hazard is monotonic. It either always increases, always decreases, or stays constant. If you believe your patients' risk of death only gets higher as time goes on (due to aging or disease progression), Weibull is a strong candidate.
+  Estimate the parameters of the Weibull using survreg() \\
+  \textbf{Weibull}: The hazard is monotonic. It either always increases, always decreases, or stays constant. 
+  If you believe your patients' risk of death only gets higher as time goes on (due to aging or disease progression), Weibull is a strong candidate. \\
   \textbf{Lognormal}: The hazard is non-monotonic (arc-shaped). It typically rises to a peak and then decreases toward zero for very long-term survivors. This is common in cases where if a patient survives the initial dangerous period (like right after a high-risk surgery), their long-term risk actually drops.
 }
+% \smalltext{
+%  \textbf{Survival function} for any positive random variable. (because time is positive always)
+%   $f(t; \alpha, \beta) = \frac{\alpha}{\beta} \left( \frac{t}{\beta} \right)^{\alpha-1} e^{-(t/\beta)^\alpha}, \quad t \ge 0$ where $\alpha$  is called the shape parameter and $\beta$  is the scale parameter. Note that if $\alpha = 1$
+%   we get the exponential distribution with parameter $\beta$ \\
+%   \textbf{Hazard function} $h(t) = \frac{\alpha}{\beta} \left( \frac{t}{\beta} \right)^{\alpha-1}$ \\
+%   To get the survival probability of each time t.
+%   }
 \begin{lstlisting}[language=R]
-  web_model <- survreg(formula = Surv(col1, col2) ~ 1,dist = "weibull", data = data)
-  intercept <- as.numeric(coef(fit_weibull))
-  log_scale <- as.numeric(log(fit_weibull$scale))
-  weibull_shape <- 1 / fit_weibull$scale
-  weibull_scale <- exp(intercept)
-  median_weibull <- qweibull(p = 0.5, shape = weibull_shape, scale = weibull_scale)
-  mean_weibull <- weibull_scale * gamma(1+(1/weibull_shape))
+  pweibull(q = 2, shape = 1,scale = 1,lower.tail = FALSE)
+\end{lstlisting}
+% \includegraphics[width=0.5\linewidth, height=2cm]{weibull-hazard-func.png}
+% \includegraphics[width=0.5\linewidth, height=2cm]{weibull-sur-func.png}
+% \smalltext{
+%   As we can see, a patient with blue (Type D) cancer has a probability of death constant over time. For the green (Type A) cancer, the chance of dying is relatively low in the early stages of cancer, while it grows substantially over time.
+% }
+\begin{lstlisting}[language=R]
+model <- survreg(formula = Surv(col1, col2) ~ 1,dist = "weibull", data = data) #dist="lognormal" if needed 
+intercept <- as.numeric(coef(model))
+log_scale <- as.numeric(log(model$scale))
+weibull_shape <- 1 / model$scale
+weibull_scale <- exp(intercept)
+median_weibull <- qweibull(p = 0.5, shape = weibull_shape, scale = weibull_scale)
+mean_weibull <- weibull_scale * gamma(1+(1/weibull_shape))
 \end{lstlisting}
 
 \subsection{Semi-Parametric-Cox Proportional Hazards Model}
@@ -208,7 +199,7 @@ tidy(model_steps) |> mutate_if(is.numeric, round, 3)
 glance(model_steps)
 \end{lstlisting}
 
-\section{Non continuous Piecewise LR}
+\subsection{Non continuous Piecewise LR}
 \smalltext{
   So, for each interval beginning c1, we have an additional intercept and an additional slope.
  }
@@ -216,7 +207,7 @@ glance(model_steps)
 model_piecewise_linear <- lm(fat ~ week * steps, data = fat_content)
 \end{lstlisting}
 
-\section{Continuous Piecewise Linear Regression}
+\subsection{Continuous Piecewise Linear Regression}
 \smalltext{
   To fix the above matter, we can impose restrictions to make sure that the lines are connected to each other. Therefore, we need to introduce the concept of the hinge function.
 }
@@ -234,6 +225,9 @@ model_piecewise_linear <- lm(fat ~ week * steps, data = fat_content)
   )
   glance(model_piecewise_cont_linear)
 \end{lstlisting}
+% \includegraphics[width=0.3\linewidth, height=2cm]{p-w-c.png}
+% \includegraphics[width=0.3\linewidth, height=2cm]{p-w-n-cont.png}
+% \includegraphics[width=0.3\linewidth, height=2cm]{p-w-conti.png}
 
 \section{k-nn Regression}
 \smalltext{
@@ -241,42 +235,87 @@ model_piecewise_linear <- lm(fat ~ week * steps, data = fat_content)
 }
 
 \begin{lstlisting}[language=R]
-# Use odd numbers here so there is no missmatch on how the ties are handled.
-k <- 7
-my_knn <- knnreg(fat ~ week, data = fat_content, k = k)
+# Use odd numbers so no missmatch on how the ties are handled.
+my_knn <- knnreg(fat ~ week, data = fat_content, k = 7)
 grid <- fat_content |>  data_grid(week) |>  add_predictions(my_knn)
 \end{lstlisting}
 
 \section{(LOWESS) Regression}
 \smalltext{
-  Predict response $y$ for a specific $x$ (e.g., fat content at week 10).Define Neighborhood: Identify the closest data points to the target $x$. The number of points (span) is a user-defined parameter.Assign Weights: Apply weights to these neighbors based on distance. Points closer to the target $x$ receive higher weights ($w_i$), while distant points receive lower weights.Local Regression: Perform a Weighted Least Squares (WLS) fit using a polynomial (often 1st or 2nd degree). For a second-degree polynomial, minimize the weighted sum of squared errors:
-  $\sum_{i} w_i(y_i - \beta_0 - \beta_1x_i - \beta_2x_i^2)^2$
+  Predict response $y$ for a specific $x$ (e.g., fat content at week 10).
+  Define Neighborhood: Identify the closest data points to the target $x$. 
+  The number of points (span) is a user-defined parameter.
+  Assign Weights: Apply weights to these neighbors based on distance. 
+  Points closer to the target $x$ receive higher weights ($w_i$), while distant points receive lower weights.
   }
 
-\begin{lstlisting}[language=R]
-  p <- list()
-  i <- 1
-  for (degree in seq(0, 2, 1)) {
-    for (span in seq(0.25, 1, 0.25)) {
-      model_loess <- loess(fat ~ week,
-        span = span, degree = degree,
-        data = fat_content
-      )
-      i <- i + 1
-    }
-  }
-\end{lstlisting}
-
-\section{Parametric Quantile Regression}
+\section{Quantile Regression}
 \smalltext{
+  In many practical cases, we have inferential questions that are related to quantiles and not the mean.
   How does the alcohol price affect the weekly consumption of light drinkers, moderate drinkers, and heavy drinkers at given cut-off values of alcohol consumption?
   How does the alcohol price ($X$) affect the weekly consumption ($Y$) of light drinkers ($\tau = 0.25$), moderate drinkers ($\tau = 0.5$), and heavy drinkers ($\tau = 0.9$) in given cut-off values in weekly alcohol consumption?
   This prediction will not be a confidence interval since we are talking about probabilities (i.e., chances). Therefore, we can use “probability” instead of “confidence.” Moreover, we would obtain prediction bands.
-  }
+}
+
+\subsection{Parametric Quantile Regression}
+\smalltext{
+$Y_i = \beta_0(\tau) + \beta_1(\tau)X_{i,1} + \beta_2(\tau)X_{i,2} + \dots + \beta_k(\tau)X_{i,k} + \varepsilon_i(\tau)$
+where $\beta_0(\tau)$(for j = 0,1,2,..k) means that the regression term has a quantile have a different regression function on the right-hand side of our modelling equation.
+Unlike OLS, where there is a single model fitting, any Quantile regression approach (either parametric or non-parametric) would require fitting as many models as quantiles we are interested in!
+OLS method minimizes the sum of squared residuals. Its goal is to estimate the conditional mean of the response variable.
+Quantile Regression method minimizes an asymmetric loss function (often called the "check function" or "tilted absolute value"). Its goal is to estimate a conditional quantile (like the 75th percentile). \\
+| When  $\tau=0.25$, we consider overpredicting. $e_i = y_i - \hat{y}_i < 0$ WORSE than underpredicting $e_i = y_i - \hat{y}_i > 0$
+Note how Stepper the panalty on fidelity graph (y-axis), when we overestimate (negative part of x-axis) \\
+| When  $\tau=0.5$, we care equally about underpredicting and overpredicting. This corresponds to the median value. \\
+| When $\tau=0.75$, we consider underpredicting. $e_i = y_i - \hat{y}_i > 0$ WORSE than overpredicting $e_i = y_i - \hat{y}_i < 0$
+}
+% \includegraphics[width=0.3\linewidth, height=2cm]{quantile.png}
+% \includegraphics[width=0.3\linewidth, height=2cm]{fidelity.png}
+
 \begin{lstlisting}[language=R]
-  
+fit_rq_teams <- rq(formula = runs ~ hits, data = teams, tau = c(0.25, 0.5, 0.75))
+# pairwise bootstrapping method resamples with replacement bsmethod
+param_QR_summary <- summary(fit_rq_teams, se = "boot", R = 1000, bsmethod = "xy")
+param_QR_summary[3] #75 percentile
+round(predict(fit_rq_teams, newdata = data.frame(hits = 1000)), 0) #prediction
+\end{lstlisting}
+\smalltext{
+  \textbf{Inference:} For those teams at the upper 75\% threshold in runs, is this association is significant. So hits is statistically associated to the 75-quantile of runs.
+  \textbf{Coef-Interpretation:} For each one hit increase, the 75-quantile of runs will increase by 0.5.
+  \textbf{Prediction:} for any given team that scores 1000 hits in a future tournament, it is estimated to have a 50\% (0.75-0.25*100\%) chance to have between 452 and 557 runs.
+}
+
+\subsection{Non-Parametric Quantile Regression}
+\smalltext{This class of Quantile regression implicates no model function specification. The core idea is to allow the model to capture the local behaviour of the data (i.e., capturing its local structure).
+Lambda decides variability. smaller lambda estimated functions will not be that smooth anymore, there will be more variability on the prediction.
+}
+\begin{lstlisting}[language=R]
+  rqss_model_0.25_lambda_100 <- rqss(runs ~ qss(hits, lambda = 100), tau = 0.25, data = teams)
+  summary(rqss_model_0.25_lambda_100)
 \end{lstlisting}
 
-  
+\section{Missing Data}
+\smalltext{
+  Identifying the type of missingness is critical because it determines the appropriate statistical approach.
+• \textbf{Missing Completely At Random (MCAR):} Missingness is totally by chance and independent of any data. It is the ideal class because there is no pattern; removing these rows does not introduce bias, though it increases standard errors due to a smaller sample size.
+• \textbf{Missing At Random (MAR):} Missingness depends on observed data available in the dataset. For example, a device might fail more often at night, and "time" is a recorded variable. Imputation techniques can use the observed data to fill these gaps.
+• \textbf{Missing Not At Random (MNAR):} The most serious type, where missingness depends on unobservable quantities. If the variable causing the missingness is not recorded, the data is MNAR, and simple deletion will likely skew the analysis and introduce serious bias.
+\textbf{Simple Handling Techniques \& Their Drawbacks}
+• Listwise Deletion: Removing any row with missing data. While unbiased for MCAR, it leads to loss of power (higher standard errors) and can cause significant bias in MAR or MNAR scenarios.
+• Mean Imputation: Filling NAs with the overall mean of the variable.
+    ◦ Constraint: Only for continuous or count-type variables.
+    ◦ Drawback: It artificially reduces the standard deviation/variance of the data and ignores relationships between variables.
+• Regression Imputation: Uses an OLS model from complete observations to predict missing values.
+    ◦ Drawback: It reinforces the data's correlation too perfectly, as all imputed points fall exactly on the regression line, which can "inline" the behavior artificially.
+multiple imputation is robust enough to work for both MAR and MNAR data
+}
+\begin{lstlisting}[language=R]
+  md.pattern(data): Used for Exploratory Data Analysis (EDA) to visualize missingness patterns.
+  mice(data, m = 5, method = "pmm"): Generates m imputed datasets.
+  with(mids, lm(y ~ x)): Performs analysis on all imputed datasets simultaneously.
+  pool(models): Combines multiple models into one using Rubins Rules.
+  summary(pooled_model): Provides the final estimates, standard errors, and p-values
+\end{lstlisting}
+
 \end{multicols}
 \end{document}
