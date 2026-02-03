@@ -134,7 +134,7 @@ glance(fit_km) |>  mutate_if(is.numeric, round, 3)
 % \includegraphics[width=0.5\linewidth, height=2cm]{weibull-hazard-func.png}
 % \includegraphics[width=0.5\linewidth, height=2cm]{weibull-sur-func.png}
 % \smalltext{
-%   As we can see, a patient with blue (Type D) cancer has a probability of death constant over time. For the green (Type A) cancer, the chance of dying is relatively low in the early stages of cancer, while it grows substantially over time.
+%   As we can see, a patient with blue (Type D) cancer has a probability of death constant over time.
 % }
 \begin{lstlisting}[language=R]
 model <- survreg(formula = Surv(col1, col2) ~ 1,dist = "weibull", data = data) #dist="lognormal" if needed 
@@ -192,23 +192,15 @@ model_piecewise_linear <- lm(fat ~ week * steps, data = fat_content)
 \smalltext{
   To fix the above matter, we can impose restrictions to make sure that the lines are connected to each other. Therefore, we need to introduce the concept of the hinge function.
 }
-
 \begin{lstlisting}[language=R]
   levels(fat_content$steps)
   knots <- c(7.8, 14.6, 21.4, 28.2)
-  model_piecewise_cont_linear <- lm(
-    fat ~ week +
-      I((week - knots[1]) * (week >= knots[1])) +
-      I((week - knots[2]) * (week >= knots[2])) +
-      I((week - knots[3]) * (week >= knots[3])) +
-      I((week - knots[4]) * (week >= knots[4])),
-    data = fat_content
-  )
+  model_piecewise_cont_linear <- lm(fat ~ week +I((week - knots[1]) * (week >= knots[1])) + ..,data = fat_content)
   glance(model_piecewise_cont_linear)
 \end{lstlisting}
-% \includegraphics[width=0.3\linewidth, height=2cm]{p-w-c.png}
-% \includegraphics[width=0.3\linewidth, height=2cm]{p-w-n-cont.png}
-% \includegraphics[width=0.3\linewidth, height=2cm]{p-w-conti.png}
+% \includegraphics[width=0.3\linewidth, height=1.5cm]{p-w-c.png}
+% \includegraphics[width=0.3\linewidth, height=1.5cm]{p-w-n-cont.png}
+% \includegraphics[width=0.3\linewidth, height=1.5cm]{p-w-conti.png}
 
 \section{k-nn Regression}
 \smalltext{
@@ -256,8 +248,10 @@ Note how Stepper the panalty on fidelity graph (y-axis), when we overestimate (n
 | When  $\tau=0.5$, we care equally about underpredicting and overpredicting. This corresponds to the median value. \\
 | When $\tau=0.75$, we consider underpredicting. $e_i = y_i - \hat{y}_i > 0$ WORSE than overpredicting $e_i = y_i - \hat{y}_i < 0$
 }
-% \includegraphics[width=0.3\linewidth, height=2cm]{quantile.png}
-% \includegraphics[width=0.3\linewidth, height=2cm]{fidelity.png}
+% \includegraphics[width=0.2\linewidth, height=2cm]{quantile.png}
+% \includegraphics[width=0.2\linewidth, height=2cm]{fidelity.png}
+% \includegraphics[width=0.2\linewidth, height=2cm]{weibull-sur-func.png}
+% \includegraphics[width=0.2\linewidth, height=2cm]{weibull-hazard-func.png}
 
 \begin{lstlisting}[language=R]
 fit_rq_teams <- rq(formula = runs ~ hits, data = teams, tau = c(0.25, 0.5, 0.75))
@@ -306,6 +300,10 @@ draws.
   pool(models): Combines multiple models into one using Rubins Rules.
   summary(pooled_model): Provides the final estimates, standard errors, and p-values
 \end{lstlisting}
+\includegraphics[width=0.25\linewidth, height=2cm]{image.png}
+\includegraphics[width=0.25\linewidth, height=2cm]{image copy.png}
+\includegraphics[width=0.23\linewidth, height=2cm]{image copy 2.png}
+\includegraphics[width=0.23\linewidth, height=2cm]{image copy 3.png}
 
 \end{multicols}
 \end{document}
