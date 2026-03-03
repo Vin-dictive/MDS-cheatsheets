@@ -30,7 +30,7 @@ jobs:
             dir=$(dirname "$pdf")
             base=$(basename "$pdf" .pdf)
             echo "Converting first page of $pdf -> $dir/${base}.png (letter, ${DENSITY} DPI)"
-            convert -density $DENSITY -quality 100 "$pdf[0]" "$dir/${base}.png"
+            convert -density $DENSITY -background white -flatten -quality 100 "$pdf[0]" "$dir/${base}.png"
           done < <(find . -name '*.pdf' -type f -not -path './.git/*' -print0)
 
       - name: Commit and push PNGs
