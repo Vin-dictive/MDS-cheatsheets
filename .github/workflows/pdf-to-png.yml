@@ -3,7 +3,6 @@ name: PDF to PNG (4K)
 on:
   push:
     branches: [main, master]
-    paths: ['**/*.pdf']
   workflow_dispatch:
 
 jobs:
