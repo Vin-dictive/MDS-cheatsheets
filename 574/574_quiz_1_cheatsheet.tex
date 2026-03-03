@@ -88,13 +88,13 @@
 \begin{multicols}{3}
 
 
-\section{Features of a time series}
+\section{Features of a TS}
 \smalltext{
-  Univariate: A time series that consists of a single variable recorded sequentially over time (e.g., bike sale over time from a single store)
+  Univariate: A TS that consists of a single variable recorded sequentially over time (e.g., bike sale over time from a single store)
   Multivariate: Consists of multiple variables recorded sequentially over time (e.g., bike sale and profit over time from a single store)
   Hierachical: Consists of multiple variables from multiple observations, nested within the larger group categories, recorded sequentially over time (e.g., bike sale and profit from multiple stores over time)
 }
-\subsection{Different tasks in time series analysis}
+\subsection{Different tasks in TS analysis}
 \smalltext{
   \textbf{Prediction/forecasting (supervised)} Example: Predicting the number of tourists in the upcoming quarters, Approach: Statistical models (exponential smoothing, ARIMA, etc..) or ML/DL models (CNN,RNN,LightGBM, etc…)
 
@@ -115,17 +115,12 @@
   How much domain knowledge/information you possess
 }
 
-\subsection{Working with time series - Visualizing}
+\subsection{Working with TS - Visualizing}
 \smalltext{
-  The first step in any time series analysis should be a time plot! 
-  \textbf{Temporal dependence} What makes time series different to data we've seen previously is that they include temporal dependence - observations close in time tend to be correlated. That means that the value of the series at time 
-  t often depends in some way on past values. We can quantify this dependence by looking at the correlation of a time series with “lagged” values of itself. We call this \textbf{autocorrelation}.
+  The first step in any TS analysis should be a time plot! 
+  \textbf{Temporal dependence} What makes TS different to data we've seen previously is that they include temporal dependence - observations close in time tend to be correlated. That means that the value of the series at time 
+  t often depends in some way on past values. We can quantify this dependence by looking at the correlation of a TS with “lagged” values of itself. We call this \textbf{autocorrelation}.
 }
-
-\begin{lstlisting}[language=python]
-  sun["sunspots (lag=1)"] = sun["sunspots"].shift(1)
-\end{lstlisting}
-
 \smalltext{
   \textbf{Correlogram} Simpler plot to visualise all this information. Plots the autocorrelation function (ACF) on the y-axis and lags on the x-axis. 
   The formula used for standard error depends upon the situation.
@@ -135,19 +130,109 @@ If ACF for residuals diagnostics as part of the ARIMA routine, the standard erro
 If ACF used as part of the raw data as a model selection tool, then we should use the Bartlett's formula. `bartlett\_confint=True`
 }
 \begin{lstlisting}[language=python]
-  fig, (ax1,ax2) = plt.subplots(nrows=1, ncols=2, figsize=(11, 5))
-  plot_acf(sun["sunspots"], lags=50, title=None,ax=ax1)
-  ax1.set_xlabel("Lag (years)")
-  ax1.set_ylabel('ACF')
-  sun.sunspots.plot.line(xlabel="Time", ylabel="Sunspots", legend=False,ax=ax2); 
+  from statsmodels.graphics.tsaplots import plot_acf
+  plot_acf(sun["sunspots"], lags=50, title="ACF of Sunspots")
+  sun["sunspots"].plot.line(xlabel="Time", ylabel="Sunspots")
 \end{lstlisting}
 
 \includegraphics[width=0.5\linewidth, height=2cm]{autocorrelation.png}
+\includegraphics[width=0.5\linewidth, height=2cm]{whitenoise.png}
 
-\subsection{Time Series Patterns}
+\subsection{Time Series (TS) Patterns}
+\smalltext{
+  \textbf{Trend:} long term increases or decreases in the series. Patterns that don't repeat with a regular period.
 
+  \textbf{Seasonality:} regular variation in the series at some fixed interval, e.g., month, day of week, time of day, etc.
 
+  \textbf{Cyclicity:} variations in the series that repeat with some regularity but of unknown and changing period.
+
+  Seasonal smaller timeframe than cyclical, but at a fixed frequency.
+  Cyclical larger timeframe than seasons, and not at a fixed frequency.
+  Cyclical always larger timeframe than seasonal behaviour.
+
+  \textbf{White noise:} Zero mean, constant variance, no autocorrelation, iid and Gaussian.
+  If TS has white noise then that means it is a series of random numbers and cannot be predicted.
+  Residuals/errors from a TS for a forecast model should resemble white noise, implies that we have extracted all the useful information from the time-series.
+}
+
+\section{Time series decomposition}
+\smalltext{
+  \textbf{Trend-cycle (T)}
+  \textbf{Seasonal (S)}
+  \textbf{Remainder (R)} 
+}
+\textit{Additive}
+\smalltext{
+  $y_t = S_t + T_t + R_t$: Appropriate if the magnitude of the seasonal fluctuations, or the variation around the trend-cycle, does not vary with the value of the series.
+}
+
+\textit{Multiplicative}
+\smalltext{
+  $y_t = S_t \times T_t \times R_t$: Appropriate if variation in the seasonal pattern, or the variation around the trend-cycle, appears to be proportional to the value of series.
+}
+
+\subsection{Estimating the trend-cycle}
+\textit{Curve-fitting}
+\smalltext{
+  Easily calculate and remove a simple polynomial curve from our data.
+  Method assumes the same curve fits the data at all time points, but this is usually not the case
+}
+
+\begin{lstlisting}[language=python]
+  from statsmodels.tsa.tsatools import detrend
+  for order in range(3):
+    fit_label = f"Poly. fit (order {order})"
+    trend = detrend(df["CO2"], order=order)
+    df[fit_label] = df["CO2"] - trend
+    detrended_series = df["CO2"] - df[fit_label]
+    df[["CO2", fit_label]].plot.line(title=f"Order {order}: Original", xlabel="Time", ylabel="CO2 (ppm)")
+    detrended_series.plot.line(title=f"Order {order}: Detrended", xlabel="Time")
+\end{lstlisting}
+
+\textit{Moving average}
+\smalltext{
+  Estimates trend using a moving average which just means, passing a window of some size over the data and calculating the average .
+  Nature of data, expert knowledge, tells window size. If seasonality in the data, use a window equal to the seasonal period. 
+  This will average out seasonal variation and allow us to focus on the trend-cycle. Period other than 12 may contaminate the trend-cycle with seasonality.
+  \textbf{Problem with MA of even window size} moving average doesn't line up with the index of the original series. To rectify this, we usually take an extra 2-MA of the result of a MA with an even window.
+}
 % \includegraphics[width=0.5\linewidth, height=2cm]{silllo-2.png}
+
+\subsection{Estimating the Seasonality}
+\smalltext{
+1. Remove the trend-cycle component from the data
+
+2. Estimate the seasonal component by averaging
+}
+
+\subsection{Estimating the remainder}
+\smalltext{
+  To estimate the remainder, we simply subtract the trend-cycle and seasonal components from the original series:
+}
+
+\subsection{Just use seasonal\_decompose or STL}
+
+\begin{lstlisting}[language=python]
+model = seasonal_decompose(co2[["CO2"]],model="additive",period=12)
+model = STL(co2["CO2"], period=12, seasonal=13).fit() #STL 
+with mpl.rc_context():
+    mpl.rc("figure", figsize=(7, 10))
+    model.plot()
+    plt.tight_layout()
+\end{lstlisting}
+
+
+\section{Forecasting}
+\smalltext{
+  \textbf{Average} Use the average of the series for all future forecasts.
+
+  \textbf{Naive} Use the last observation for all forecasts.
+
+  \textbf{Seasonally-adjusted Naive} seasonally adjusted by applying a classical decomposition.
+
+
+}
+
 
 
 \end{multicols}

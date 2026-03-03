@@ -87,27 +87,6 @@
 \pagestyle{empty}
 \begin{multicols}{3}
 
-
-\smalltext{
-  For simple models, we can sometimes do the math and get a closed-form posterior distribution.
-  But in more realistic Bayesian models, especially multi-parameter models, their corresponding posteriors become analytically impossible to write down and manipulate.
-\textbf{MCMC} is the simulation approach we use to work around that barrier: instead of deriving the posteriors exactly, we generate approximate posterior samples that behave like draws from the posterior distribution.
- Valid inference for any (finite) amount of data.
-  Population parameters of interest are random variables! They have prior and posterior distributions.
-  Easy to interpret uncertainty for the population parameters.
-  Recursive updating.
-}
-\smalltext{
-  \textbf{Generative Models:}
-  A “story about how your data was created.”. Synthetic data (running computational simulations!)
-
-  \textbf{Probabilistic Generative Models:} models incorporate randomness into the system of interest.
-  Incorporate noise in measurements. Overly simplified models with incomplete measurements. Incorporate unobservable latent variables.
-
-  \textbf{Rstan:} is a probabilistic C++-based programming language for Bayesian statistical inference 
-
-}
-
 \section{Difference between Probability and Likelihood}
 \smalltext{
   Probability and likelihood are NOT the same.
@@ -128,11 +107,8 @@
 \subsection{Definitions of Probability Equation}
 \smalltext{
 $P(L | T) = \frac{P(L \cap T)}{P(T)}$ 
-
 $P(L | T)$: P of event $L$ occurring given that event $T$ has occurred.
-
 $P(L \cap T)$: P that both event $L$ and event $T$ occur.
-
 $P(T)$: P of the condition, event $T$, occurring on its own.
 
 $\text{new posterior} \propto \text{new likelihood} \times \text{old posterior}$
@@ -163,16 +139,21 @@ $\text{new posterior} \propto \text{new likelihood} \times \text{old posterior}$
   $P(L | T) = \frac{P(T | L) \cdot P(L)}{P(T)}$ \textbf{Prior:} what we believe before new evidence (e.g., from a previous study).
   \textbf{Evidence term:} how compatible the evidence is with each outcome (e.g., from an observed sample).
   \textbf{Posterior:} what we believe after incorporating the evidence.
-
-  $P(T | L) \neq P(L | T)$. While they use the same variables, they answer fundamentally different questions:
-  
-  $P(T | L)$ answers: Among people who end up partnered ($L$), how many used Tinder ($T$)?
-  
-  $P(L | T)$ answers: Among people who used Tinder ($T$), how many end up partnered ($L$)?
-
-  This is Bayesian inference!
   Hidden variables of interest are random (the prior distribution).
+
   We use the conditional distribution of hidden variables given observations (the posterior distribution) to capture uncertainty.
+
+  $F_M$: "forgets ID on Monday," $P(F_M) = 0.10$.
+  
+  $F_T$: "forgets ID on Tuesday," $P(F_T) = 0.10$.
+  
+  $F_M^c$: "does not forget ID on Monday," $P(F_M^c) = 1 - 0.10 = 0.90$.
+  
+  $F_T^c$: "does not forget ID on Tuesday," $P(F_T^c) = 1 - 0.10 = 0.90$.
+  
+  We want $P(F_T^c \mid F_M^c)$. Start from the definition of conditional probability:$P(F_T^c \mid F_M^c) = \frac{P(F_T^c \cap F_M^c)}{P(F_M^c)}.$Use independence across days: $F_T^c$ and $F_M^c$ are independent, so $P(F_T^c \cap F_M^c) = P(F_T^c) \times P(F_M^c) = 0.90 \times 0.90 = 0.81.$
+  
+  Now, substitute into the conditional probability formula:$P(F_T^c \mid F_M^c) = \frac{0.81}{0.90} = 0.90.$So, the probability the student does not forget their ID on Tuesday, given they did not forget it on Monday, is $0.90$. This is the same probability from Monday since both events are independent.
 }
 \subsection{MAP and MLE}
 \smalltext{
@@ -209,31 +190,26 @@ $\text{new posterior} \propto \text{new likelihood} \times \text{old posterior}$
   \textit{Likelihood:} Bernoulli / Binomial 
   \textit{Latent Variable:} Probability of success ($\pi$)
   \textit{Bounds:} $0 \le \pi \le 1$
-  \textit{Example:} Did the Cubs win or lose?
   
   \item \textbf{Counts ($0, 1, 2, \dots$)} 
   \textit{Likelihood:} Poisson
   \textit{Latent Variable:} Expected rate ($\lambda$) - continous
   \textit{Bounds:} $\lambda > 0$
-  \textit{Example:} How many runs were scored in a game?
   
   \item \textbf{Continuous (No bounds)} 
   \textit{Likelihood:} Normal (Gaussian)
   \textit{Latent Variable:} Mean ($\mu$)
   \textit{Bounds:} $-\infty < \mu < \infty$
-  \textit{Example:} What is the average height of a player?
   
   \item \textbf{Continuous (Positive only)} 
   \textit{Likelihood:} Log-Normal / Gamma
   \textit{Latent Variable:} Shape ($\alpha$) and Rate ($\beta$)
   \textit{Bounds:} $\alpha > 0, \beta > 0$
-  \textit{Example:} How long is the duration of a game?
   
   \item \textbf{Waiting Times} 
   \textit{Likelihood:} Exponential
   \textit{Latent Variable:} Rate of decay ($\lambda$)
   \textit{Bounds:} $\lambda > 0$
-  \textit{Example:} How much time between home runs?
 \end{itemize}
 
 \subsection{The Prior Selection (The "Question" Phase)}
@@ -261,20 +237,20 @@ $\text{new posterior} \propto \text{new likelihood} \times \text{old posterior}$
 }
 
 \section{Beta-Binomial}
+\smalltext{
+  For a posterior distribution where $\pi \mid Y = y \sim \text{Beta}(a_0 + y, b_0 + n - y)$, specifically $\text{Beta}(16, 7)$:
+
+  Posterior Mean: The calculation is $\mathbb{E}(\pi \mid Y = y) = \frac{a_0 + y}{a_0 + b_0 + n}$
+
+  n = 20 free throws and scores y = 14
+}
 \begin{lstlisting}[language=R]
-  data {
-    int<lower=1> n;    # Total number of trials
-    int<lower=0> X;    # Number of observed successes
-    real<lower=0> a;   # Hyperparameter 'alpha' for the Beta prior
-    real<lower=0> b;   # Hyperparameter 'beta' for the Beta prior
-  } 
-  parameters {    
-    real<lower=0, upper=1> pi; #Unknown param we want to estimate
-  } 
-  model {
-    pi ~ beta(a, b); # 1. THE PRIOR - gives pi a distribution before seeing the data and params that define it
-    X ~ binomial(n, pi); # 2. THE LIKELIHOOD This is the line that tells Stan how the observed data X are generated.
-  }
+  L <- qbeta(0.05, shape1 = 16, shape2 = 7)
+  data {    int<lower=1> n; int<lower=0> X;#observed successes 
+    real<lower=0> a; real<lower=0> b; }  #hyperparams a and b
+  parameters { real<lower=0, upper=1> pi; }#Unknown param estimate
+  model { pi ~ beta(a, b); # 1. THE PRIOR
+    X ~ binomial(n, pi);} # 2. THE LIKELIHOOD
   rocket_dictionary <- list(n = 20, X = 10,a = 1, b = 1)
   posterior_rockets <- sampling( # MCMC method of simulation
     object = rockets_stan,  # 1. The compiled model
@@ -284,31 +260,48 @@ $\text{new posterior} \propto \text{new likelihood} \times \text{old posterior}$
     warmup = 1000,          # 5. Learning the terrain (discarded)
     thin = 5,               # 6. Saving every Nth step
     seed = 553,             # 7. Reproducibility key
-    algorithm = "NUTS"      # 8. The navigation strategy
-  )
+    algorithm = "NUTS" )     # 8. The navigation strategy
   round(qbeta(p = c(0.025, 0.975), shape1 = 42, shape2 = 18), 2)
 \end{lstlisting}
+\smalltext{
+  Beta(a = 12, b = 8) is more informative because the distribution is more concentrated
+  around 0.6, unlike prior Beta(a = 1, b = 1) that assigns the same density across all values of $\pi$.
+  \textbf{Advantage:} Because n = 8 is tiny, a prior lets the team encode realistic expectations about triage
+accuracy so the posterior for $\pi$ does not swing wildly based on just a small handful of audited cases. 
+This can lead to more stable staffing/safety decisions early in the rollout.
+\textbf{Disadvantage:} If the site really is different, a prior
+like Beta(a = 12, b = 8) can delay detection of poor performance by pulling the posterior upward
+toward “what usually happens as a prior knowledge,” which could cause the team to miss a safety
+problem in the first week and make overly optimistic decisions about adopting the checklist.
+}
 
 \includegraphics[width=0.5\linewidth, height=2cm]{beta.png}
 \includegraphics[width=0.5\linewidth, height=2cm]{Gamma.png}
 
 \section{Gamma-Poisson}
 \smalltext{
-  Therefore, our \textbf{prior distributions} for these weather parameters would be:
-$
-\begin{aligned}
-l_w & \sim \mathcal{N}(\mu, \sigma^2) \quad \text{for} \quad w \in \{1, 2, 3\} \\
-a_w & \sim \text{Gamma}(k, \theta) \quad \text{for} \quad w \in \{1, 2, 3\}.
-\end{aligned}
-$
-Now, we have \textbf{hyperparameters}! They are:
-    [$\mu, \sigma^2$:] Mean and variance for the Normal distribution.
-    [$k, \theta$:] Shape and scale for the Gamma distribution.
+  Posterior estimate can be a location summary (i.e., planning around a
+  rate) such as the posterior mean $\lambda \mid \mathbf{Y} = \mathbf{y} \sim \text{Gamma}(s', r'), \mathbb{E}(\lambda \mid \mathbf{Y} = \mathbf{y}) = \frac{s'}{r'}$
+
+  Posterior estimate can be a spread summary (i.e., an uncertainty measure)
+such as the posterior standard deviation  $\lambda \mid \mathbf{Y} = \mathbf{y} \sim \text{Gamma}(s', r'), \text{sd}(\lambda \mid \mathbf{Y} = \mathbf{y}) = \frac{\sqrt{s'}}{r'}$
+
+ Posterior summary can be an extreme-value summary (high but plausible rate) such as a high posterior quantile. For instance, define the 0.95 posterior quantile.
 }
+\begin{lstlisting}[language=R]
+data { int<lower=0> n; int<lower=0> t; array[n] int<lower=1> win_team; array[n] int<lower=1> lose_team;
+array[n] int<lower=0> score_diff;  }        # score differences
+parameters { vector<lower=0>[t] skill; } # real-valued vector
+model {  skill ~ gamma(1, 1); #Vectorized prior: Gamma(1,1)
+  for (i in 1:n) {            
+    int win_index = win_team[i]; int lose_index = lose_team[i]; 
+    score_diff[i] ~ poisson(log(1 + exp(skill[win_index] - skill[lose_index])));}}
+\end{lstlisting}
+
 
 \section{Monte Carlo Algorithm}
 \smalltext{
-  We will start with the simple Monte Carlo algorithm. Suppose you have a closed analytical form for the posterior distribution $f(\Theta \mid \mathbf{y})$ (e.g., the Beta posterior in the Beta-Binomial model). You can build your \textbf{independent} Monte Carlo sample $\{\Theta_1, \dots, \Theta_N\}$ of size $N$, from $f(\Theta \mid \mathbf{y})$ by selecting each element $\Theta_i$ ($i = 1, \dots, N$) in the following way:
+  You have a closed analytical form for the posterior distribution $f(\Theta \mid \mathbf{y})$. You can build your \textbf{independent} Monte Carlo sample $\{\Theta_1, \dots, \Theta_N\}$ of size $N$, from $f(\Theta \mid \mathbf{y})$ by selecting each element $\Theta_i$ ($i = 1, \dots, N$) in the following way:
 \textbf{Step 1.} Draw $\Theta_i$ from $f(\Theta \mid \mathbf{y})$.
      \textbf{Step 2.} Go there.  
   This is a random walk!
@@ -317,24 +310,10 @@ Now, we have \textbf{hyperparameters}! They are:
 \section{Markov Chain}
 \smalltext{
   In terms of our Bayesian modelling for the posterior, it is a sequence $\{\Theta_1, \dots, \Theta_N\}$ of size $N$ whose elements are \textbf{NOT ENTIRELY INDEPENDENT} (hence the word chain!).
-
-\textbf{What does NOT ENTIRELY INDEPENDENT implicate?} It implicates the so-called \textbf{Markov property}:
-
+ It implicates the so-called \textbf{Markov property}:
     \textit{The next sampled $\Theta_{i+1}$ will depend on the current $\Theta_i$ but not on previous $\Theta_{i-1}, \Theta_{i-2}, \dots$}
 More formally, because of this property, the conditional probability function of $\Theta_{i+1}$ can be depicted as:
 $f(\Theta_{i+1} \mid \Theta_i, \mathbf{y}) = f(\Theta_{i+1} \mid \Theta_1, \Theta_2, \dots, \Theta_i, \mathbf{y}).$
-}
-
-\section{The Metropolis-Hastings Algorithm}
-\smalltext{
-  This algorithm allows us to obtain an \textbf{approximation of the posterior distribution} $f(\Theta \mid \mathbf{y})$ via our Markov Chain $\{\Theta_1, \dots, \Theta_N\}$.
-
-  Recall Bayes' rule:
- $ f(\Theta \mid \mathbf{y}) \propto f(\Theta) \times \ell(\Theta \mid \mathbf{y}). $
-  
-  Let the current $\Theta_i = \Theta$. The algorithm's two steps are:
-   \textbf{Step 1.} Randomly draw a new location $\Theta'$ from a proposed model with PDF $q(\Theta' \mid \Theta)$. This is a \textbf{jumping distribution} (e.g., symmetric \textbf{Uniform} or \textbf{Normal}, or asymmetric \textbf{Log-normal} for non-negative constraints).
-   \textbf{Step 2.} Decide whether to ``go'' or ``not to go'' to the proposed $\Theta'$.
 }
 
 \section{MCMC}
@@ -345,6 +324,17 @@ $f(\Theta_{i+1} \mid \Theta_i, \mathbf{y}) = f(\Theta_{i+1} \mid \Theta_1, \Thet
   make the likelihood more concentrated). In contrast, MCMC settings like warmup length, iterations, and
   number of chains do not change the target posterior; they mainly affect whether the chains explore it
   adequately and whether the resulting posterior summaries and plots are stable and trustworthy
+}
+\subsection{Disadvantage of MCMC}
+\smalltext{
+  MCMC too slow or too resource-intensive for a 10-minute operational decision, whereas closed-form posteriors give instant calculation.
+  With MCMC in a 20-parameter model, chains can mix slowly, parameters can be correlated, and exploration can be uneven, so you
+  need diagnostics to confirm the approximate posterior samples are reliable. Under time pressure,
+  skipping those checks can lead to misleading summaries and decisions. 
+  With many 20 covariates, small modeling choices can noticeably change the posterior. MCMC will faithfully
+  reflect whatever you specified, but under time pressure you may not have time to stress-test those
+  choices, whereas closed-form setups are often used in simpler models with fewer moving parts.
+
 }
 
 
