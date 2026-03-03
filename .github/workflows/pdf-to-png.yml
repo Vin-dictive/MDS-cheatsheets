@@ -1,0 +1,45 @@
+name: PDF to PNG (4K)
+
+on:
+  push:
+    branches: [main, master]
+    paths: ['**/*.pdf']
+  workflow_dispatch:
+
+jobs:
+  convert-and-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # required to push commits
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+      - name: Convert PDFs to single letter-size PNG (4K)
+        run: |
+          # Single page only, letter 8.5"×11"; 4K width → ~450 DPI (3825×4950 px)
+          DENSITY=450
+          for pdf in $(find . -name '*.pdf' -not -path './.git/*'); do
+            dir=$(dirname "$pdf")
+            base=$(basename "$pdf" .pdf)
+            echo "Converting first page of $pdf -> $dir/${base}.png (letter, ${DENSITY} DPI)"
+            convert -density $DENSITY -quality 100 "$pdf[0]" "$dir/${base}.png"
+          done
+
+      - name: Commit and push PNGs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add '**/*.png'
+          if git diff --staged --quiet; then
+            echo "No PNG changes to commit."
+          else
+            git commit -m "chore: add/update 4K PNG exports from PDFs"
+            git push
+          fi
