@@ -100,9 +100,6 @@
   \textbf{Correlogram} Plots the autocorrelation function (ACF). If ACF for residuals diagnostics as part of the ARIMA routine, the standard errors are determined assuming the residuals are white noise.
 If ACF used as part of the raw data as a model selection tool, then we should use the Bartlett's formula. `bartlett\_confint=True`
 }
-\begin{lstlisting}[language=python]
-  plot_acf(sun["sunspots"], lags=50, title="ACF of Sunspots")
-\end{lstlisting}
 
 \subsection{Time Series (TS) Patterns}
 \smalltext{
@@ -151,10 +148,7 @@ Appropriate if variation in the seasonal pattern, or the variation around the tr
 \smalltext{
 1. Remove the trend-cycle component from the data
 2. Estimate the seasonal component by averaging
-}
-
 \textbf{Estimating the remainder (R)}
-\smalltext{
   Simply subtract the trend-cycle and seasonal components from the original series.
 }
 
@@ -178,9 +172,9 @@ model = STL(co2["CO2"], period=12, seasonal=13).fit() #STL
   $\hat{y}_{T+h|T} = y_T + h \left( \frac{y_T - y_1}{T - 1} \right)$
 }
 
-\includegraphics[width=0.3\linewidth, height=2cm]{forecasting.png}
-\includegraphics[width=0.3\linewidth, height=2cm]{holt.png}
-\includegraphics[width=0.3\linewidth, height=2cm]{ETS.png}
+\includegraphics[width=0.3\linewidth, height=1cm]{forecasting.png}
+\includegraphics[width=0.3\linewidth, height=1cm]{holt.png}
+\includegraphics[width=0.3\linewidth, height=1cm]{ETS.png}
 
 \subsection{Simple Exponential Smoothing (SES)}
 \smalltext{
@@ -218,6 +212,19 @@ model = STL(co2["CO2"], period=12, seasonal=13).fit() #STL
 }
 
 
+\begin{lstlisting}[language=python]
+model = ETSModel(df["Production"], error="add", trend="add", damped_trend=True, seasonal="mul", seasonal_periods=12).fit()
+predictions = model.get_prediction(start=df.index[-1] + pd.DateOffset(months=1), end="2020").summary_frame()
+q = 0.975  # 95% prediction intervals
+simulations = model.simulate(anchor="end", nsimulations=348, repetitions=100, random_errors="bootstrap")
+fig = plot_acf(model.resid, lags=60, title=None, bartlett_confint=False)
+p1 = model.test_serial_correlation('ljungbox', lags=24)[0, 1, -1]
+p2 = model.test_normality('jarquebera')[0, 1]
+if p1 < 0.05: print("Residuals significantly different from white noise. That's bad...")
+if p2 < sig_level: print("Residuals significantly different from normal distribution. That's bad...")
+\end{lstlisting}
+
+
 \section{Model selection}
 
 \smalltext{  
@@ -240,7 +247,7 @@ model = STL(co2["CO2"], period=12, seasonal=13).fit() #STL
 
   \textbf{Summary statistics} For stationary time series, the mean and variance should be approximately constant over time.
 
-  \textbf{Hypothesis tests} Augmented Dickey Fuller (“ADF”) test or Kwiatkowski-Phillips-Schmidt-Shin (“KPSS”) test: Null hypo $H_0$: The time series is non-stationary, small p-value indicates stationary.   result = adfuller(noise)
+  \textbf{Hypothesis tests} Augmented Dickey Fuller (“ADF”) test or Kwiatkowski-Phillips-Schmidt-Shin (“KPSS”) test: Null hypo $H_0$: The time series is non-stationary, small p-value indicates stationary.  
 }
 \textbf{How to make stationary?}
 \smalltext{
@@ -249,6 +256,11 @@ model = STL(co2["CO2"], period=12, seasonal=13).fit() #STL
   In some situations, 1st order data will not appear to be stationary, 2nd order to obtain a stationary series.
   If still appear non-stationarity, then you might want to check for seasonal differencing.
 }
+\begin{lstlisting}[language=python]
+  result = adfuller(noise) #stationary check
+  airline_diff = airline.diff().dropna() # 1st order diff
+\end{lstlisting}
+  
 \section{Autoregressive (AR) Moving average (MA)}
 \smalltext{
   We can combine autoregression + moving average, to get the dynamics of both models.
@@ -276,8 +288,8 @@ p is the autoregressive order,
 d is the order of differencing to apply (usually 1),
 q is the moving average order
 }
-\includegraphics[width=0.5\linewidth, height=2cm]{ARIMA.png}
-\includegraphics[width=0.5\linewidth, height=2cm]{SARIMA.png}
+\includegraphics[width=0.5\linewidth, height=1cm]{ARIMA.png}
+\includegraphics[width=0.5\linewidth, height=1cm]{SARIMA.png}
 
 \smalltext{
  \textbf{SARIMA} simply adds an ARIMA with seasonal terms, that is, seasonal difference, and seasonally-based AR and MA models. It is often denoted ARIMA(p,d,q)(P,D,Q,m), where m is the seasonal period.
@@ -324,6 +336,8 @@ q is the moving average order
         \end{itemize}
     \item \textbf{Multi-output:} A single model that produces a vector of predictions for the entire horizon at once (e.g., certain Neural Networks).
 \end{itemize}
+
+
 
 \end{multicols}
 \end{document}
