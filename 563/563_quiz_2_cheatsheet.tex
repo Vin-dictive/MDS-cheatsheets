@@ -101,15 +101,13 @@ print(f"Cosine Similarity: {cosine_similarity(v1, v2):.4f}")
 \textbf{Rank 3 (Least Similar): Item 2 / Item 3.} (The one with the larger angular gap).
 }
 
-\subsection{Vector Space Models}
+\subsection{Term - Term Co-occurrence Context}
 \smalltext{
-Map words to dense vectors where geometric distance $\approx$ semantic similarity.
-\begin{itemize}
-    \item \textbf{One-hot:} $|V|$ dimensions. Sparse. No inherent notion of relationship between words and the dot product between similar and non-similar words is zero.
-    \item \textbf{Term-Term Co-occurrence:} go through a corpus of text, keeping a count of all of the words that appear in context of each word (within a window). The similarity is calculated using dot products between word vectors.
-    \item \textbf{LSA} count-based/matrix factorization. LSA can generate dense word embeddings. LSA can generate dense word embeddings.
-    \item \textbf{Word2Vec}Continuous bag of words (CBOW), Skip-gram optimized by Hierarchical softmax and Negative sampling.
-\end{itemize}
+    \textbf{One-hot:} $|V|$ dimensions. Sparse. No inherent notion of relationship between words and the dot product between similar and non-similar words is zero.
+    \textbf{Diagonal Zeroes:} The diagonal entries are zero because we typically do not consider a word to be its own context in these models.
+    The operation is $vector(b) - vector(a) + vector(c)$. The system then searches for the word vector closest to this result.
+    go through a corpus of text, keeping a count of all of the words that appear in context of each word (within a window). The similarity is calculated using dot products between word vectors.
+
 }
 
 \subsection{Word2Vec - Skip Gram - Gensim}
@@ -121,8 +119,8 @@ Map words to dense vectors where geometric distance $\approx$ semantic similarit
 }
 \smalltext{
     \textbf{Pre-trained Embeddings}
-    \textbf{word2vec} trained on several corpora using the word2vec algorithm. \textbf{fastText}
-
+    \textbf{word2vec} trained on several corpora using the word2vec algorithm.We use pre-trained embeddings (like GloVe or Word2Vec) because training them from scratch requires massive datasets and high computational power; pre-trained models capture general semantic relationships that are difficult to learn on smaller, domain-specific data.
+    \textbf{fastText Advantage:} It is particularly useful if your corpus updates frequently with unknown words, as it uses subword information (character n-grams) to create embeddings for words not seen during training.
     \textbf{Implicit biases and stereotypes in word embeddings}: Embeddings reflect gender stereotypes present in broader society.
     They may also amplify these stereotypes because of their widespread usage.
 
@@ -139,7 +137,9 @@ Map words to dense vectors where geometric distance $\approx$ semantic similarit
 \section{Latent Semantic Analysis LSA $X_{n \times d} \approx Z_{n \times k} W_{k \times d}$}
 \smalltext{
 $n$ number of documents, $k$ number of topics, $d$ number of features, $Z$ is document topic assignments, $W$ is topic-word assignments.
-LSA TruncatedSVD for matrix factorization using SVD (without centering the data).  \textbf{Advantage: }
+LSA TruncatedSVD for matrix factorization using SVD (without centering the data).  
+\textbf{The Role of Centering:} Before factorizing, we subtract the global mean, user bias, and item bias. This ensures the model learns the interactions (latent features) rather than just the fact that some users are "easy raters" or some movies are "generally popular."
+\textbf{Advantage: }
 The idea is to reduce the dimensionality of the data to extract some semantically meaningful components.
 \textbf{Disadvantage: }
 Topics are not probability distributions over words.
@@ -152,8 +152,8 @@ Not Probabilistic generative model hence we use LDA.
 \smalltext{
 LSA disadvantage is \textbf{advantage}. we assume each document has a distribution over topics and each topic has a distribution over words.
 LDA is a Bayesian probabilistic generative model with Dirichlet priors, we compute the posterior distribution over these latent variables. However, this posterior has no closed-form solution. So we rely on approximate inference methods.
-\textbf{how dif from k-means:}In clustering with K-Means, documents are grouped based on a similarity measure, and each document is assigned to a single cluster. In contrast, topic modeling produces distributions over words for each topic, as well as distributions over topics per document. Topic modeling can be thought of as a form of soft clustering, where documents are assigned to multiple topics based on their probability distributions rather than a single cluster.
-
+\textbf{how dif from k-means:}In clustering with K-Means, documents are grouped based on a similarity measure, and each document is assigned to a single cluster. In contrast, topic modeling produces distributions over words for each topic, as well as distributions over topics per document.
+LDA is a soft clustering technique. While K-Means assigns a document to exactly one cluster, LDA produces a distribution, meaning a document can be a mixture of several topics.
 The Dirichlet controls how mixed or concentrated a probability distribution is.
 
 \textbf{Case 1: Small $\alpha$=0.1} - Distributions are sparse and peaked.
@@ -214,6 +214,7 @@ Performance is validated via \textbf{(RMSE)}or \textbf{(MSE)}.
 }
 \subsection{Baseline Imputation}
 \smalltext{
+Are critical because they serve as a "sanity check." If a complex Collaborative Filtering model cannot beat a simple average, it is not adding value.
 \begin{itemize}
     \item \textbf{Simple Averages:} Global $\mu$, per-user $\mu_i$, or per-item $\mu_j$.
     \item \textbf{K-Nearest Neighbors (KNN):} Imputing missing values based on the $k$ most similar users/items in the training manifold.
@@ -226,24 +227,20 @@ train_mat_imp = imputer.fit_transform(train_mat)
 \end{lstlisting}
 
 \section{Collaborative Filtering \& SVD}
-\subsection{Matrix Factorization (MF)}
 \smalltext{
-Approximates $Y \approx ZW^T$, where $Z \in \mathbb{R}^{N \times k}$ and $W \in \mathbb{R}^{M \times k}$. 
-\begin{itemize}
-    \item \textbf{$z_i$ (User Embedding):} Latent representation of user $i$.
-    \item \textbf{$w_j$ (Item Embedding):} Latent representation of item $j$.
-\end{itemize}
+   SVD Limitation: You cannot run standard SVD on a utility matrix with missing values because the math is undefined for incomplete matrices. To use it, you must first "impute" or fill the missing values (often with the global or user mean).
+}
+\textbf{Matrix Factorization (MF)}
+\smalltext{
 The predicted rating is the dot product: $\hat{y}_{ij} = w_j^T z_i$.
 }
 \textbf{Regularized Objective Function:}
 \smalltext{
-Since standard SVD is undefined for missing data, CF minimizes the squared error over \textbf{observed ratings} $R$ with $L_2$ regularization:
-$f(Z,W) = \sum_{(i,j) \in R} (w_j^T z_i - y_{ij})^2 + \frac{\lambda_1}{2} \|Z\|_F^2 + \frac{\lambda_2}{2} \|W\|_F^2$
+Since standard SVD is undefined for missing data, CF minimizes the squared error over \textbf{observed ratings} $R$ with $L_2$ regularization.
 }
 \textbf{Incorporating Biases:}
 \smalltext{
 To account for systematic variations (e.g., "easy" raters or "popular" items), we add bias terms:
-$\hat{y}_{ij} = \beta + \beta_i + \beta_j + w_j^T z_i$
 Where $\beta$ is global mean, $\beta_i$ is user bias, and $\beta_j$ is item bias.
 }
 \section{Implementation: Surprise Library}
@@ -281,6 +278,7 @@ The objective is to suggest items based on latent preference. Formulated as a \t
 \section{Content-Based Filtering}
 \subsection{Methodology}
 \smalltext{
+we learn a weight vector and a bias term for each user using Ridge regression. The number of weights in the vector corresponds exactly to the number of item features (e.g., genres).
 Construct user profiles based on historical item features. For each user $i$, train a regressor (e.g., \textbf{Ridge}) where $X$ is the feature matrix and $y$ are the user's ratings.
 }
 \subsection{Pros and Cons} 
