@@ -77,8 +77,8 @@
 \newcommand{\code}[1]{\textcolor{myred}{\texttt{#1}}}
 
 % Custom small text wrapper - ensuring 8pt for body text
-\newcommand{\smalltext}[1]{%
-  {\fontsize{8}{9}\selectfont\sloppy #1\par}%
+\newcommand{\smalltext}[1]{
+  {\fontsize{8}{9}\selectfont\sloppy #1\par}
 }
 
 % DOCUMENT START
@@ -86,239 +86,16 @@
 \fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
 \pagestyle{empty}
 \begin{multicols}{3}
-\section{ML Workflow}
+
+
+\section{Header}
+\subsection{subheader}
 \smalltext{
-Data collection - Data cleaning, splitting - EDA - Preprocessing, Feature engineering - Feature selection, Model building - Evaluation, model selection - Test data predictions, visualizations, possible deployment
+  LOREM ipsum
 }
 
-\section{Confusion matrix}
-\begin{lstlisting}[language=Python]
-confusion_matrix(y_train, cross_val_predict(pipe, X_train, y_train))
+\begin{lstlisting}[language=python]
 \end{lstlisting}
-\begin{itemize}
-    \item Perfect prediction has all values down the diagonal
-    \item Off diagonal entries can often tell us about what is being mis-predicted
-\end{itemize}
-
-\smalltext{
-\textbf{Disease test:} It's worse to miss someone who actually has the disease (false negative) because they won't get the treatment they need. If we wrongly think someone has the disease (false positive), a doctor will check before treating them, so it's less harmful.\\
-\textbf{Spam filter:} It's worse to mark a real email as spam (false positive) because the person might never see an important message. If a spam email gets through (false negative), you can just delete it yourself.
-} 
-\subsection{Confusion matrix with cross-validation}
-
-\begin{lstlisting}[language=Python]
-confusion_matrix(y_train, cross_val_predict(pipe, X_train, y_train))
-ConfusionMatrixDisplay.from_predictions #used from CV same as above
-\end{lstlisting}
-
-\subsection{Precision}
-\smalltext{
-Precision is the ability of the classifier to putting a positive label on a positive observation. \\
-$Precision = TP/(TP+FP)$
-}
-
-\subsection{Recall}
-\smalltext{
-Recall is the ability of the classifier to find all the positive samples. \\
-$Recall = TP/(TP+FN)$
-}
-
-\begin{lstlisting}[language=Python]
-TP, FN, FP, TN = confusion_matrix(y_valid, pipe.predict(X_valid)).flatten()
-precision_score(y_valid, pipe.predict(X_valid), pos_label='Fraud')
-recall_score(y_valid, pipe.predict(X_valid), pos_label='Fraud')
-\end{lstlisting}
-
-\subsection{Drawbacks of precision and recall - F1 Score}
-\smalltext{
-F1-score combines precision and recall to give one score, which works for hyperparameter opt.
-F1 score, both the precision and recall are regarded as equally important.
-}
-\begin{lstlisting}[language=Python]
-f1_score = (2 * precision * recall) / (precision + recall)
-f1_score(y_valid, pipe.predict(X_valid), pos_label='Fraud')  # Recall and precision equally important
-classification_report(y_valid, pipe.predict(X_valid)) # get all values like recall precision
-\end{lstlisting}
-\subsection{F$\beta$ Score}
-\smalltext{
-When we care about recall more than percision and vice versa, use the general \textbf{F$\beta$ Score}, where beta is the weight of recall vs precision. beta = 1 is f1 score.
-}
-\begin{lstlisting}[language=Python]
-\end{lstlisting}
-
-\subsection{Precision/Recall tradeoff}
-\smalltext{
-By default, predictions use the threshold of 0.5. If predict\_proba $\geq$ 0.5, predict “fraud” else predict “non-fraud”. We can see this by manually typing in the 0.5 threshold and getting the same results as above. \\
-If you identify more things as “fraud”, recall is going to increase but there are likely to be more false positives.
-}
-\textbf{Decreasing the threshold}
-\begin{itemize}
-    \item Using a lower bar to predict fraud.
-    \item You accept more false positives in exchange for gaining more true positives.
-    \item Recall will either stay the same or increase.
-    \item Precision will likely decrease, though it can sometimes increase if all newly added predictions are true positives.
-\end{itemize}
-\textbf{Increasing the threshold}
-\begin{itemize}
-    \item Using a higher bar to predict fraud.
-    \item Recall will decrease or stay the same.
-    \item Precision will likely increase, though it may decrease if true positives drop without reducing false positives.
-\end{itemize}
-
-\subsection{Precision-recall curve - Fig1}
-\smalltext{ 
-Usually the goal is to keep recall high as precision goes up.}
-\subsection{Receiver Operating Characteristic (ROC) curve - Fig2}
-\begin{itemize}
-    \item Another commonly used tool to analyze the behavior of classifiers at different thresholds.
-    \item Similar to PR curve, it considers all possible thresholds for a given classifier given by predict\_proba but instead of precision and recall it plots false positive rate (FPR) and true positive rate (TPR or recall).
-    \item FPR = FP/(FP+TN)
-    \item The ideal curve is close to the top left. Classifier with high recall while keeping low false positive rate.
-\end{itemize}
-\subsection{AP score}
-\begin{itemize}
-    \item one number summarizing the PR plot
-    \item One way to do this is by computing the area under the PR curve.
-    \item Called average precision 
-    \item AP score has a value between 0 (worst) and 1 (best).
-\end{itemize}
-
-\subsection{AP vs. F1-score}
-\begin{itemize}
-    \item F1 score is for a given threshold and measures the quality of predict.
-    \item AP score is a summary across thresholds and measures the quality of predict\_proba
-    \item Optimizing towards a high F1 score means that you find the model that performs the best at the default decision threshold while considering both recall and precision
-    \item Optimizing towards a high AP score means that you get the model that performs the best over all possible decision thresholds, which could give you more flexibility in your tradeoffs between precision and recall when deciding on a decision threshold.
-\end{itemize}
-
-
-
-\section{Which type of error is important in imbalanced}
-\begin{itemize}
-    \item False positives (FPs) and false negatives (FNs) have quite different real-world consequences.
-    \item In PR curve and ROC curve, we saw how changing the prediction threshold can change FPs and FNs.
-    \item We can then pick the threshold that's appropriate for our problem.
-    \item if we want high recall, we may use a lower threshold (e.g., a threshold of 0.1). We'll then catch more fraudulent transactions. 
-\end{itemize}
-
-\subsection{Handling imbalanced}
-\smalltext{
-  Undersampling, Oversampling, Random oversampling, SMOTE: Synthetic Minority Over-sampling Technique, Changing the training procedure - class\_weight.
-  All sklearn classifiers have a parameter called \textbf{class\_weight}, For example, maybe a false negative is 10x more problematic than a false positive.
-}
-\begin{itemize}
-    \item Recall is much better but precision has dropped a lot; we have many false positives.
-    \item We can optimize class\_weight using hyperparameter optimization for your specific problem.
-    \item Changing the class weight will generally reduce accuracy.
-\end{itemize}
-\section{Regression scoring functions}
-\smalltext{In sklearn for regression problems, using r2\_score() and .score() (with default values) will produce the same results}
-\subsection{Mean squared error (MSE) }
-\smalltext{
-$
-\text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
-$ - Affected by outliers - always non-negative - lesser better - hence we take negative value for CV
-}
-
-\subsection{Root mean squared error (RMSE)}
-\smalltext{
-$
-\text{RMSE} = \sqrt{MSE}
-$ - always non-negative - lesser better - hence we take negative value for CV
-}
-
-\subsection{Mean absolute error (MAE) - Less sensitive to outliers}
-\smalltext{
-$
-\text{MAE} = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|
-$
-}
-
-\subsection{Mean absolute percentage error (MAPE) }
-\smalltext{
-$
-\text{MAPE} = \frac{100}{n} \sum_{i=1}^{n} \left| \frac{y_i - \hat{y}_i}{y_i} \right|
-$- frames the error in terms of a proportion/percentage instead of an absolute number.
-}
-
-\subsection{R\textsuperscript{2} - compare our model's errors to the errors in a baseline model which always predicts the mean.}
-\smalltext{
-$R^2 = 1 - \frac{\sum_{i=1}^n (y_i - \hat{y}_i)^2}{\sum_{i=1}^n (y_i - \bar{y})^2}$
-}
-\subsection{Transforming the targets}
-\smalltext{
-When you have prices or count data, the target values can often be skewed. A common trick in such cases is applying a log transform on the target column to make it more normal and less skewed.
-Linear regression will usually have better performance on data that is more normal.
-}
-
-\section{Feature Engineering}
-\smalltext{
-Good features would ideally:
-Capture most important aspects of the problem
-Allow learning with fewer examples
-Generalize to new scenarios.
-There is a trade-off between simple and expressive features:
-With simple features overfitting risk is low, but scores might be low.
-With complicated features scores can be high, but so is overfitting risk.
-}
-
-\subsection{Polynomial}
-\smalltext{
-  Linear models learn lines, planes, or hyperplanes. Poly can learn, hyperbolas, quadratic function.
-  Increasing deg makes the model more complex, overfitting, pick the degree of polynomial using hyperparameter optimization.
-  Suitable for regression problems, they can also help in classification.
-  2-features - Planes | 
-  Circles - Poly with 2 degree |
-  Polynomial feature engineering first then Standard scaler to avoid the polynomial features from having much larger absolute magnitude than the original features, which would be an issue for any distance based calculations and for interpretation of coefficients.
-}
-\subsection{Feature discretization / binning}
-\smalltext{
-    Transforming numeric features into categorical features is called bucketing or binning.
-}
-\subsection{Bag-of-words model - Text - N-grams}
-\smalltext{
-    Transforming numeric features into categorical features is called bucketing or binning.
-}
-
-\section{Feature Selection}
-\begin{itemize}
-    \item Correlation among features might make coefficients completely uninterpretable.
-    \item Fairly straightforward to interpret coefficients of ordinal features.
-    \item In categorical features, helpful to consider one category as a reference point and think about relative importance.
-    \item For numeric features, relative importance is meaningful after scaling.
-    \item You have to be careful about the scale of the feature when interpreting the coefficients. (polynomial)
-    \item Explaining the model is not same as explaining the data
-    \item Coefficients tell us only about the model and they might not accurately reflect the data
-\end{itemize}
-
-\subsection{Model-based feature selection}
-\smalltext{Keep only the most important features. We can put the feature selection transformer in a pipeline. preprocessor - select\_lr - randomForestRegressor = select\_lr selects important features before running model}
-
-\begin{lstlisting}[language=Python]
-pipe_rf_model_based['randomforestregressor'].n_features_in_ #gives features count
-\end{lstlisting}
-
-\subsection{Recursive feature elimination (RFE)}
-\smalltext{
-    But it's different in the sense that it iteratively eliminates unimportant features. It builds a series of models. At each iteration, discards the least important feature according to the model. Computationally expensive.
-}
-
-\subsection{RFE with cross-validation (RFECV)}
-\smalltext{
-We arbitrarily picked 120 features before. Use RFECV which uses cross-validation to select number of features. Slow because there is cross validation within cross validation
-}
-
-\subsection{Forward or backward selection}
-
-\smalltext{
-Shrink or grow feature set by removing or adding one feature at a time. Makes the decision based on whether adding/removing the feature improves the CV score or not. Very slow. selects d/2 features
-}
-
-\subsection{Warnings about feature selection}
-
-\smalltext{
-A feature's relevance is only defined in the context of other features. If features can be predicted from other features, you cannot know which one to pick. Relevance for features does not have a causal relationship.
-}
 
 \end{multicols}
 \end{document}
