@@ -150,7 +150,8 @@ posterior_prob_H_a <- pbeta(0.15, 24, 192, lower.tail = FALSE)
 posterior_odds <- posterior_prob_H_a / posterior_prob_H_0
 prior_prob_H_0 <- pbeta(0.15, 4, 12)
 prior_prob_H_a <- pbeta(0.15, 4, 12, lower.tail = FALSE)
-prior_odds <- prior_prob_H_a / prior_prob_H_0
+prior_odds <- prior_prob_H_a / prior_prob_H_0 
+#1/prior_odds times as plausible as the H_a that this mean exceeds
 bayes_factor <- posterior_odds / prior_odds
 round(qbeta(c(0.025, 0.975), 24, 192), 2) #2 sided test If the 95% credible interval falls within this range, there is reasonable evidence for H_0.
 \end{lstlisting}
@@ -214,9 +215,8 @@ our posterior mean indicates that for each one thousand USD increase in income, 
 }
 
 \section{Bayesian Hierarchical Modeling}
-\subsection{Foundations and Variability}
 \smalltext{
-Standard Bayesian models involve a likelihood conditioned on parameters with fixed hyperparameters. \textbf{Hierarchical models} make these hyperparameters random variables with their own priors. This allows the model to account for two sources of variability: \textbf{Within-group variability} (differences among observations in a group) and \textbf{Between-group variability} (differences from one group to another).
+Standard Bayesian models involve a likelihood conditioned on parameters with fixed hyperparameters. \textbf{Hierarchical models} make these hyperparameters random variables with their own priors. This allows the model to account for two sources of variability: \textbf{Within-group variability} (differences among observations in a group) and \textbf{Between-group variability} (differences from one group to another). It is the best of complete pooled and non-pooled models.
 }
 
 \subsection{Modeling Approaches Comparison}
@@ -235,7 +235,7 @@ Standard Bayesian models involve a likelihood conditioned on parameters with fix
 
 \textbf{Prior Specifications}
 \smalltext{
-In a hierarchical rocket success model, success probabilities $\pi_i$ follow a $Beta(a, b)$ distribution. The parameters $a$ and $b$ are assigned \textbf{Gamma priors} (e.g., $Gamma(0.001, 0.001)$), which are continuous and non-negative, reflecting the support required for Beta shape parameters.
+In a hierarchical rocket success model, success probabilities $\pi_i$ follow a $Beta(a, b)$ distribution. The parameters $a$ and $b$ are assigned \textbf{Gamma priors} (Chi-squared also) (e.g., $Gamma(0.001, 0.001)$), which are continuous and non-negative, reflecting the support required for Beta shape parameters.
 }
 
 \subsection{Inference and Prediction}
@@ -253,22 +253,6 @@ To predict the probability $\pi_{pred}$ for a entirely \textbf{new group} not in
 \smalltext{
 Hierarchical Bayesian models are the counterpart to frequentist \textbf{mixed-effects models}. They allow for generalization to new observations and the ability to use information from the entire dataset to infer group-specific probabilities.
 }
-
-\begin{lstlisting}[language=R]
-parameters {
-  vector[num_artist] mean_dance; // bj
-  real overall_mean; // mu
-  real<lower=0> between_sigma; // sigma_mu
-  real<lower=0> within_sigma; // sigma_w
-}
-model {
-  between_sigma ~ exponential(0.048);
-  within_sigma ~ exponential(1);
-  mean_dance ~ normal(0, between_sigma);
-  y ~ normal(overall_mean + mean_dance[artist], within_sigma);
-}
-\end{lstlisting}
-
 \section{MCMC Diagnostics: Visual Tools}
 \subsection{Trace Plots and Density Overlays}
 \smalltext{
