@@ -236,7 +236,12 @@ Standard Bayesian models involve a likelihood conditioned on parameters with fix
 \textbf{Prior Specifications}
 \smalltext{
 In a hierarchical rocket success model, success probabilities $\pi_i$ follow a $Beta(a, b)$ distribution. The parameters $a$ and $b$ are assigned \textbf{Gamma priors} (Chi-squared also) (e.g., $Gamma(0.001, 0.001)$), which are continuous and non-negative, reflecting the support required for Beta shape parameters.
+
+The equation $\alpha_h + \beta_1x_{h,i} + \beta_2x^2_{h,i} + \beta_3x^3_{h,i}$ can be dissected as  each region has its own intercept, but all regions share the same slopes. region-specific intercepts are not estimated completely separately from one another.
+Instead, they are assumed to come from a common population-level distribution, so information is shared across regions. This creates what it is called partial pooling, where regions with limited data are pulled somewhat toward the overall population pattern rather than being estimated in isolation. The fitted regional relationship can be overly sensitive to limited information rather than reflecting a broader underlying pattern. A hierarchical regression model helps by borrowing strength from the other regions through the shared population distribution. As a result, the region’s estimates are typically more precise, less sensitive to random variation from a small sample, and often less extreme than they would be under no pooling.
 }
+
+
 
 \subsection{Inference and Prediction}
 \textbf{Posterior Results:}
@@ -273,6 +278,9 @@ $N_{eff}$ measures the number of \textbf{independent samples} required to achiev
 \subsection{Gelman-Rubin Diagnostic ($\hat{R}$)}
 \smalltext{
 $\hat{R}$ evaluates stability by comparing \textbf{within-chain variability} to \textbf{between-chain variability}. Values of $\hat{R} \approx 1$ are desirable, suggesting chains behave similarly. Values noticeably above 1 (e.g., $> 1.1$) indicate instability and that chains have not yet converged to the target posterior.
+
+R value of 5.5 suggests poor mixing or lack of convergence across chains. As a preliminary diagnostic, it suggests that the chains are not producing consistent sampling behavior for $\theta$, so the posterior simulation for this parameter is not yet trustworthy.We would still want to examine other tools such as trace plots,
+density plots, effective sample size, and autocorrelation.
 }
 
 \section{Diagnostic Remediation}
