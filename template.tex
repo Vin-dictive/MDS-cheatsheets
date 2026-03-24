@@ -97,5 +97,16 @@
 \begin{lstlisting}[language=python]
 \end{lstlisting}
 
+\smalltext{
+\setlength{\tabcolsep}{4pt} % Reduces padding to fit column
+\renewcommand{\arraystretch}{1} % Adds vertical breathing room
+\begin{tabular}{|p{2.2cm}|c|c|}
+\hline
+\textbf{Decision} & \textbf{$H_0$ is True} & \textbf{$H_0$ is False} \\ \hline
+\textbf{Fail to Reject} & \begin{tabular}[c]{@{}c@{}}Correct (TN)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Type II Error (FN / $\beta$)\end{tabular} \\ \hline
+\textbf{Reject $H_0$} & \begin{tabular}[c]{@{}c@{}}Type I Error (FP / $\alpha$)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Correct (TP / Power)\end{tabular} \\ \hline
+\end{tabular}
+}
+
 \end{multicols}
 \end{document}
