@@ -1,0 +1,126 @@
+\documentclass[8pt,landscape]{article}
+
+
+% PACKAGES
+\usepackage[letterpaper, margin=0.1in]{geometry}
+\usepackage{amsmath, amssymb, geometry}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{booktabs} % For better tables if needed
+
+
+% Define a custom color for code highlighting and environment
+\definecolor{myred}{RGB}{204, 0, 0} % A strong red
+\definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
+\setlist[itemize]{
+noitemsep,  % Removes vertical space between list items
+topsep=0pt,  % Removes space before the list
+partopsep=0pt, % Removes extra space when a list begins mid-paragraph
+parsep=0pt, % Removes space between paragraphs within an item
+leftmargin=*, % Sets the left margin to the minimum necessary
+labelsep=0.5em, % You can slightly adjust the space between the bullet and the text
+}
+% LISTINGS SETUP for R and Python
+\lstset{
+basicstyle=\ttfamily\scriptsize\color{black},
+backgroundcolor=\color{mygray},
+frame=single,
+frameround=tttt,
+framesep=0pt,        % no padding between code and frame
+rulecolor=\color{black!20},
+rulesep=0pt,         % no space between rules
+breaklines=true,
+columns=fullflexible,
+showstringspaces=false,
+commentstyle=\color{gray},
+keywordstyle=\color{blue!80!black},
+stringstyle=\color{myred},
+breakatwhitespace=true,
+xleftmargin=0pt,     % no left margin
+xrightmargin=0pt,    % no right margin
+aboveskip=0pt,       % no space above listing
+belowskip=0pt,       % no space below listing
+abovecaptionskip=0pt,
+belowcaptionskip=0pt,
+framexleftmargin=0pt,
+framexrightmargin=0pt,
+framextopmargin=0pt,
+framexbottommargin=0pt
+}
+
+
+% FORMATTING
+\setstretch{0.9} % Reduce line spacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+
+% Reduce section spacing and change color
+\makeatletter
+\renewcommand{\section}{@startsection{section}{2}{0pt}%
+{0.1ex}% space before section
+{0.1ex}% space after section
+{\fontsize{8}{9}\bfseries\color{red}}} % section font: 8pt
+\makeatother
+
+
+% Reduce subsection spacing and make subsections blue
+\makeatletter
+\renewcommand{\subsection}{@startsection{subsection}{2}{0pt}%
+{0.1ex}% space before subsection
+{0.1ex}% space after subsection
+{\fontsize{8}{9}\bfseries\color{blue}}} % Subsection font: 8pt
+\makeatother
+
+
+% Custom command for red-highlighted code/commands (for in-line use)
+\newcommand{\code}[1]{\textcolor{myred}{\texttt{#1}}}
+
+
+% Custom small text wrapper - ensuring 8pt for body text
+\newcommand{\smalltext}[1]{
+{\fontsize{8}{9}\selectfont\sloppy #1\par}
+}
+
+
+% DOCUMENT START
+\begin{document}
+\fontsize{8}{9}\selectfont % Set the base font size to 8pt and line skip to 9pt for the entire document
+\pagestyle{empty}
+\begin{multicols}{3}
+
+
+\section{Header}
+\subsection{subheader}
+\smalltext{
+LOREM ipsum
+}
+
+
+\begin{lstlisting}[language=python]
+\end{lstlisting}
+
+
+\smalltext{
+\setlength{\tabcolsep}{4pt} % Reduces padding to fit column
+\renewcommand{\arraystretch}{1} % Adds vertical breathing room
+\begin{tabular}{|p{2.2cm}|c|c|}
+\hline
+\textbf{Decision} & \textbf{$H_0$ is True} & \textbf{$H_0$ is False} \ \hline
+\textbf{Fail to Reject} & \begin{tabular}[c]{@{}c@{}}Correct (TN)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Type II Error (FN / $\beta$)\end{tabular} \ \hline
+\textbf{Reject $H_0$} & \begin{tabular}[c]{@{}c@{}}Type I Error (FP / $\alpha$)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Correct (TP / Power)\end{tabular} \ \hline
+\end{tabular}
+}
+
+
+\end{multicols}
+\end{document}
+
+
+Give me summary of the lecture in the format above, Mention all the imp points from the lecture, it should be useful as a cheatsheet for me for my exams

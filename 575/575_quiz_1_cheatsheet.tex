@@ -1,0 +1,374 @@
+\documentclass[8pt,landscape]{article}
+% PACKAGES
+\usepackage[letterpaper, margin=0.1in]{geometry}
+\usepackage{amsmath, amssymb, geometry}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage{sectsty}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{booktabs}
+
+% Define a custom color for code highlighting and environment
+\definecolor{myred}{RGB}{204, 0, 0} % A strong red
+\definecolor{mygray}{RGB}{240, 240, 240} % Light gray for background
+
+\setlist[itemize]{
+noitemsep,
+topsep=0pt,
+partopsep=0pt,
+parsep=0pt,
+leftmargin=*,
+labelsep=0.5em,
+}
+
+% LISTINGS SETUP for R and Python
+\lstset{
+basicstyle=\ttfamily\scriptsize\color{black},
+backgroundcolor=\color{mygray},
+frame=single,
+frameround=tttt,
+framesep=0pt,
+rulecolor=\color{black!20},
+rulesep=0pt,
+breaklines=true,
+columns=fullflexible,
+showstringspaces=false,
+commentstyle=\color{gray},
+keywordstyle=\color{blue!80!black},
+stringstyle=\color{myred},
+breakatwhitespace=true,
+xleftmargin=0pt,
+xrightmargin=0pt,
+aboveskip=0pt,
+belowskip=0pt,
+abovecaptionskip=0pt,
+belowcaptionskip=0pt,
+framexleftmargin=0pt,
+framexrightmargin=0pt,
+framextopmargin=0pt,
+framexbottommargin=0pt
+}
+
+% FORMATTING
+\setstretch{0.9}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+% Reduce section spacing and change color
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{2}{0pt}%
+{0.1ex}% space before section
+{0.1ex}% space after section
+{\fontsize{8}{9}\bfseries\color{red}}}
+\makeatother
+
+% Reduce subsection spacing and make subsections blue
+\makeatletter
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0pt}%
+{0.1ex}% space before subsection
+{0.1ex}% space after subsection
+{\fontsize{8}{9}\bfseries\color{blue}}}
+\makeatother
+
+% Custom command for red-highlighted code/commands (for in-line use)
+\newcommand{\code}[1]{\textcolor{myred}{\texttt{#1}}}
+
+% Custom small text wrapper - ensuring 8pt for body text
+\newcommand{\smalltext}[1]{
+{\fontsize{8}{9}\selectfont\sloppy #1\par}
+}
+
+% DOCUMENT START
+\begin{document}
+\fontsize{8}{9}\selectfont
+\pagestyle{empty}
+\begin{multicols}{3}
+
+\smalltext{
+A \textbf{Language Model} computes the probability distribution over sequences of tokens/subtokens. It assigns a probability $P$ to plausible sequences (e.g., $P(\text{I have read}) > P(\text{eye have red})$). \\
+\textbf{Applications:} Machine translation, spell check, speech recognition, and standalone systems like ChatGPT (QA, summarization).
+}
+
+\textbf{Markov Assumption}
+\smalltext{
+Instead of conditioning on the \textit{entire} history, we approximate by considering only the \textbf{current state}. \\
+\textbf{First-order Markov Assumption:} The future is conditionally independent of the past given the present:
+$ P(S_{t+1} | S_0, \dots, S_t) \approx P(S_{t+1} | S_t) $
+A \textbf{Homogeneous Markov Chain} assumes transition probabilities are constant across all time steps $t$.
+}
+
+\section{Discrete Markov Chains}
+\smalltext{
+\textbf{State Space ($S$):} Finite set of unique observations $\{s_1, s_2, \dots, s_n\}$.
+
+\textbf{Initial Distribution ($\pi_0$):} Probability distribution over states at $t=0$.
+
+\textbf{Transition Matrix ($T$):} Matrix $A$ where $a_{ij} = P(s_j | s_i)$ is the prob of moving from $s_i$ to $s_j$. 
+
+Transition matrix for a MM means calculating the proportion of how often sequences of states occur in your data.
+Two corpora would have different word n-gram frequencies.
+
+\textbf{Note:} Each row must sum to 1.0.
+}
+
+\subsection{Key Computations}
+\smalltext{
+\textbf{1. Sequence Probability:} Using the Markov assumption, a sequence prob is the product of conditionals:
+$ P(s_0, s_1, s_2) = P(s_0) \times P(s_1|s_0) \times P(s_2|s_1) $
+\textbf{2. State Distribution at time $t$ ($\pi_t$):}
+Can be calculated using matrix multiplication:
+$ \pi_t = \pi_{t-1} T \quad \text{or} \quad \pi_t = \pi_0 T^t $
+}
+
+\begin{lstlisting}[language=python]
+pi_0 = np.array([0.5, 0.3, 0.2])  # initial state probability dist
+T = np.array([[0.5, 0.2, 0.3], [0.2, 0.5, 0.3], [0.3, 0.1, 0.6]])
+pi_18 = pi_0 @ np.linalg.matrix_power(T, 18)# State at t=18
+\end{lstlisting}
+
+\section{Stationary Distributions}
+\textbf{Steady State Analysis}
+\smalltext{
+A distribution $\pi$ is \textbf{stationary} if it remains unchanged as time progresses.
+$ \pi T = \pi $
+It describes the long-run behavior of the chain (e.g., PageRank algorithm).
+}
+
+\subsection{Conditions for Uniqueness}
+\smalltext{
+A unique stationary distribution exists if the chain is:
+\begin{itemize}
+\item \textbf{Irreducible:} Possible to reach any state from any other state (fully connected graph).
+\item \textbf{Aperiodic:} No fixed repetitive cycles. GCD of return times to any state is 1. Self-loops help break periodicity.
+\end{itemize}
+}
+
+\subsection{How to find Stationary distributions?}
+\smalltext{
+\textbf{Power Iteration:} Multiply $\pi_0$ by $T$ repeatedly until stable.
+\textbf{Eigen-decomposition:} Transpose $T$ and find the eigenvector with eigenvalue $\lambda=1$.
+\textbf{Monte Carlo:} Simulate many transitions and count occurrences.
+}
+\smalltext{
+  If a state has only one possible transition, the transition probability for that transition would be 1.0.
+  If each row in the transition matrix of a Markov chain has only one possible transition, the chain would be deterministic.
+  \textbf{Fully Connected:} Irreducible (Yes) | Aperiodic (Yes) \
+  \textbf{Fixed Cycles:} Irreducible (Yes) | Aperiodic (No) \
+  \textbf{Absorbing State:} Irreducible (No) | Aperiodic (Yes)
+}
+
+\section{Markov Models (MM)}
+\smalltext{
+\textbf{Markov Assumption:} Future is conditionally independent of the past given the present. \\
+\textbf{Learning = Counting:} Estimates use Maximum Likelihood Estimates (MLE). \\
+\textbf{Initial Dist ($\pi_0$):} $P(s_i) = \frac{\# \text{ starts in } s_i}{n \text{ sequences}}$. \\
+\textbf{Transitions ($T$):} $P(s_j | s_i) = \frac{\# \text{ moves } s_i \to s_j}{\# \text{ moves } s_i \to \text{anything}}$. \\
+\textbf{Matrix Property:} Sum of each row in $T$ must be 1.0.
+}
+
+\begin{lstlisting}[language=python]
+#Step 1 Tokenize
+toy_corpus_tokens = nltk.word_tokenize(toy_corpus.lower())
+#Step 2: Count transitions
+frequencies = defaultdict(Counter) 
+for i in range(len(toy_corpus_tokens) - 1):
+    frequencies[toy_corpus_tokens[i : i + 1][0]][toy_corpus_tokens[i + 1]] += 1
+#Step 3: Convert to probabilities (Transition matrix)
+trans_df = freq_df.div(freq_df.sum(axis=1), axis=0)
+\end{lstlisting}
+
+\section{N-gram Language Models: MM of Language}
+\smalltext{
+  With n-gram models, we are able to incorporate more history. calculate probability of sequences, predict the state at a given time step, or calculate the stationary distribution the same way.
+}
+
+\subsection{Limitations}
+\smalltext{
+\textbf{Sparsity:} State space grows exponentially as $V^{n-1}$($V$=vocab size). \\
+\textbf{Long-range Dependencies:} Cannot capture context beyond the fixed $n$ window. \\
+\textbf{No Semantics:} Treats words as discrete symbols (dog$\neq$cat).
+}
+
+\section{Sampling Techniques:Text Generation}
+\smalltext{
+\textbf{Greedy:} Always picks highest probability word; can be repetitive. \\
+\textbf{Top-k:} Keeps top $k$ words, renormalizes, and samples;adds diversity. \\
+\textbf{Top-p (Nucleus):} Samples from smallest set whose cumulative probability exceeds $p$. \\
+\textbf{Temperature ($\tau$):} Reshapes distribution via $y = \text{softmax}(u/\tau)$. \\
+\textbf{Low $\tau (<1)$:} More deterministic,more like greedy sampling. \\
+\textbf{High $\tau (>1)$:} more diverse, useful for creative and open-ended tasks.
+}
+
+\section{Evaluation of Language models}
+\smalltext{
+Increasing the value of n in MM usually results in lower perplexity. 
+\textbf{Intrinsic: Perplexity:} Inverse probability of test set normalized by $N$ words. $\sqrt[N]{1 / P(w_1 \dots w_N)}$. \\
+\textbf{Lower Perplexity} better predictor of the words in the test set. \\
+\textbf{Higher Perplexity} $n$ typically decreases perplexity. \\
+Evaluating capabilities of modern LLMs, it’s not sufficient. The difference in perplexity between high-performing models may not correlate with actual quality of output (e.g., helpfulness, relevance, factuality).
+\textbf{Extrinsic:} The most reliable way to evaluate a llm is to embed it into a downstream application and measure how much the performance of the application improves.(translation, reasoning). Eg of some benchmarks - Reading comprehension tasks, World knowledge tests, Common sense reasoning.
+}
+
+\section{Hidden Markov Models (HMM)}
+\textbf{The 5-Tuple $\{S, Y, \pi, A, B\}$}
+\smalltext{
+Used when states are unobserved (latent).
+\textbf{S:} Hidden states (e.g., Moods).
+\textbf{Y:} Observations (e.g., Activities).
+\textbf{A:} Transition matrix $P(q_i | q_{i-1})$.
+\textbf{B:} Emission probabilities $P(o_i | q_i)$.
+}
+
+\textbf{HMM Assumptions|}
+\smalltext{
+\textbf{Markov:} State depends only on previous state.
+\textbf{O/P Independence:} Obs depends only on current hidden state.
+}
+
+\section{HMM Fundamentals}
+\smalltext{
+An HMM is defined by $\theta = \langle \pi, A, B \rangle$: \\
+$\pi$: Initial state distribution $P(q_1)$.
+$A$: Transition matrix $a_{ij} = P(q_t | q_{t-1})$.
+$B$: Emission probabilities $b_j(o_t) = P(o_t | q_t)$. \\
+\textbf{Independence Assumptions:} 
+$o_t$ is conditionally independent of past obs and states given $q_t$. 
+$q_t$ is conditionally independent of past states/obs given $q_{t-1}$.
+}
+
+\section{Task 1: Likelihood (Forward Algorithm)}
+\smalltext{
+\textbf{Goal}: Compute $P(O|\theta)$ for sequence $O = o_1, \dots, o_T$. \\
+\textbf{Naive approach:} $P(O) = \sum_Q P(O, Q)$ is intractable ($n^T$ paths). \\
+\textbf{Forward Variable $\alpha_i(t)$:} $P(o_1 \dots o_t, q_t = s_i | \theta)$, the probability of seeing partial obs and ending in state $s_i$.
+}
+
+\subsection{Forward Steps | Dynamic Programming}
+\smalltext{
+\textbf{Initialize:} $\alpha_i(1) = \pi_i b_i(o_1)$. 
+\textbf{Induction:} $\alpha_j(t) = \sum_{i=1}^n \alpha_i(t-1) a_{ij} b_j(o_t)$. 
+\textbf{Termination:} $P(O|\theta) = \sum_{i=1}^n \alpha_i(T)$. \\
+Complexity: $O(n^2 T)$ via Dynamic Programming.
+}
+
+\smalltext{
+Observation sequence O and the model parameters are fixed and known.
+
+Total probability of seeing the first t observations and ending up in state i at time t, considers all possible paths that could have led there.
+
+$\alpha_i(t)$ does not know anything about the future time steps after the time step.
+
+Forward procedure by summing over the values at the last Time step.
+
+You can pass sequences of different lengths when training HMMs.
+}
+
+\section{Task 2: Decoding (Viterbi Algorithm)}
+The Viterbi algorithm is a dynamic programming approach used to find the \textbf{most likely sequence of hidden states} (the Viterbi path) given a sequence of observations.
+
+\textbf{1. Initialization ($t=1$)}
+At the very first time step, we calculate the starting probability for each state.
+"What is the probability that we started in state $i$ and saw the first observation $o_1$?"
+
+\textbf{2. Induction ($2 \le t \le T$)}
+For every subsequent time step, we move forward through the sequence.
+$    \delta_j(t) = \max_{1 \le i \le N} \left[ \delta_i(t-1) a_{ij} \right] b_j(o_t)$
+$
+  \psi_j(t) = \arg\max_{1 \le i \le N} \left[ \delta_i(t-1) a_{ij} \right]
+$  
+\begin{itemize}
+    \item \textbf{$\delta_j(t)$ (The Score):} This finds the "best" path to reach state $j$ at time $t$. We look at all possible previous states $i$, pick the one that was most likely to transition to $j$, and multiply by the current observation probability.
+    \item \textbf{$\psi_j(t)$ (The Breadcrumb):} This records \textit{which} previous state $i$ was the winner. We don't need the probability here, just the "ID" of the best previous state so we can retrace our steps later.
+\end{itemize}
+
+\textbf{3. Termination}
+Once we reach the end of the sequence ($T$), we identify the single most likely ending state.
+"Of all the possible final states, which one has the highest total path probability?"
+
+\textbf{4. Backtracking ($t = T-1, T-2, \dots, 1$)$ q^*_t = \psi_{q^*_{t+1}}(t+1)$}
+We follow the breadcrumbs ($\psi$) from the end of the sequence back to the beginning.
+"Since I know I ended in state $X$, I check my notes ($\psi$) to see which state most likely led me to $X$. I repeat this until I have the full path."
+
+\section{Task 3: Supervised vs Unsupervised Learning}
+\smalltext{
+\textbf{Supervised:} Use MLE (counting) if state sequences are known. \\
+\textbf{Unsupervised:} Use iterative \textbf{Expectation-Maximization} (Baum-Welch) if only $O$ is given.
+}
+
+
+
+\section{RNN Fundamentals}
+\smalltext{
+\textbf{Markov Limitations:} Struggle with long-distance dependencies and suffer from sparsity/memory growth as $n$ increases. \\
+\textbf{RNN Advantage:} Use \textbf{hidden units} to retain continuous, high-dimensional "memory" of the entire past sequence. \\
+\textbf{Graphical Model:} Each state $h_t$ is a function of the current input $x_t$ and the previous state $h_{t-1}$.
+}
+
+\subsection{Parameter Sharing}
+\smalltext{
+RNNs use \textbf{three weight matrices} shared across all time steps:
+\begin{itemize}
+\item \textbf{$W$:} Input to hidden state ($x_t \to h_t$).
+\item \textbf{$V$:} Hidden state to output ($h_t \to y_t$).
+\item \textbf{$U$:} Hidden to hidden state ($h_{t-1} \to h_t$).
+\end{itemize}
+Sharing parameters allows the model to learn patterns regardless of their position in the sequence.
+}
+
+\section{Forward Pass \& Math}
+\subsection{Calculations}
+\smalltext{
+\textbf{1. New Hidden State ($h_t$):} Typically uses \code{tanh} activation.
+$ h_t = \tanh(U h_{t-1} + W x_t + b_1) $
+\textbf{2. Output ($y_t$):} Typically uses \code{softmax} for classification.
+$ y_t = \text{softmax}(V h_t + b_2) $
+Forward pass iterates through the sequence length $T$.
+}
+
+\begin{lstlisting}[language=python]
+import torch.nn as nn
+# input_size=20, hidden_size=10, layers=1
+rnn = nn.RNN(20, 10, 1)
+output, hn = rnn(inp, h0)
+\end{lstlisting}
+
+\section{Training \& Architectures}
+\subsection{BPTT}
+\smalltext{
+\textbf{Backpropagation Through Time (BPTT):} A generalized backprop for sequential models.
+\begin{itemize}
+\item Error at $t$ depends on current $y_t$ and all subsequent states $h_{t+1 \dots T}$.
+\item \textbf{Truncated BPTT:} Updates using smaller chunks to save cost.
+\item \textbf{Issue:} Standard RNNs suffer from \textbf{vanishing gradients} on long dependencies.
+\end{itemize}
+}
+
+\subsection{Architectures \& Tasks}
+\smalltext{
+\begin{itemize}
+\item \textbf{Many-to-One:} Sequence classification (e.g., Sentiment analysis). Only final $h_n$ is used.
+\item \textbf{Many-to-Many:} Sequence labeling (e.g., POS tagging, NER). Output at every step.
+\item \textbf{One-to-Many:} Text/Music generation. Sample $y_t$ and use as $x_{t+1}$.
+\end{itemize}
+}
+
+\subsection{Stacked \& Bidirectional}
+\smalltext{
+\textbf{Stacked RNNs:} Output of one RNN layer becomes the input for the next; learns hierarchy/abstraction. \\
+\textbf{Bidirectional RNNs:} Combines forward RNN ($h_t^f$) and backward RNN ($h_t^b$) to capture context from both sides. Essential for tasks like POS tagging where future words clarify the current word.
+}
+
+\smalltext{
+\textbf{Many-to-One:} Sentiment analysis (Compressed sequence) \\
+\textbf{Many-to-Many:} POS Tagging (Local + Previous context) \\
+\textbf{Bidirectional:} Translation (Left + Right context) \\
+\textbf{Stacked:} Complex NLP (Higher abstraction layers)
+}
+
+
+\end{multicols}
+\end{document}
