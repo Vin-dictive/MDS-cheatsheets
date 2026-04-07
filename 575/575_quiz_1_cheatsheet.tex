@@ -111,7 +111,7 @@ A \textbf{Homogeneous Markov Chain} assumes transition probabilities are constan
 
 Transition matrix for a MM means calculating the proportion of how often sequences of states occur in your data.
 Two corpora would have different word n-gram frequencies.
-
+stopwords should not be removed. Although they may seem less “meaningful”, stopwords play a vital role in the structure and grammar of language. An n-gram model trained without stopwords would fail to learn important syntactic patterns, leading to ungrammatical and unnatural text generation.
 \textbf{Note:} Each row must sum to 1.0.
 }
 
@@ -184,6 +184,7 @@ trans_df = freq_df.div(freq_df.sum(axis=1), axis=0)
 \section{N-gram Language Models: MM of Language}
 \smalltext{
   With n-gram models, we are able to incorporate more history. calculate probability of sequences, predict the state at a given time step, or calculate the stationary distribution the same way.
+As n grows,Data sparsity increases, the number of possible combinations exceeds what is observed in the data,leading to many possible sequences having zero probability.
 }
 
 \subsection{Limitations}
@@ -196,7 +197,7 @@ trans_df = freq_df.div(freq_df.sum(axis=1), axis=0)
 \section{Sampling Techniques:Text Generation}
 \smalltext{
 \textbf{Greedy:} Always picks highest probability word; can be repetitive. \\
-\textbf{Top-k:} Keeps top $k$ words, renormalizes, and samples;adds diversity. \\
+\textbf{Top-k:} Keeps top $k$ words, renormalizes, and samples;adds diversity. When k=1, its greedy \\
 \textbf{Top-p (Nucleus):} Samples from smallest set whose cumulative probability exceeds $p$. \\
 \textbf{Temperature ($\tau$):} Reshapes distribution via $y = \text{softmax}(u/\tau)$. \\
 \textbf{Low $\tau (<1)$:} More deterministic,more like greedy sampling. \\
@@ -345,17 +346,11 @@ Output provides a probability distribution over classes.
     \item \textbf{Practice:} Often implemented as \textbf{truncated BPTT} using smaller sequence chunks.
 \end{itemize}
 }
-
-\subsection{PyTorch Implementation}
-\begin{lstlisting}
-import torch.nn as nn
-# (input_size, hidden_size, num_layers)
-rnn = nn.RNN(20, 10, 1)
-
-# inp: (seq_len, batch, input_size)
-# h0: (num_layers, batch, hidden_size)
+\begin{lstlisting}[language=python]
+rnn = nn.RNN(20, 10, 1)# (input_size, hidden_size, num_layers)
 output, hn = rnn(inp, h0)
 \end{lstlisting}
+
 \smalltext{
 \textbf{PyTorch Output Details:}
 \begin{itemize}
