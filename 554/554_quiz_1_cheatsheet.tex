@@ -87,6 +87,14 @@
 \pagestyle{empty}
 \begin{multicols}{3}
 
+  \textbf{Exploratory:} Searching for patterns, clusters, or unexpected differences without a pre-specified hypothesis
+  
+  \textbf{Inferential:} Generalizing a specific claim from a sample to a broader population
+  
+  \textbf{Causal:} Determining what would happen under a specific intervention or change
+  
+  \textbf{Predictive:} Forecasting individual-level future outcomes
+
 \section{Causal Inference Objectives}
 \smalltext{
 Distinguishing between \textbf{experimentally-generated} and \textbf{observational data} to evaluate causal claims. Key goals include fitting regression models that adjust for \textbf{confounding variables} and applying the principle: \code{block what you can, randomize what you cannot} in experimental designs like A/B testing.
@@ -105,7 +113,7 @@ This block emphasizes \textbf{"joined-up thinking"} across the data pipeline. It
 \begin{tabular}{|p{2.2cm}|c|c|}
 \hline
 \textbf{Decision} & \textbf{$H_0$ is True} & \textbf{$H_0$ is False} \\ \hline
-\textbf{Fail to Reject} & \begin{tabular}[c]{@{}c@{}}Correct (TN)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Type II Error (FN / Power=1-$\beta$)\end{tabular} \\ \hline
+\textbf{Fail to Reject} & \begin{tabular}[c]{@{}c@{}}Correct (TN)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Type II Error (FN / Beta)\end{tabular} \\ \hline
 \textbf{Reject $H_0$} & \begin{tabular}[c]{@{}c@{}}Type I Error (FP / $\alpha$)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Correct (TP / Power)\end{tabular} \\ \hline
 \end{tabular}
 }
@@ -117,6 +125,11 @@ The \textbf{p-value} is the probability of obtaining a test statistic as extreme
 The significance level $\alpha$ will be our tolerance to type I error: rejecting the null hypothesis when in fact is true.
 
 \textbf{Increasing Power ($1 - \beta$):} Power is the ability to detect a real effect when it exists (reducing Type II errors). Increasing power helps you find true positives, but it doesn't stop "fake" positives from appearing due to multiple testing.
+
+When $H_0$ is True: p-values are uniformly distributed (roughly evenly spread across the interval from 0 to 1)
+
+When $H_0$ is False: p-values are concentrated near 0 (repeated tests detect the real difference more often)
+
 }
 
 \begin{lstlisting}[language=R]
@@ -245,7 +258,7 @@ pairwise.prop.test(x = df$clicks, n = df$impressions, p.adjust.method = "holm")
 \section{ANOVA and Factorial Designs}
 \smalltext{
 \textbf{Main Effect}: The avg impact of one factor (Scent) ignoring others.\\
-\textbf{Interaction}: When the effect of one factor changes across levels of another (e.g., Scent helps Cute lines more than Direct lines).\\
+\textbf{Interaction Effects}: When the effect of one factor changes across levels of another. Interpretation: A significant interaction means the effect of one factor depends on the level of the other factor (e.g., the effect of dose on tooth growth depends on the delivery method)\\
 \textbf{Visuals}: Crossing or non-parallel lines in interaction plots = interaction.
 }
 \begin{lstlisting}[language=R]
@@ -262,6 +275,11 @@ interaction.plot(d$Scent, d$PickUp, d$Receptivity) # InteractionPlot
     \item \textbf{Rule}: Treat blocks as additive terms (\code{+}), not interactions (\code{*}), unless the block itself is of scientific interest.
 \end{itemize}
 }
+\textbf{Randomization Limit} 
+\begin{itemize}
+    \item \textbf{No Perfection Guarantee}: Randomization does not guarantee that groups will be perfectly balanced on every characteristic in a single experiment
+    \item \textbf{Systematic Bias:}: It succeeds by breaking the systematic link between assignment and confounders, ensuring remaining differences occur only by chance
+\end{itemize}
 \begin{lstlisting}[language=R]
 aov(Y ~ Block + FactorA * FactorB, data = d)# Model with Blocking
 \end{lstlisting}
@@ -309,6 +327,12 @@ Simulations track behavior via four key metrics:
 \section{Statistical Power Analysis}
 \smalltext{
 Power ($1-\beta$) is the probability of rejecting $H_0$ when $H_a$ is true. There is a direct trade-off between significance level ($\alpha$) and power. Sample size $n$ depends on effect size ($\delta$), variance ($\sigma$), $\alpha$, and power. Stricter $\alpha$ (e.g., 0.01) dramatically increases the required $n$.
+
+\textbf{Sample Size (n):} The output n from pwr.t.test() represents the required number of units per treatment group, not the total. You must multiply by 2 for the total sample size
+
+\textbf{Impact of Variability ($\sigma$):} If the population standard deviation increases, the "noise" increases. This makes the treatment difference harder to detect and increases the required sample size per group
+
+\textbf{Standardized Effect Size (d):} Explicitly note that d is the smallest mean difference of practical importance expressed in standard deviation units
 }
 
 \subsection{Sample Size Computation}
