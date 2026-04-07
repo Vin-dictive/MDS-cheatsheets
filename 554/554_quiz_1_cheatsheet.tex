@@ -105,7 +105,7 @@ This block emphasizes \textbf{"joined-up thinking"} across the data pipeline. It
 \begin{tabular}{|p{2.2cm}|c|c|}
 \hline
 \textbf{Decision} & \textbf{$H_0$ is True} & \textbf{$H_0$ is False} \\ \hline
-\textbf{Fail to Reject} & \begin{tabular}[c]{@{}c@{}}Correct (TN)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Type II Error (FN / $\beta$)\end{tabular} \\ \hline
+\textbf{Fail to Reject} & \begin{tabular}[c]{@{}c@{}}Correct (TN)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Type II Error (FN / Power=1-$\beta$)\end{tabular} \\ \hline
 \textbf{Reject $H_0$} & \begin{tabular}[c]{@{}c@{}}Type I Error (FP / $\alpha$)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Correct (TP / Power)\end{tabular} \\ \hline
 \end{tabular}
 }
@@ -138,7 +138,6 @@ Sets a stricter significance level: \code{alpha / m}. It ensures the \textbf{FWE
 
 \begin{lstlisting}[language=R]
 sum(pval < (sig_alpha / (nvars * nvars))) # Number of rejected H_0
-
 p.adjust(pval, method = "bonferroni") # Bonferroni Adjustment in R
 \end{lstlisting}
 
@@ -152,8 +151,7 @@ Bonferroni is \textbf{highly conservative}. It significantly increases the risk 
 \begin{lstlisting}[language=R]
 fdr_p <- p.adjust(raw_p, method = "fdr")# FDR/BH Adjustment in R
 \end{lstlisting}
-\includegraphics[width=0.50\linewidth, height=2.0cm]{bonf.png}
-\includegraphics[width=0.50\linewidth, height=2.0cm]{GWAS.png}
+
 
 \section{False Discovery Rate (FDR)}
 \smalltext{
@@ -167,12 +165,13 @@ Controls the \textbf{expected proportion of false positives} among all rejection
 }
 
 \section{Simpson's Paradox}
-\subsection{Definition \& Mechanics}
-\smalltext{Simpson's paradox occurs when a trend appearing in aggregated data reverses when the data is separated into specific groups. This often results from a limited or poor Exploratory Data Analysis (EDA). A real-world example is COVID-19 fatality rates: Italy appeared to have a higher overall rate than China, but when disaggregated by age, Italy actually had lower rates in every single age group.
+\smalltext{
+  Simpson's paradox occurs when a trend appearing in aggregated data reverses when the data is separated into specific groups. This often results from a limited or poor Exploratory Data Analysis (EDA). A real-world example is COVID-19 fatality rates: Italy appeared to have a higher overall rate than China, but when disaggregated by age, Italy actually had lower rates in every single age group.
+  
+  \textbf{To avoid misleading conclusions}, it is extremely important to know how our data was collected. Define what variables are relevant to our study. For example, if we want to infer causality, we must determine the possible causes for our outcome of interest.
 }
 
 \section{Confounding Variables}
-\subsection{Criteria for Confounding}
 \smalltext{
 A variable $C$ is a confounder of the relationship between exposure $X$ and outcome $Y$ if:
 \begin{itemize}
@@ -183,47 +182,149 @@ Confounding is essentially a mixing of effects where the third factor independen
 }
 
 \begin{lstlisting}[language=R]
-# Simulating Simpson's Paradox
 simpson_data <- simulate_simpson(n=200, groups=4, r=0.4)
-
-# Overall vs Group correlation
 cor(data$X, data$Y) # May be negative
-data %>% group_by(Group) %>% 
-  summarise(corr = cor(X, Y)) # Positive
+data %>% group_by(Group) %>% summarise(corr = cor(X, Y)) # Positive
 \end{lstlisting}
 
 \section{Dealing with Confounding}
-\subsection{Observational vs. Experimental}
 \smalltext{
 \textbf{Observational Studies:} Use stratification or regression adjustment. Include confounders $C$ as additional regressors to "block" their effect. \\
-\textbf{Experimental Studies (A/B Testing):} Randomization is the "gold standard." It guarantees that treatment $X$ is independent of all confounders, allowing for causal interpretation.
+\textbf{Experimental Studies (A/B Testing):} Randomization is the "gold standard." It guarantees that treatment $X$ is independent of all confounders, allowing for causal interpretation.(ANOVA)
 }
 
 \section{TikTok Simulation Case Study}
-\subsection{Naive vs. Precise Modeling}
 \smalltext{
-The "true" effect of the new ad was an 8-second increase in dwell time.
-\begin{itemize}
-\item \textbf{Naive Observational}: Effect overestimated (10.68s) because high-dwell-city users chose the new ad.
-\item \textbf{Randomized Study}: Comparing "New" vs "Current" yielded an accurate estimate (8.22s).
-\item \textbf{ANCOVA}: Including confounders (city/age) in a randomized model increases precision (8.04s with a narrower CI).
-\end{itemize}
+The "true" effect of the new ad was an 8-sec inc in dwell time.
+\textbf{Naive Observational}: Effect overestimated because high-dwell-city users chose the new ad.
+\textbf{Randomized Study}: Comparing "New" vs "Current" yielded an accurate estimate (8.22s).
+\textbf{ANCOVA}: Including confounders (city/age) in a randomized model increases precision.
 }
 
 \begin{lstlisting}[language=R]
 # Observational with Adjustment
-lm(y_obs ~ x_self_choice + city + age, 
-   data = sample_TikTok)
-
+lm(y_obs ~ x_self_choice + city + age, data = sample_TikTok)
 # Randomized Study (ANCOVA)
-lm(y_exp ~ x_randomized + city + age, 
-   data = sample_TikTok)
+lm(y_exp ~ x_randomized + city + age, data = sample_TikTok)
 \end{lstlisting}
+% \includegraphics[width=0.5\linewidth, height=2cm]{naive-vs-exp.png}
 
-\section{Key Takeaways}
-\subsection{Causal Inference}
+\textbf{Causal Inference}
 \smalltext{
 To avoid misleading conclusions, know how data was collected. Randomization allows accurate estimation without knowing every confounder, but including known covariates (ANCOVA) makes estimations more precise.
+}
+
+\section{Proportion Testing (Binary Y)}
+\smalltext{
+When comparing means of 2 groups, \textbf{2-sample t-test}
+
+When dealing with proportions of i groups, \textbf{Z-test}
+
+Used for Click-Through Rates (CTR). $H_0: p_1 = p_2$.
+\begin{itemize}
+    \item \textbf{prop.test()}: Uses $\chi^2$ approximation. Set \code{correct=FALSE} to disable Yates' continuity correction for large samples.
+    \item \textbf{One-sided}: Use \code{alternative="greater"} if testing if a new variant outperforms a baseline.
+\end{itemize}
+}
+\begin{lstlisting}[language=R]
+prop.test(x = c(clicks1, clicks2), n = c(n1, n2), alternative = "greater", correct = FALSE)
+\end{lstlisting}
+
+\subsection{Multiple Comparisons (A/B/n)}
+\smalltext{
+When testing $>2$ groups, the \textbf{Family-Wise Error Rate (FWER)} inflates. We must adjust $p$-values.
+\begin{itemize}
+    \item \textbf{Bonferroni}: Strict. $p_{adj} = \min(1, p \times m)$. High control of Type I error, but low power (high Type II error).
+    \item \textbf{Holm}: Sequential, less conservative than Bonferroni. Good balance for general business/marketing use.
+\end{itemize}
+}
+\begin{lstlisting}[language=R]
+pairwise.prop.test(x = df$clicks, n = df$impressions, p.adjust.method = "holm")
+\end{lstlisting}
+
+\section{ANOVA and Factorial Designs}
+\smalltext{
+\textbf{Main Effect}: The avg impact of one factor (Scent) ignoring others.\\
+\textbf{Interaction}: When the effect of one factor changes across levels of another (e.g., Scent helps Cute lines more than Direct lines).\\
+\textbf{Visuals}: Crossing or non-parallel lines in interaction plots = interaction.
+}
+\begin{lstlisting}[language=R]
+mod <- aov(Receptivity ~ Scent * PickUp, data = d) # (Continuous Y)
+interaction.plot(d$Scent, d$PickUp, d$Receptivity) # InteractionPlot
+\end{lstlisting}
+
+\section{Advanced Blocking}
+\subsection{RCBD Design}
+\smalltext{
+\textbf{Randomized Complete Block Design}: Groups units into homogeneous blocks (e.g., \code{YearInSchool}) to reduce "nuisance" variance. 
+\begin{itemize}
+    \item \textbf{Goal}: Increase precision of treatment effect estimates.
+    \item \textbf{Rule}: Treat blocks as additive terms (\code{+}), not interactions (\code{*}), unless the block itself is of scientific interest.
+\end{itemize}
+}
+\begin{lstlisting}[language=R]
+aov(Y ~ Block + FactorA * FactorB, data = d)# Model with Blocking
+\end{lstlisting}
+
+\section{Post-Hoc Reasoning}
+\smalltext{
+Class of experimental models refers to all possible pairwise comparisons among the levels of the main and interactions effects after the model is estimated.\\
+\textbf{Tukey HSD}: Best for balanced ANOVA main effects/interactions.keeps the family-wise error rate (FWER) at 
+    or below. \\
+\textbf{PostHocTest (DescTools)}: Flexible for various adjustments.
+}
+\begin{lstlisting}[language=R]
+aov_res <- aov(formula = Duration ~ Colour * Font, data = ABn_data)
+tidy(TukeyHSD(aov_res, conf.level = 0.95))
+PostHocTest(mod, which = "Scent:PickUp", method = "bonferroni")
+\end{lstlisting}
+
+\section{Experimental Design \& Strategy}
+\smalltext{
+  Blocking guarantees that each strata or demographic category is represented equally in both treatment groups, preventing imbalances that occur more frequently in small samples.
+  
+\textbf{Non-blocking}: Sampling $n$ units and randomly assigning treatments without considering strata. \textbf{Blocking}: Randomizing treatments \textit{within} each demographic category (block). This ensures sufficient representation across categories, which is critical for small sample sizes and controlling "nuisance" variance.
+}
+
+\subsection{Modelling Frameworks}
+\smalltext{
+The \textbf{Raw Model} regresses response $y$ on treatment $x$ only, ignoring stratum effects. The \textbf{Adjusted Model} uses post-hoc inclusion of demographic covariates. The \textbf{Blocking Model} uses data from a design where treatments were randomized within strata. While all models are accurate as $n \to \infty$, blocking models remain significantly more precise.
+}
+
+\section{Monte Carlo Metrics}
+\subsection{Performance Evaluation}
+\smalltext{
+Simulations track behavior via four key metrics:
+\begin{itemize}
+\item \textbf{BIAS}: Accuracy ($E[\hat{\theta}] - \theta$). Smaller is better.
+\item \textbf{RMSE}: Captures both bias and variance; typical error magnitude.
+\item \textbf{COVERAGE}: \% of 95\% CIs containing the true effect value.
+\item \textbf{POWER}: Probability of detecting a real effect ($\theta \neq 0$).
+\end{itemize}
+}
+
+\includegraphics[width=0.5\linewidth, height=2cm]{power-analysis.png}
+\includegraphics[width=0.5\linewidth, height=2cm]{block-vs-no-block.png}
+
+\section{Statistical Power Analysis}
+\smalltext{
+Power ($1-\beta$) is the probability of rejecting $H_0$ when $H_a$ is true. There is a direct trade-off between significance level ($\alpha$) and power. Sample size $n$ depends on effect size ($\delta$), variance ($\sigma$), $\alpha$, and power. Stricter $\alpha$ (e.g., 0.01) dramatically increases the required $n$.
+}
+
+\subsection{Sample Size Computation}
+\smalltext{
+For continuous variables, use Cohen's $d = \delta / \sigma$. Blocking can achieve acceptable power with significantly less data (e.g., 10x less in high-variance contexts).
+}
+
+\begin{lstlisting}[language=R]
+# Sample Size for Two-Sample t-test
+pwr.t.test(d = delta / sigma, sig.level = 0.05, power = 0.8, type = "two.sample", alternative = "greater")
+\end{lstlisting}
+
+\section{Block Homogeneity}
+\textbf{The Efficiency Principle}
+\smalltext{
+Blocking works best when blocks are \textbf{homogeneous}. Stratify units so variation in $Y$ is maximized \textit{across} blocks and minimized \textit{within} blocks. If within-block variation exceeds between-block variation, the benefits of blocking are negated.
 }
 
 \end{multicols}
