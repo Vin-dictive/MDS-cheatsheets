@@ -6,8 +6,6 @@ Cheatsheets for UBC MDS courses, for anyone who couldn’t make their own. If yo
 
 **New features & news**
 
-- **No cheatsheet for 554 Quiz 2:** I will be not working on the quiz 2 cheatsheets. Thank you!
-
 - **Auto-generated PNGs:** This repo uses a GitHub Actions workflow to turn each PDF cheatsheet into a 4K PNG (letter-size, first page). When you push a commit, the bot runs, converts all PDFs to PNGs, and then **makes a second commit** to add or update those PNGs. So you’ll often see two commits per update: yours, then the bot’s.
 
 
