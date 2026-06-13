@@ -21,6 +21,12 @@ These reflect **my learning needs at the time I took each quiz**, so they may no
 
 ---
 
+## Support
+
+If these cheatsheets have helped you, consider [sponsoring on GitHub](https://github.com/sponsors/Vin-dictive). It helps keep this repo updated and free for everyone.
+
+---
+
 *Good luck with your quizzes.*
 
 
